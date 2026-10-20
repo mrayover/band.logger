@@ -25,7 +25,7 @@ Every chunk must produce a usable, testable increment of the application.
 
 The intended Windows working directory is:
 
-`C:\Users\mrove\Projects\band.logger`
+`C:\Users\mrove\Projects\band.logger\band.logger`
 
 The owner manages commits, branches, and publishing through **GitHub Desktop**.
 

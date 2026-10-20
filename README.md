@@ -333,7 +333,7 @@ The last four files will be established during implementation.
 
 The intended local directory is:
 
-`C:\Users\mrove\Projects\band.logger`
+`C:\Users\mrove\Projects\band.logger\band.logger`
 
 The owner uses **GitHub Desktop** to manage the repository.
 
