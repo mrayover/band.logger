@@ -2,7 +2,7 @@
 
 **A project-based workspace for musicians and working bands.**
 
-**Project status:** Planning complete; initial implementation pending  
+**Project status:** Chunk 1 Windows preview built and tested; owner acceptance pending
 **Established:** October 20, 2026  
 **Primary platform:** Windows desktop  
 **Planned companion platform:** Android  
@@ -309,7 +309,7 @@ The staged plan is defined in `BUILD_CHUNKS.md`.
 
 | Chunk | Scope | Status |
 |---|---|---|
-| 1 | Application, projects, branding, members, `.4ss` technical proof | Not started |
+| 1 | Application, projects, branding, members, `.4ss` technical proof | Implemented; owner review pending |
 | 2 | Drive integration, imports, and tune catalog | Not started |
 | 3 | Library master export | Not started |
 | 4 | Supplements, history, and receipts | Not started |
@@ -327,7 +327,7 @@ Work Mode sessions must update the project documentation and leave the repositor
 - `ARCHITECTURE.md` — technical design
 - `DECISIONS.md` — confirmed and pending design decisions
 
-The last four files will be established during implementation.
+These implementation documents are now maintained in the repository. See `CURRENT_STATE.md` for verified scope and `WORK_LOG.md` for test results.
 
 ## Getting started — project owner
 
@@ -337,7 +337,7 @@ The intended local directory is:
 
 The owner uses **GitHub Desktop** to manage the repository.
 
-Initial owner workflow:
+Original setup workflow (completed; retained for reference):
 
 1. Create or clone the `band.logger` repository using GitHub Desktop.
 2. Ensure its local directory is the intended location.
@@ -397,3 +397,20 @@ As each development chunk is completed:
 6. Preserve the overall project vision unless the owner changes it.
 
 **The repository is the long-term source of truth for band.logger's design and implementation.**
+## Permanent Windows delivery and acceptance requirement
+
+Every completed development chunk must produce a usable, downloadable Windows desktop application. Build and supply an `.exe` with all required runtime components and dependencies, preferably inside a self-contained ZIP that launches without a development environment. Establish automated Windows packaging in GitHub Actions in Chunk 1 and deliver an updated package after every subsequent chunk. Test compilation, packaging, and functionality; preserve all previously completed functionality; include a simple manual testing checklist with every delivery. A chunk is not fully accepted until the owner has had the opportunity to run and review its Windows application. Do not begin the next chunk without owner approval. Local build packages may be delivered before publication; GitHub Actions artifacts require the owner to commit and push through GitHub Desktop.
+
+The actual local repository is `C:\Users\mrove\Projects\band.logger\band.logger`. Use this existing checkout; do not recreate it.
+
+## Running the Chunk 1 Windows preview
+
+Obtain `dist/band.logger-0.1.0-windows-x64.zip` from the local build, or the Windows application workflow artifact after the owner commits and pushes. Extract the whole ZIP and launch `band.logger/band.logger.exe`. Keep its app and runtime folders together. Windows 10/11 x64 is the target. No Java or development environment is needed. This preview is unsigned.
+
+Project creation/editing/switching, editable Quaternity starter members, ordered chart preferences, per-project colors, local persistence, bundled Lato and synthetic `.4ss` export are implemented. SVG rendering is pending; branding is a labeled text placeholder. Chart library and Drive features below remain planned for subsequent chunks.
+
+Use `MANUAL_TESTING.md` for review. Local data is under `%LOCALAPPDATA%\band.logger`. See `CURRENT_STATE.md` for limitations and `WORK_LOG.md` for results. Chunk 1 is not fully accepted until owner review; do not begin Chunk 2 without approval.
+
+### Development builds
+
+Run `scripts/build-local.ps1` to use the local toolchain (or download it if absent), run tests and package the application. The Gradle Wrapper and pinned dependencies provide reproducible build configuration. Internet is required for the first build. `.tools`, build output and `dist` are ignored.

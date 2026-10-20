@@ -256,6 +256,7 @@ Eventually, rehearsal and performance setlists should reference charts already i
 10. A technical proof that produces a valid open-format `.4ss` file using synthetic PDF data.
 11. Reproducible builds and automated tests.
 12. Initial architecture and work-log documentation.
+13. Self-contained Windows executable ZIP, automated GitHub Actions packaging, package smoke test and manual review checklist.
 
 ### Initial screens
 
@@ -343,7 +344,7 @@ The iPad test is a separate verification gate. If the agent cannot access an iPa
 
 ### Chunk 1 completion gate
 
-Do not declare Chunk 1 complete unless the desktop application builds and the foundation tests pass.
+Do not declare Chunk 1 complete unless the desktop application builds, the foundation tests pass, and a usable self-contained Windows executable package has been delivered. Full acceptance also requires the owner to have had the opportunity to run and review that package.
 
 The forScore XML generator must pass its automated tests. Record actual iPad import verification separately; unresolved real-device compatibility must remain visible before production chart exports begin.
 
@@ -660,3 +661,8 @@ Decisions that materially change the data model or user workflow must be brought
 - GitHub Desktop: https://desktop.github.com/
 
 **This document must remain in the Git repository and must be amended when scope, chunk acceptance criteria, or technical decisions change. Do not replace its history with unexplained new plans.**
+## Permanent Windows delivery and acceptance requirement
+
+Every completed development chunk must produce a usable, downloadable Windows desktop application. Build and supply an `.exe` with all required runtime components and dependencies, preferably inside a self-contained ZIP that launches without a development environment. Establish automated Windows packaging in GitHub Actions in Chunk 1 and deliver an updated package after every subsequent chunk. Test compilation, packaging, and functionality; preserve all previously completed functionality; include a simple manual testing checklist with every delivery. A chunk is not fully accepted until the owner has had the opportunity to run and review its Windows application. Do not begin the next chunk without owner approval. Local build packages may be delivered before publication; GitHub Actions artifacts require the owner to commit and push through GitHub Desktop.
+
+The actual local repository is `C:\Users\mrove\Projects\band.logger\band.logger`. Use this existing checkout; do not recreate it.
