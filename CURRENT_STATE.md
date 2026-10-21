@@ -1,3 +1,25 @@
+# Current state — Member-specific event exports, October 21, 2026 / 0.5.0
+
+Owner tested/approved 0.4.1 and updated Git; continued clean main at 84f9204. This supersedes earlier event-export deferrals below; history is retained.
+
+Saved rehearsal/gig → Export for Members now previews every current project musician's recorded baseline, preference, total/matched/missing occurrence counts, exact filenames, set count and destination. Unsaved drafts must be saved first. Missing/no-baseline output and Undated filenames require separate explicit acknowledgements. Each musician receives one ZIP with one complete reference-only .4ss and READ-ME.txt. All saved nonempty sets/order/repeats are retained, Set N headings use official placeholders, and missing references occupy their original positions as Missing chart — <tune>. Empty sets are warned/skipped; entirely empty events/no members are rejected.
+
+References come exclusively from each member's latest valid non-empty recorded Library Master by tune ID, reusing PendingPlanner's deterministic rule and recorded fallback filenames. Current catalog revisions do not replace references. Current preferred parts label filenames only. No PDF/source/master-ZIP IO, chart approval/distribution changes or workspace writes. Schema remains 5. Generation validates XML, stages/verifies all member ZIPs and publishes a new folder under <root>/Events/<saved date and event title>; repeat folders are uniquely suffixed. Destination overrides are transient. Success lists outputs/warnings and Open Export Folder.
+
+PASS: all 120 tests (97 prior + 23 new), zero failures/errors/skips; compilation; standard Windows packaging; app-image/extracted smoke including proper parsing of member ZIP XML, heading/order/repeat/exact filename/no-data checks, workspace immutability and existing second-process restart tests. Extracted execution uses path with spaces and no developer Java. All 207 extracted release files match ZIP SHA-256; all previous Windows ZIPs unchanged. Live workspace unchanged.
+
+PASS final extracted synthetic UI: saved-event export action/two panels retained, per-member preview (Marcus: 4 total/3 matched/1 missing with recorded C fallback under Guitar preference; new member: 4 missing/no baseline), missing+Undated independent acknowledgement gates, generation/success filenames/warnings, Open Export Folder, dirty-edit export disabling and clean reversion. Independent XML parsing verified exact paths, two sets, all repeats, titled missing placeholders and no PDF data; UI workspace remained byte-identical. Full owner real-library UI/export regression, manual failure/repeated-export/narrow-modal branches and actual iPad import were not performed; engine cases and existing feature regressions passed automated tests.
+
+ZIP: dist/band.logger-0.5.0-windows-x64.zip (61,770,065 bytes).
+EXE: dist/band.logger-0.5.0-windows-x64/band.logger/band.logger.exe.
+SHA-256: 1818335CF9C5960C5D2F39F3AADE31C4D56E2803EBD3D8B49B3F3D463255180B (dist/SHA256-0.5.0.txt).
+Extract all, retain app/ and runtime/, close old app windows and launch; no Java/Gradle installation. Unsigned Windows x64 preview. No new dependencies, original chart changes, remote Actions runs, commits/pushes/releases/uploads. Earlier successful packages preserved.
+
+Limits: no supplements, templates, covers, per-song overrides, embedded-PDF event packages or persistent event-export history. No installation/receipt confirmation; actual iPad filenames must match. Long labels are sanitized/truncated and long roots may exceed Windows path limits. Interrupted exports can leave hidden incomplete staging directories; do not distribute them. Event editing/save/crash limits remain unchanged.
+
+Next: owner transfers member ZIP via Drive → local iPad Files extraction → shares .4ss to forScore and verifies set headings, exact order/repeats, installed filename/fallback matches and missing placeholders. Prior successful Library Master import does not verify this new reference-only workflow. No further features started; await device findings before another export increment.
+
+---
 # Current state — Two-column editor and multiple sets, October 21, 2026 / 0.4.1
 
 Supersedes older single-set restrictions/status below; all history is retained.

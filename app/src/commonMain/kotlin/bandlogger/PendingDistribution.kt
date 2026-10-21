@@ -27,16 +27,23 @@ object PendingPlanner {
         }
     }.isSuccess
 
+    private fun validMasters(project: Project) = project.masters.filter { valid(it, project.id) }
+        .sortedWith(compareBy<LibraryMaster>({ timeKey(it.createdAt) }, { it.id }))
+
+    fun baselines(project: Project): List<MemberBaseline> {
+        val masters = validMasters(project)
+        return project.members.map { member -> MemberBaseline(member,
+            masters.lastOrNull { master -> master.members.any { it.memberId == member.id && it.charts.isNotEmpty() } }) }
+    }
+
     fun calculate(project: Project, sourceIssues: Map<String, String> = emptyMap()): PendingDistribution {
         // Overlay read-only source errors before selection, so a broken preferred chart cannot trigger a fallback.
         val checked = project.copy(catalog = project.catalog.copy(charts = project.catalog.charts.map {
             if (it.id in sourceIssues) it.copy(fileError = sourceIssues.getValue(it.id)) else it
         }))
         val preview = MasterPlanner.preview(checked)
-        val masters = project.masters.filter { valid(it, project.id) }
-            .sortedWith(compareBy<LibraryMaster>({ timeKey(it.createdAt) }, { it.id }))
-        val baselines = project.members.map { member -> MemberBaseline(member,
-            masters.lastOrNull { master -> master.members.any { it.memberId == member.id && it.charts.isNotEmpty() } }) }
+        val masters = validMasters(project)
+        val baselines = baselines(project)
         val entries = preview.members.flatMap { allocation ->
             val baseline = baselines.single { it.member.id == allocation.member.id }.master
             val prior = baseline?.members?.single { it.memberId == allocation.member.id }?.charts.orEmpty()

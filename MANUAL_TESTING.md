@@ -91,3 +91,23 @@ This supersedes the single-set limitations above. Extract all of band.logger-0.4
 - [ ] On the first save of older data, verify workspace.pre-multisets.backup.json retains original schema 1–4 bytes. Existing pre-events/pre-masters/chunk1 backups stay untouched. Older binaries reject schema 5; deliberate rollback requires the preserved matching older workspace.
 
 No drag/drop, cross-set move command, event exports, templates or cover pages. Move between sets by removing an occurrence and adding it to the desired set. Source PDFs and chart approval are untouched. Save explicitly; forced termination can lose unsaved drafts. Use a comfortable window height (approximately 650 px or taller) for both panels; short windows leave less panel space.
+
+## October 21, 2026 — Member event exports / 0.5.0 (current checklist)
+
+The owner approved 0.4.1 and updated Git before this increment. Extract all of band.logger-0.5.0-windows-x64.zip, close older app windows and run band.logger/band.logger.exe with app/ and runtime/ together.
+
+- [ ] Open a saved multi-set rehearsal/gig. Export for Members is available; after editing it becomes Save to export (disabled). Save before previewing so output matches the saved event.
+- [ ] Open Export for Members. Check saved date/title, every musician's current preference label, baseline ID, non-empty set count, total/matched/missing occurrence counts and exact recorded filenames. Repeats count individually; fallbacks remain the recorded part.
+- [ ] Use the configured export root or Browse/paste an existing writable folder. Review Events/<saved date and event title>/ beneath it. This one-export override does not change project settings.
+- [ ] For missing references or members without a master, verify the explicit warnings and required acknowledgement before Generate is enabled. Missing occurrences become Missing chart — <tune> placeholders in their original positions. No-baseline output is placeholder-only apart from set headings.
+- [ ] For an undated event, verify Undated filenames require separate acknowledgement. Otherwise return, enter a date and save; the current date must never be substituted.
+- [ ] An entirely empty event or no project members must show an error with no generation. Empty sets within a musical event are warned/skipped; later set headings retain their saved numbers.
+- [ ] Generate: one new event folder, one ZIP per current member, each containing one complete .4ss plus READ-ME.txt. Verify all sets/repeats in one .4ss per musician, no PDFs or data attributes. Complete result lists ZIPs/warnings and Open Export Folder.
+- [ ] Generate again; a distinguishable new event folder appears and prior files remain unchanged. Invalid/unavailable destination must report failure without successful output. Check original workspace/catalog/master records remain unchanged.
+- [ ] Regression-check multi-set editing, save/restart/project isolation, Library Master and Pending Distribution. Use disposable synthetic data for destructive/failure tests.
+
+### Owner iPad gate (not yet verified for reference-only event output)
+
+Transfer each member ZIP through Google Drive, save locally in iPad Files, extract, then share its .4ss (not READ-ME.txt) to forScore. Verify the named setlist, Set 1/Set 2/Set 3 placeholders, exact tune sequence including repeated occurrences, fallback member parts and chart opening. Each referenced filename must already be installed; a generated master does not prove that. Test explicit missing-chart placeholders and a known uninstalled filename. Record any forScore duplicate-occurrence/title/placeholder behavior. No claim of event-export iPad compatibility until this owner test passes.
+
+No event PDFs are read/copied/embedded/modified. Existing Library Master remains a separate embedded-PDF workflow. No supplements, templates, cover pages, per-song overrides or persistent event-export history. Event export does not save/edit an event or mark charts distributed/received. Workspace schema remains 5. Save explicitly; forced termination can lose unsaved drafts. An interrupted export can leave a hidden .bandlogger-event-* staging folder; do not distribute incomplete output. Package filename labels may sanitize/truncate Windows-unsafe text without editing saved titles. Long destinations can exceed Windows path limits; use a shorter root if needed.

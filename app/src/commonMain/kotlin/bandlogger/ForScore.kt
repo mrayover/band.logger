@@ -16,6 +16,13 @@ object ForScore {
         require(score.pdf.take(5).toByteArray().decodeToString() == "%PDF-") { "Expected PDF bytes." }
         return "  <score title=\"${escape(score.title)}\" path=\"${escape(score.filename)}\" data=\"${Base64.encode(score.pdf)}\" />\n"
     }
+    fun validReferenceFilename(filename: String): Boolean = filename.isNotBlank() && filename == filename.trim() &&
+        filename.endsWith(".pdf", true) && filename.length > 4 && filename.none { it in "<>:\"/\\|?*" || it.code < 32 }
+    fun referenceElement(title: String, filename: String): String {
+        require(validReferenceFilename(filename)) { "Supply the exact safe PDF filename, not a path." }
+        return "  <score title=\"${escape(title)}\" path=\"${escape(filename)}\" />\n"
+    }
+    fun placeholderElement(title: String): String = "  <placeholder title=\"${escape(title)}\" />\n"
     const val footer = "</forScore>\n"
     fun generate(title: String, scores: List<ProofScore>): String = buildString {
         append(header(title))

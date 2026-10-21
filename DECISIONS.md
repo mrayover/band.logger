@@ -100,3 +100,13 @@ This supersedes earlier notes that diagnostic iPad import was unresolved. No app
 - Use 38/62 desktop panels, independent lazy scrolling and a compact fixed header; stack below 700 dp editor content width. Preserve existing project sidebar/theme/Lato and all other screen scroll behavior.
 - Destination/search/scroll/window state remains transient; reopen selects the first set. Stored event data/order and existing explicit save/dirty/close protection remain durable. No autosave or crash recovery added.
 - Deliver unused version 0.4.1, preserve prior successful ZIPs byte-for-byte, retain GitHub Actions and leave Git operations to the owner. Next is owner review, then separately scoped reference-only forScore export planning/identity-matching validation.
+
+## October 21, 2026 — Member event-export decisions / 0.5.0
+
+- Owner-approved 0.4.1 baseline is clean commit 84f9204. Current task authorizes event exports only; preserve the existing multi-set editor and schema 5.
+- Reuse PendingPlanner's exact latest valid non-empty master baseline by current member ID. Record filenames/fallbacks govern references; never allocate from newer local revisions or infer supplements/installation. Expose the helper to share semantics rather than maintain a parallel rule.
+- One complete reference-only .4ss per member with official Set N placeholders. Preserve every repeated occurrence. Skip/warn empty sets; reject no songs/no members. Unsafe/missing filenames become missing-reference placeholders after acknowledgement. No-baseline output requires explicit acknowledgement too.
+- Naming uses saved event date/title, current member name and first usable preferred part. Preference describes the package, not every included part. Undated requires separate acknowledgement. Sanitize/truncate Windows labels, retain original event metadata and suffix member-label collisions/new repeat-export folders.
+- Use existing configured export root by default with Events subfolder. A dialog override is transient. Stage/validate all member ZIPs before publishing; never overwrite old packages. No direct Drive API, PDF IO/embedding/copying, chart acceptance/distribution updates or new export-history schema.
+- Retain filename-matching caveat: master generation is not proof of installation. Owner must verify the new reference-only workflow on iPad; previously approved embedded Library Master does not establish placeholder/repetition/reference behavior here.
+- Deliver new unused 0.5.0, preserve all earlier ZIP hashes and GitHub Actions. No commits/pushes/releases. Next task is owner iPad validation before further export scope.

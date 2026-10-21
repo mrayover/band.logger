@@ -2,7 +2,7 @@
 
 **A project-based workspace for musicians and working bands.**
 
-**Project status:** Two-column setlist editor and persistent multiple sets delivered (0.4.1), alongside existing Library Master and Pending Distribution. See the latest October 21 update below.
+**Project status:** Member-specific reference-only event exports delivered (0.5.0); 0.4.1 editor owner-approved. See the latest October 21 update below.
 **Established:** October 20, 2026  
 **Primary platform:** Windows desktop  
 **Planned companion platform:** Android  
@@ -475,3 +475,17 @@ Schema 5 retains the existing initialSet representation and adds ordered additio
 Delivery: dist/band.logger-0.4.1-windows-x64.zip; extracted EXE: dist/band.logger-0.4.1-windows-x64/band.logger/band.logger.exe. Extract all, keep app/ and runtime/, close older app windows and launch; Java/Gradle is not required. Unsigned Windows x64 preview. All 97 tests pass; packaged/extracted second-process smoke and synthetic UI desktop/narrow/search/add/order/save/restart/reopen checks passed. Previous Windows archives remain byte-identical. See CURRENT_STATE.md, WORK_LOG.md and the included MANUAL_TESTING checklist for precise coverage.
 
 No drag/drop, direct move-between-sets, exports, templates, cover pages, venues, notes, recordings or supplement generation. Cross-set moves use remove then add. Save explicitly; forced termination can lose unsaved drafts. Comfortable height is approximately 650 px or taller. Next: owner review using the new checklist, then a separately authorized reference-only forScore export design/device-matching validation. No commits, pushes or releases performed.
+
+## October 21, 2026 — Member-specific reference event exports / 0.5.0
+
+The owner tested/approved 0.4.1 and committed it before this increment. Saved rehearsals/gigs now offer Export for Members while retaining the two-column editor. Save unsaved edits first. Preview shows each current musician's preference label, latest valid non-empty Library Master baseline, exact recorded filenames, total/matched/missing occurrence counts, non-empty sets and destination. Missing entries/no baseline require explicit acknowledgement; undated events require separate Undated acknowledgement or a saved date. Empty events/no members are rejected; empty sets are warned/skipped with original heading numbers retained.
+
+One ZIP per member contains one complete reference-only .4ss plus READ-ME.txt, preserving all non-empty sets and repeated occurrences. The XML uses official forScore score path references and Set N placeholders, with no data attributes/PDF content. References use recorded filenames by stable tune ID, including legitimate recorded fallbacks; current catalog revisions/preferences never replace that baseline selection. Current preferences describe output labels only. Missing matches become explicitly titled placeholders in position; no-master members receive acknowledged placeholder-only output. A generated master does not prove those filenames are installed in forScore.
+
+Example: 20261021 Eden Wine Lounge (Marcus - Guitar).zip contains the same-named .4ss and READ-ME.txt; its internal setlist title omits the extension. Date comes from the saved event. Windows-unsafe labels are sanitized/truncated without changing event titles; duplicate member labels receive a deterministic suffix. Files go under <chosen export root>/Events/<event date and title>/; repeated exports create new timestamp/unique-ID-suffixed folders. Existing configured destination is the default; a dialog override is not saved to workspace settings.
+
+All XML is parsed before writing, then member ZIPs are staged, reopened/parsed and published as one new completed folder. Nothing is recorded as distributed/received and workspace schema remains 5. No PDF or master archive access occurs in event generation. Existing master/pending behavior and all backups remain. No new dependencies installed. Official specification: https://forscore.co/developers-file-types/ .
+
+Delivery: dist/band.logger-0.5.0-windows-x64.zip; EXE: dist/band.logger-0.5.0-windows-x64/band.logger/band.logger.exe. Extract all, retain app/ and runtime/, close older app windows and launch without installing Java/Gradle. Unsigned Windows x64 preview. All 120 tests (97 prior + 23 new) pass, as do packaged/extracted executable smoke tests with parsed reference-only event ZIPs and prior restart checks. Extracted synthetic UI preview/acknowledgements/generation/Open Export Folder passed; generated member XML and workspace immutability checked independently. All 207 extraction files and every prior Windows ZIP match SHA-256 checks. No commit/push/release/upload.
+
+Owner iPad verification is still required: ZIP through Drive → save locally in Files → extract → share .4ss to forScore; check set headings, repeats, exact installed filename matches and missing placeholders. Prior successful Library Master import does not establish this new reference-only workflow. Next: perform that device gate and report results before separately authorizing more export work. No supplements, templates, cover pages, embedded-PDF event output, per-song overrides or persistent event-export history implemented. Interrupted exports can leave hidden staging folders; do not distribute them. Long destination paths may need a shorter root.

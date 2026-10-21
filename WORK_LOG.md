@@ -273,3 +273,69 @@ Extract all, keep app/ and runtime/, close older app windows before normal use a
 Limits/deferred: no drag/drop/direct cross-set move (remove/add instead), exports, templates, cover pages, venues/calendar/notes/recordings/supplement generation or unrelated UI redesign. No automatic unsaved-draft recovery; forced termination can lose unsaved changes. Active set/search/scroll/window are transient; reopening selects the first set. Comfortable height approximately 650 px or taller; very short windows reduce panel room. Source charts and review/master/pending behavior unchanged. Next: owner review, then separately authorize reference-only forScore export design and device identity-matching validation; no export implementation started.
 
 Usage checkpoints: 85% current-window/67% weekly remaining at start; 82%/66% at packaging; 72%/65% at documentation. Packaging began long before the owner's reserve thresholds; feature scope stayed bounded. No extra development was started after the working executable. Final git diff --check passed (line-ending normalization warnings only). All changes are uncommitted/unpushed for GitHub Desktop review; no merge, release, upload or remote Actions run.
+
+## October 21, 2026 — Member-specific reference-only event exports / 0.5.0
+
+### Baseline, source and authorization
+
+Owner reports 0.4.1 tested/approved and Git updated. Read attached Pasted text.txt request and continued actual clean main at 84f9204 (Event and setlist updates), with no newer uncommitted owner changes. Reviewed CURRENT_STATE, recent WORK_LOG, relevant README/BUILD_CHUNKS/ARCHITECTURE/DECISIONS/MANUAL_TESTING portions, event/editor/storage/member models, master manifests/planner/exporter, pending baseline rules, XML writer and Windows workflow/tests. Earlier full historical docs/Computer Use skill were already read in this chat. No project AGENTS.md found at checked paths. No reset/recreation/checkout or source-control mutations. Hashed all previous Windows ZIPs and live workspace before implementation in ignored .tools/event-export-verification-20261021.
+
+Checked the official forScore Open Setlist specification at https://forscore.co/developers-file-types/ via web. Uses documented forScore kind=setlist/version=1.0/title root, score title/path without data, and placeholder title. Exact filename matching/placeholder/repeat display on iPad remains owner-verification work; previous embedded master success is not claimed as this new gate.
+
+### Exact source and documentation changes
+
+Added:
+- app/src/commonMain/kotlin/bandlogger/EventExport.kt: pure saved-event/member-baseline plan, exact tune-ID-to-recorded-filename resolution, safe names/date handling, counts/warnings/acknowledgements and ordered reference XML.
+- app/src/desktopMain/kotlin/bandlogger/EventExporter.kt: parser validation, contained Events destination, staged ZIP authoring/reopening/validation, no-replacement publication and transient result.
+- app/src/desktopMain/kotlin/bandlogger/EventExportDialog.kt: preview/member details/destination/acknowledgements, async generation/error/success/Open Export Folder.
+- app/src/desktopTest/kotlin/bandlogger/EventExportTest.kt: 23 focused regression tests.
+
+Modified:
+- app/src/commonMain/kotlin/bandlogger/ForScore.kt: add safe reference filename checks plus reference/placeholder element writers reusing existing escaping/header/footer; existing embedded writer unchanged.
+- app/src/commonMain/kotlin/bandlogger/PendingDistribution.kt: expose/reuse canonical baseline helper and valid-master sort; classifications unchanged. Existing full pending suite passes.
+- app/src/desktopMain/kotlin/bandlogger/EventScreen.kt: saved-only Export for Members action/dirty Save to export disabling, modal and root busy callback; two-panel editor retained.
+- app/src/desktopMain/kotlin/bandlogger/Main.kt: pass busy callback, new version label and packaged event-export smoke with proper ZIP/XML parsing/workspace immutability.
+- app/build.gradle.kts and scripts/package-windows.ps1: unused version 0.5.0 throughout package/ZIP/checksum paths; previous archive overwrite guard retained. GitHub Actions workflow unchanged.
+- README.md, BUILD_CHUNKS.md, CURRENT_STATE.md, ARCHITECTURE.md, DECISIONS.md, MANUAL_TESTING.md and WORK_LOG.md: current capabilities, owner approval, exact rules/results/paths, limits and iPad checklist; historical entries retained. MANUAL_TESTING was updated before packaging and is included unchanged in the release.
+
+### Resolution, persistence and safety decisions
+
+Resolve each current member's latest structurally valid, same-project, non-empty Library Master using the existing PendingPlanner timestamp/ID rules, retaining earlier nonempty baselines when later packages skip that member. Match each saved occurrence's stable tune ID against that member's selected baseline, preserving the recorded exact filename/legitimate fallback. Never union older masters to fill omissions, select new catalog revisions, infer supplements/imports or substitute another member's chart. Current member preferences affect descriptive labels only (first usable configured part; otherwise member-only label). Invalid recorded filenames become acknowledged missing placeholders instead of being guessed/sanitized.
+
+One complete .4ss per current member retains all nonempty saved sets and repeated occurrences, with Set N heading placeholders and Missing chart — <tune> placeholders at unmatched positions. Empty sets are warned/skipped with original numbering; no-song/no-member events are rejected. Total/matched/missing counts count occurrences. No-baseline members receive acknowledged placeholder-only output. Undated filenames require independent acknowledgement or a date entered/saved in the editor.
+
+Example: 20261021 Eden Wine Lounge (Marcus - Guitar).zip contains 20261021 Eden Wine Lounge (Marcus - Guitar).4ss and READ-ME.txt. Internal title matches the basename. Saved event date controls YYYYMMDD; current date is never substituted. Windows-unsafe text is sanitized/truncated without changing event data, duplicate member basenames receive deterministic numeric suffixes. Output is <configured/chosen root>/Events/<saved-date and title>/; repeated export uses a new UTC-generation-time/unique-ID suffix folder, preserving originals. Root overrides are per-export/transient.
+
+Generator recomputes the plan to reject stale saved events/baselines/members, enforces acknowledgements, validates every XML document with a proper secured parser before output, stages member ZIPs, reopens each to parse/compare contents, then publishes a new folder without replacement. Normal failure cleanup touches only this operation's stage files; pre-existing stage/output untouched. Abrupt termination may leave a hidden .bandlogger-event-* folder; do not distribute incomplete output. Long roots may exceed Windows path limits and need shortening.
+
+No event-export PDF IO/copy/embed/modification, source scans, master archive reads, workspace writes, distribution/receipt changes or new persistence history. Schema remains 5 and all earlier migrations/backups remain untouched. No dependencies installed/changed. Existing event save/restart/dirty/project protections and library/master/pending behavior preserved. UI blocks navigation/close while generation is busy; failures remain visible in preview for correction/retry.
+
+### Tests and package verification
+
+- gradlew.bat :app:compileKotlinDesktop: PASS, 7 seconds.
+- gradlew.bat :app:desktopTest: PASS, 4 seconds.
+- scripts/build-local.ps1: PASS; :app:desktopTest :app:createDistributable completed in 8 seconds, followed by packaged smoke/restart, ZIP creation and extracted smoke/restart from a fresh path with spaces, JAVA_HOME empty and system-only PATH. No bypassed/disabled tests or smoke checks.
+- Final report total: 120 tests, 0 failures/errors/skips (97 existing plus 23 new). A progress message incorrectly said 121; corrected after reading exact report totals. No test failures occurred.
+- New tests cover XML root/escaping/absence of data/Base64/PDFs; all sets/order/repeated entries in one document; exact per-member/fallback filenames; current preferences not reallocating; latest valid nonempty/tied/fractional baseline and skipped-member retention; invalid/foreign baselines; missing placeholders in position/no-baseline output; unsafe recorded filenames; empty set warnings/empty event/no members; unsaved or foreign events; saved dates/Undated and missing acknowledgement gates; safe/reserved/long/colliding member names; exact two-entry ZIP contents; repeated export folder/no overwrite; invalid Events destination; stale plan; invalid XML before output; preserving existing staging folder; project/workspace isolation; parser rejection of data/unsafe references. Existing full event/multiset/catalog/master/pending/storage/XML/font/file safety suite passed.
+- New synthetic smoke exports from real saved two-set/repeated events with synthetic recorded masters. For every generated member ZIP it opens entries, requires exactly one .4ss plus READ-ME, parses proper root/elements, checks three score occurrences and exact C fallback paths, Set 1/Set 2 headings/order, and no data/PDF entries. Workspace encoded bytes remain identical. Both image/extracted event-export-passed.txt markers passed alongside existing master/pending/restart smoke.
+- Final distribution extracted to dist/band.logger-0.5.0-windows-x64. SHA-256 of all 207 extracted files equals their ZIP streams. Every previous Windows ZIP equals its pre-session hash, and the live workspace is byte-identical. No archived build overwritten. New ZIP not rebuilt after success.
+
+### Packaged UI and independent generated-output verification
+
+Computer Use skill targeted the final extracted 0.5.0 EXE with isolated synthetic ui-data under .tools/event-export-verification-20261021. Fixture has an undated saved two-set/four-occurrence event, Marcus with a recorded C fallback (Guitar label) and a missing tune, plus a new member with no baseline. PASS: retained two-panel editor; Export for Members preview; Marcus 4 total/3 matched/1 missing with exact C filenames; new member 4 total/0 matched/4 missing and clear no-master placeholder-only warning; destination/Undated/filenames; Generate stayed disabled until both independent acknowledgements checked; generation completion lists two ZIPs/warnings and output; Open Export Folder opened the expected Explorer folder. After returning, temporary title edit visibly disabled export as Save to export; reverting that character restored clean state/export availability without saving.
+
+Independently opened UI ZIPs and parsed XML with XPath: each contains exactly one complete .4ss plus README, two set-heading placeholders in correct positions, exact three C references for Marcus plus Missing chart — Along Came Betty; new member has all four song placeholders and no score nodes. An initial external PowerShell check counted an absent XML property as a one-element null array; changed verification to explicit XPath counts, after which both ZIPs passed. No product defect/fix or output regeneration was needed. No PDF/Base64/data payloads. Synthetic workspace stayed byte-identical before/after preview/generation/temporary edit reversion; live workspace also unchanged. Closed the synthetic app normally. Existing owner app/windows were untouched; generated-folder Explorer is harmless local verification output.
+
+Not manually rerun: real-owner-library exports, all destination/failure/repeated-export/narrow-modal branches, every old screen regression or iPad imports. Engine failure/repetition/naming/isolation and old functionality have passing automated coverage; do not claim an iPad result. Manual owner checklist is included in ZIP.
+
+### Delivery and handoff
+
+ZIP: C:\Users\mrove\Projects\band.logger\band.logger\dist\band.logger-0.5.0-windows-x64.zip (61,770,065 bytes).
+EXE: C:\Users\mrove\Projects\band.logger\band.logger\dist\band.logger-0.5.0-windows-x64\band.logger\band.logger.exe.
+SHA-256: 1818335CF9C5960C5D2F39F3AADE31C4D56E2803EBD3D8B49B3F3D463255180B, recorded in dist/SHA256-0.5.0.txt.
+
+Extract all, retain app/ and runtime/, close old app windows before normal use; no installed Java/Gradle needed. Unsigned Windows x64 preview. Open/save an event, Export for Members, inspect recorded filenames/counts/destination, acknowledge missing/Undated where necessary, Generate, then Open Export Folder. Transfer member ZIP through Drive → save locally in iPad Files → extract → share .4ss, not README, to forScore. Check set headings, order/repeats, expected installed filename/fallback matches and missing placeholders. A generated master is not proof of installation. This owner iPad test is the recommended next task before any more export scope.
+
+No supplements/templates/cover pages/embedded-PDF event exports/per-song overrides/venues/calendar/recordings/drag-drop or persistent event-export history. No upload/direct cloud API or receipt confirmation. No additional functionality started. Full required Markdown updated with history preserved. GitHub Actions retained but not run remotely. All changes remain uncommitted/unpushed for owner GitHub Desktop review, commit and push; no reset, merge or release.
+
+Usage checkpoints: 70% current-window/65% weekly remaining at start; 65%/64% at packaging. All feature work was complete and a working new executable was preserved well before 35/25/15%-remaining thresholds. Final milestone recorded by live tool before handoff; no optional scope added. Final git diff --check and artifact/workspace checks completed.

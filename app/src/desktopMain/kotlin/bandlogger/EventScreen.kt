@@ -43,8 +43,9 @@ fun EventsScreen(project: Project, create: (EventType) -> Unit, open: (BandEvent
 fun EventType.label() = if (this == EventType.REHEARSAL) "Rehearsal" else "Gig"
 
 @Composable
-fun EventEditorScreen(project: Project, draft: EventDraft, error: String?, change: (BandEvent) -> Unit, save: () -> Unit, back: () -> Unit, modifier: Modifier = Modifier) {
+fun EventEditorScreen(project: Project, draft: EventDraft, error: String?, change: (BandEvent) -> Unit, save: () -> Unit, back: () -> Unit, setBusy: (Boolean) -> Unit, modifier: Modifier = Modifier) {
     val event = draft.value
+    var exportOpen by remember(event.id) { mutableStateOf(false) }
     var search by remember(event.id) { mutableStateOf("") }
     var selection by remember(event.id) { mutableStateOf(EventSetSelection(event.initialSet.id)) }
     var removeSetId by remember(event.id) { mutableStateOf<String?>(null) }
@@ -76,6 +77,7 @@ fun EventEditorScreen(project: Project, draft: EventDraft, error: String?, chang
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
                 EventType.entries.forEach { type -> FilterChip(selected = event.type == type, onClick = { change(event.copy(type = type)) }, label = { Text(type.label()) }) }
                 Spacer(Modifier.weight(1f))
+                OutlinedButton(enabled = !draft.isDirty, onClick = { exportOpen = true }) { Text(if (draft.isDirty) "Save to export" else "Export for Members") }
                 OutlinedButton(onClick = {
                     val updated = event.addSet(::newId)
                     selection = EventSetSelection(updated.sets.last().id)
@@ -152,6 +154,7 @@ fun EventEditorScreen(project: Project, draft: EventDraft, error: String?, chang
             }
         }
     }
+    if (exportOpen) EventExportDialog(project, event.id, setBusy) { exportOpen = false }
     removeSetId?.let { id ->
         val target = event.sets.find { it.id == id }
         if (target != null) AlertDialog(onDismissRequest = { removeSetId = null },
