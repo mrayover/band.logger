@@ -70,3 +70,12 @@ This supersedes earlier notes that diagnostic iPad import was unresolved. No app
 - No new data schema, dependencies, event/setlist editors, supplements or cover pages.
 - Owner reports successful actual Library Master import and tunes present in forScore on iPad. Do not infer additional tests or annotation preservation.
 - Deliver as 0.3.3 because a local 0.3.2 archive already existed despite source version 0.3.1. Guard against overwriting existing version ZIPs; retain versioned checksums. No commit or push.
+
+## October 21, 2026 — Pending Distribution decisions
+
+- Reuse the one catalog and MasterPlanner. No second library, migration, source modification or acceptance changes.
+- Latest valid non-empty master per member; normalized UTC timestamp then ID breaks ties deterministically. Skipped members retain prior valid baselines. Historical exports are not erased or merged into a cumulative full-master baseline.
+- Compare tune identity, selected part, revision and SHA-256; filenames/timestamps alone never establish distribution status. Equivalent duplicate/renamed chart records are unchanged when musical identity and bytes match.
+- New part means a selected part never exported for this member/tune; switching back to an already exported part is a revised selection. Missing/unapproved/conflicting preferred charts block rather than silently fall back.
+- Read-only live source checks run on entry/recheck and cannot save catalog state. Summary counts member–tune selections, with initial-master selections excluded. Generated exports do not imply imported/received.
+- Deliver 0.3.4 without overwriting previous ZIPs. Optional Supplemental Export Preview deferred to protect delivery reserve. Latest usage checkpoint jumped from 36% to 13% remaining during UI checks; no additional features started.

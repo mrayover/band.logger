@@ -42,3 +42,18 @@ This is the current checklist; the Stage 3B instructions above are retained as h
 - [ ] When testing imports/exports, use a temporary synthetic library; verify ZIP/.4ss, manifest and recovery through the existing checklist above. Original charts must remain unchanged.
 
 Owner report received October 21: the actual Library Master imported successfully into forScore on the owner's iPad and the tunes were present. This supersedes the earlier pending-import statements; no additional iPad tests or annotation behavior are claimed.
+
+## October 21, 2026 — Pending Distribution / 0.3.4
+
+This supersedes the 0.3.3 placeholder checklist; older entries remain historical. Extract band.logger-0.3.4-windows-x64.zip completely and run band.logger/band.logger.exe with its app/ and runtime/ directories. Close old app windows first.
+
+- [ ] Open Pending Distribution from Home and the sidebar. Wait for the source check. Verify the project name/theme and no changes to saved review decisions.
+- [ ] Inspect member baselines: latest valid non-empty master per member, export timestamp then ID. A skipped member retains their earlier non-empty baseline; a member without one requires an initial master.
+- [ ] In a synthetic test library with a recorded master, approve a new tune, add a new preferred part, and approve a revision. Check New Tunes, New Parts and Revised Charts respectively. Counts are member–tune selections, not distinct tunes.
+- [ ] Confirm unchanged selections are absent by default; toggle Include unchanged to inspect them. Search by title, part, musician and status; expand details and check previous revision/part and current hash.
+- [ ] Leave a newer preferred chart unapproved or conflicting: it must show attention, never silently fall back. Follow Library / Needs review and inspect the review tab.
+- [ ] Remove or change a synthetic PDF after scanning, then Recheck source files. It must be blocked with a missing/changed warning; this check must not save catalog changes. Restore it and use Library Refresh/review to update the authoritative catalog.
+- [ ] Check a project with no master and a project with no pending changes; verify explanatory empty states. Switch projects and check independent allocations and themes.
+- [ ] Confirm existing Library Master exports/recovery, members, themes and four-card Home remain reachable. Exporting is not confirmation of musician receipt/import.
+
+No supplemental ZIP/.4ss generation, supplement numbering, persistent supplement history or optional per-member Supplemental Export Preview is included. Source checks are point-in-time; repeat after external changes. The screen does not poll files continuously or revalidate historical export ZIP files.

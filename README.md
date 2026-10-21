@@ -445,3 +445,9 @@ Create Rehearsal, Create Gig and Upcoming Events each show a Coming soon dialog.
 The owner confirmed that the actual Library Master successfully imported into forScore on their iPad and the tunes were present. This is owner-reported production import verification, not an agent-performed device test or proof of annotation transfer. The remaining Stage 3C checklist is not automatically marked complete.
 
 Current delivery: dist/band.logger-0.3.3-windows-x64.zip; extract all contents and run band.logger/band.logger.exe. See CURRENT_STATE.md and WORK_LOG.md for final verification. Earlier version-specific sections are historical.
+
+## October 21, 2026 — Pending Distribution / 0.3.4
+
+Pending Distribution now calculates approved per-member selections from the single catalog and recorded masters. It shows New Tunes, New Parts, Revised Charts, attention exceptions, initial-master requirements, search, expandable details and baseline inspection. Counts are member–tune selections. Source PDFs are checked read-only on entry/recheck; changed/missing files block selection without changing review state. Use Library / Needs review, then its Needs review tab, to resolve issues (Refresh first after external file changes).
+
+Baseline: latest valid non-empty master for each member, sorted by UTC export time then ID. Skipped members keep earlier non-empty baselines. Export records do not prove receipt/import. No supplemental files, numbering, history or optional Supplemental Export Preview. Schema 3, existing workflows, Home and project highlights remain unchanged. Current ZIP: dist/band.logger-0.3.4-windows-x64.zip; executable: dist/band.logger-0.3.4-windows-x64/band.logger/band.logger.exe. Prior delivery sections remain historical.

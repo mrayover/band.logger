@@ -115,16 +115,3 @@ private fun HomeIcon(kind: Int, color: Color) {
         }
     }
 }
-
-@Composable
-fun PendingDistributionScreen(openMaster: () -> Unit, goHome: () -> Unit) {
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(28.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text("Distribution tracking is coming soon", style = MaterialTheme.typography.headlineSmall)
-            Text("A pending-distribution queue and supplemental packages are not implemented yet. This screen cannot determine which charts still need to be sent or whether members have imported them.")
-            Text("You can already preview and generate member packages in Library master, view the last saved master, or recover a completed export.")
-            Button(onClick = openMaster) { Text("Open Library master") }
-            TextButton(onClick = goHome) { Text("Back to Home") }
-        }
-    }
-}

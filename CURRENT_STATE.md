@@ -1,3 +1,20 @@
+# Current state — Pending Distribution, October 21, 2026 / 0.3.4
+
+This supersedes the placeholder status below; all previous entries are retained as history.
+
+Functional read-only Pending Distribution compares approved catalog selections against each member's latest valid non-empty recorded master. Includes New Tunes/New Parts/Revised Charts, explicit initial-master requirements, unchanged toggle, search, tune groups, expanded chart details, baseline inspection and attention/file warnings. Source bytes are checked on entry/recheck; unapproved/conflicting/missing/changed selections are blocked. Library navigation opens the existing Library screen; use Refresh and Needs review there. Counts are member–tune selections, not distinct tunes. Export inclusion does not establish receipt/import.
+
+PASS: compile; 67 tests (51 existing + 16 new), zero failures/errors; packaged and extracted smoke tests including pending unchanged/new-tune checks, without developer Java; packaged synthetic UI counts (4 new, 1 new part, 3 revisions), initial-member warning, search, expansion, source-change blocking and Library navigation. Final ZIP/extraction integrity verified; live and synthetic workspaces unchanged. Full owner real-library review and new iPad tests were not performed. No schema/dependency changes or original PDFs/export modifications. Prior builds retained. No commit/push or remote Actions run.
+
+ZIP: dist/band.logger-0.3.4-windows-x64.zip.
+EXE: dist/band.logger-0.3.4-windows-x64/band.logger/band.logger.exe.
+SHA-256: DF504F91D036B8786F5E54FF84DEAA8C499613C2D867DAC82EFC735D91E9FF9E.
+Extract all files; runtime is bundled. Unsigned Windows x64 preview.
+
+Optional Supplemental Export Preview deferred. No supplement packages/numbering/history, event editors or receipt confirmation. Source checks are point-in-time; historical ZIP files are not revalidated by this view. Baseline/classification rules are in ARCHITECTURE.md. Next: owner review with MANUAL_TESTING.md, then the read-only supplement preview. Usage reached 13% remaining after packaged verification; finalization only thereafter.
+
+---
+
 # Current state — Homepage increment, October 21, 2026
 
 Version 0.3.3 is the current tested Windows delivery. Earlier Stage 3B status is retained below as historical context; this section supersedes its pending production-iPad-import and delivery-version statements.

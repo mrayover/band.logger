@@ -64,7 +64,13 @@ fun main(args: Array<String>) {
         check(MasterExporter.recover(exportProject, exported.folder) == exported)
         store.save(Workspace().saveProject(exportProject.recordMaster(exported)))
         check(store.load().projects.single().masters.single() == exported)
-        Files.writeString(dir.resolve("smoke-passed.txt"), "Storage, fonts, XML, ZIP, chart scan, preview, master generation and recovery passed.")
+        val baselineProject = store.load().projects.single()
+        check(PendingPlanner.calculate(baselineProject).count(PendingKind.UNCHANGED) == 4)
+        check(PendingSources.check(baselineProject).issues.isEmpty())
+        Files.write(charts.resolve("Q New Tune -r00- C.pdf"), syntheticPdf())
+        val pendingProject = baselineProject.copy(catalog = baselineProject.catalog.reconcile(LocalCharts.scan(charts.toString()), "Q", 2L, ::newId).acceptNew())
+        check(PendingPlanner.calculate(pendingProject).count(PendingKind.NEW_TUNE) == 4)
+        Files.writeString(dir.resolve("smoke-passed.txt"), "Storage, fonts, XML, ZIP, chart scan, preview, master generation, recovery and pending distribution passed.")
         exitProcess(0)
     }
     // Keep two windows/processes from overwriting the same metadata snapshot.
@@ -156,7 +162,7 @@ fun main(args: Array<String>) {
                         TextButton(enabled = !busy, onClick = { page = item }) { Text(if (page == item) "• $item" else item) }
                     }
                     Spacer(Modifier.height(24.dp))
-                    Text("0.3.3 · PREVIEW", style = MaterialTheme.typography.labelSmall)
+                    Text("0.3.4 · PREVIEW", style = MaterialTheme.typography.labelSmall)
                     Text("Saved locally. No account needed.", style = MaterialTheme.typography.bodySmall)
                 }
                 Column(Modifier.weight(1f).padding(36.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(20.dp)) {
@@ -169,7 +175,7 @@ fun main(args: Array<String>) {
                         Text("$page  /  Project workspace", color = hex(theme.secondary))
                         when (page) {
                             "Home" -> key(project.id) { HomeScreen(project, { projectEditor = project }, { page = "Pending Distribution" }) }
-                            "Pending Distribution" -> PendingDistributionScreen({ page = "Library master" }, { page = "Home" })
+                            "Pending Distribution" -> key(project.id) { PendingDistributionScreen(project, { page = "Library master" }, { page = "Library" }) }
                             "Library" -> key(project.id) { LibraryScreen(project, busy, { busy = it }) { updated -> persist(workspace.saveProject(updated)) } }
                             "Library master" -> key(project.id) { MasterScreen(project, busy, { busy = it }) { updated -> persist(workspace.saveProject(updated)) } }
                             "Members" -> {
