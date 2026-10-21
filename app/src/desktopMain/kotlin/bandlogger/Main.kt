@@ -57,7 +57,14 @@ fun main(args: Array<String>) {
         check(master.members.size == 4 && master.members.all { it.selectedCount == 1 })
         check(master.members.all { it.fallbackCount == 1 })
         check(store.load().projects.single().exportDestination == dir.toString())
-        Files.writeString(dir.resolve("smoke-passed.txt"), "Storage, fonts, XML, ZIP, chart scan and member preview passed.")
+        val exportDir = Files.createDirectories(dir.resolve("master-exports"))
+        val exportProject = previewProject.copy(exportDestination = exportDir.toString())
+        val exported = MasterExporter.generate(exportProject, MasterPlanner.preview(exportProject))
+        check(exported.members.count { it.zipName != null } == 4)
+        check(MasterExporter.recover(exportProject, exported.folder) == exported)
+        store.save(Workspace().saveProject(exportProject.recordMaster(exported)))
+        check(store.load().projects.single().masters.single() == exported)
+        Files.writeString(dir.resolve("smoke-passed.txt"), "Storage, fonts, XML, ZIP, chart scan, preview, master generation and recovery passed.")
         exitProcess(0)
     }
     // Keep two windows/processes from overwriting the same metadata snapshot.
@@ -134,7 +141,7 @@ fun main(args: Array<String>) {
                         TextButton(enabled = !busy, onClick = { page = item }) { Text(if (page == item) "• $item" else item) }
                     }
                     Spacer(Modifier.height(24.dp))
-                    Text("STAGE 3A · PREVIEW", style = MaterialTheme.typography.labelSmall)
+                    Text("STAGE 3B · PREVIEW", style = MaterialTheme.typography.labelSmall)
                     Text("Saved locally. No account needed.", style = MaterialTheme.typography.bodySmall)
                 }
                 Column(Modifier.weight(1f).padding(36.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(20.dp)) {
@@ -154,7 +161,7 @@ fun main(args: Array<String>) {
                                     Button(onClick = { projectEditor = project }) { Text("Edit project") }
                                 } }
                                 Text("Next chapters", style = MaterialTheme.typography.titleLarge)
-                                Text("Connect your chart folder under Library to browse tunes, review files and import PDFs. Preview member allocations under Library master. Package generation is the next stage.")
+                                Text("Connect your chart folder under Library to browse tunes, review files and import PDFs. Preview member allocations under Library master. Generate confirmed member ZIPs under Library master.")
                             }
                             "Library" -> key(project.id) { LibraryScreen(project, busy, { busy = it }) { updated -> persist(workspace.saveProject(updated)) } }
                             "Library master" -> key(project.id) { MasterScreen(project, busy, { busy = it }) { updated -> persist(workspace.saveProject(updated)) } }

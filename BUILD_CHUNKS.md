@@ -680,3 +680,7 @@ The owner explicitly approved Chunk 2 and requested updated progress documentati
 ## October 20, 2026 — Stage 3A implementation checkpoint
 
 Owner authorized 3A only. Member selection/preview, exceptions, file issues and saved export destination are implemented in 0.3.0. All 42 tests and compilation passed. The candidate Windows ZIP passed 207-file integrity verification. Windows Smart App Control blocked the unsigned executable during the package launch check; development UI verification does not replace this gate. Stage 3A is not fully accepted. Resolve trusted signing/distribution and rerun the packaged checks before acceptance. Production ZIP exports/manifests (3B), final production/device validation (3C), and Chunk 4 remain unimplemented.
+
+## October 20, 2026 — Stage 3B Windows delivery
+
+Owner authorized 3B and reported disabling Smart App Control. The prior executable blocker is resolved. Version 0.3.1 implements confirmed member ZIP generation, manifests, source validation and recovery. All 51 tests, packaged/extracted executable smoke tests and a real-chart packaged UI export/restart check passed. Owner Windows review and actual production forScore import remain pending. Full Chunk 3 acceptance and later chunks are not implied. Preserve the user's requested usage reserve; finalization began at 9% remaining.

@@ -52,3 +52,12 @@ This supersedes earlier notes that diagnostic iPad import was unresolved. No app
 - Add optional destination metadata within schema 2. Older saved data remains readable; warn that older application saves can discard the new field.
 - Version 0.3.0 is a Stage 3A preview candidate, not full Chunk 3. The accepted 0.2.0 ZIP is retained.
 - Local Windows Smart App Control blocked the unsigned candidate. No Windows security changes or per-app workarounds were made. Trusted signing is now an unresolved delivery dependency. Do not call 3A fully accepted until executable launch and owner review pass.
+
+## Stage 3B delivery
+
+- Owner disabled Smart App Control and authorized 3B; agent made no security-setting changes. Previous launch blocker is resolved and executable tests passed.
+- Explicit acknowledgement of all member selections/fallbacks/omissions before generation. Zero-chart members receive no ZIP; no misleading empty package.
+- Preserve source bytes and previous output. Stream XML per PDF, verify hashes, stage files and publish a new folder. Store immutable chart/member identity snapshots for later supplements.
+- Schema 3 protects saved masters from older application writers and preserves a pre-migration backup.
+- Recover completed output after metadata-save failure instead of regenerating it. Recovery is checksum-checked and idempotent.
+- 0.3.1 is the usable Windows Stage 3B delivery. Production iPad compatibility remains owner-verification work. Stop new work before the user's usage reserve is exhausted; finalization began at 9% remaining.

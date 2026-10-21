@@ -41,3 +41,11 @@ MasterPreview.kt in commonMain is a pure catalog snapshot planner. It never read
 MasterScreen.kt presents member lists, counts, exceptions, search and file issues. Desktop destination validation runs off the UI thread with existing busy/project-switch protection. Project.exportDestination is an optional opaque string in schema 2, default null; desktop stores a normalized folder reference. No migration is needed to read existing schema-2 data. Older binaries can drop this new setting when saving.
 
 Version 0.3.0 packaging retains the standard Windows workflow and extends the smoke routine with preview/destination checks. Local compiled image generation passed, but Smart App Control blocked executable launch; manual archive assembly was used only to produce a clearly labeled candidate. No smoke-test bypass was added to the build script or CI. Actual source verification, staged export writes and persistent manifests remain 3B design work.
+
+## Stage 3B
+
+LibraryMaster/MasterMember/MasterItem are shared serializable manifest snapshots. Project.masters persists completed outputs. Schema 3 migrates schema 1/2; the first schema-2 save preserves workspace.pre-masters.backup.json. Earlier binaries reject the new schema to avoid losing export baselines.
+
+MasterExporter is desktop-only. It rejects stale previews, unsafe/linked source paths, changed/missing PDFs and duplicate output PDF basenames. It streams individual PDF XML elements into each member ZIP, limiting a PDF to 64 MiB and member source data to 512 MiB. UTC-named new folders use unique identities and no replacement. Outputs are staged, reverified, then moved to the final folder with a manifest. Normal failures clean only this operation's staging files; abrupt termination can leave an incomplete folder.
+
+Publication precedes workspace save. If that save fails, completed output remains available; recover validates the original folder, project/catalog IDs and archive hashes, then idempotently records the manifest. It is not recipient-import confirmation. Main's packaged smoke test exercises export and recovery. Both bundled and extracted Windows tests passed after the owner's security-setting change.

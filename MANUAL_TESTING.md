@@ -1,63 +1,30 @@
-# Stage 3A Windows review checklist
+# Stage 3B Windows review checklist
 
-**Release verification blocked:** Windows Smart App Control rejected the unsigned 0.3.0 executable on this computer. Compilation and 42 automated tests passed; UI verification used the normal Gradle development task with isolated data. The ZIP contains the executable and runtime, but bundled/extracted executable launch has not passed. Do not treat this stage as fully accepted until its Windows application can be launched and reviewed. No security settings were changed. See CURRENT_STATE.md for the signing blocker.
+Extract the entire band.logger-0.3.1-windows-x64.zip, close older band.logger windows, then run band.logger/band.logger.exe. Keep app/ and runtime/ beside it. No development tools or Java installation are required. The application is unsigned.
 
-Extract the entire dist/band.logger-0.3.0-windows-x64.zip. Open band.logger/band.logger.exe with its app/ and runtime/ folders beside it. No development tools are needed. This is an unsigned Windows x64 preview.
+The owner disabled Smart App Control; the previously blocked Stage 3A packaged and extracted executables subsequently passed launch checks. Stage 3B includes production member ZIP generation; actual forScore import still needs owner verification.
 
-Stage 3A provides allocations and destination settings only. Production member ZIP generation and saved master manifests are Stage 3B.
+## Review and export
 
-- [ ] Open Library master, then Create Library Master · Preview.
-- [ ] Select each member. Check preference order, selected count, fallback count, missing parts and items needing attention.
-- [ ] Inspect a selected chart's filename, part and revision. An accepted highest revision should be selected for the first available preferred part.
-- [ ] Inspect fallback entries: the preview must name the missing preferred part and the selected fallback.
-- [ ] Check File issues. Unreviewed, excluded, missing or ambiguous records must remain visible and cannot be silently accepted.
-- [ ] Search a tune or filename; try Show fallbacks and omissions only.
-- [ ] Choose an existing export destination. Restart and verify the setting remains with this project.
-- [ ] Switch projects and confirm that members, allocations and export destinations stay independent.
-- [ ] Verify the screen clearly says preview only and does not create .4ss packages or a master record.
-- [ ] Recheck Library search/Refresh and existing project/member/theme features.
+- [ ] Open Library → Needs review. Inspect and accept recognized charts you want to distribute. Resolve ambiguous entries individually; originals remain unchanged.
+- [ ] Open Library master → Create Library Master · Preview. Check every member's chart selection, fallbacks and omissions.
+- [ ] Choose an export destination outside the public code repository, preferably your Drive export area.
+- [ ] Click Review and generate member ZIPs. Check member counts and the acknowledgement before confirming. Members with no selected charts receive no ZIP.
+- [ ] Open the saved master folder. Verify one ZIP per member with selections, plus manifest.json.
+- [ ] Open a ZIP and verify its .4ss and READ-ME.txt. Do not edit the .4ss.
+- [ ] Transfer a member ZIP through Drive; download and save locally on iPad, extract in Apple Files, then share the .4ss to forScore.
+- [ ] In forScore, find the named Library Master setlist and open its charts. Report the result before full Chunk 3 acceptance.
+- [ ] Restart band.logger and verify Last saved master, destination, members and catalog persist.
+- [ ] Switch projects; confirm their destinations and master records remain separate.
 
-For a controlled test folder: accept a C chart, then add a newer unreviewed C revision and refresh. Preview must omit that tune with a review explanation, rather than silently choosing the older C chart or another fallback.
+The preview uses the saved scan. Generation rechecks selected source paths and content; if a PDF changed or disappeared, it fails and asks for refresh/review. Source charts and previous master folders are not overwritten. Repeated deliberate master generation creates a new complete master; it is not a supplement. Importing another master may create duplicate scores and does not transfer existing annotations automatically.
 
-The preview uses the saved catalog; refresh Library after changing files. Current catalog review decisions are preserved. Stage 3B will recheck actual PDF contents before export. Choosing a destination checks current accessibility but does not guarantee future write access.
+## Recovery and regression
 
-The following accepted Chunk 2 checklist remains available for regression testing.
+- [ ] If files completed but the app record failed to save, choose Recover a completed master folder and select the original folder containing manifest.json. Recovery verifies project identity, catalog identities and ZIP checksums. Repeating recovery does not duplicate the app record.
+- [ ] In a temporary synthetic library, change or remove a selected PDF after preview. Confirm export fails without recording a successful master.
+- [ ] Recheck project switching, member edits, theme, Library search/Refresh, and safe PDF import.
 
-# Chunk 2 Windows review checklist
+Schema 3 adds durable master records. Before the first save from schema 2, workspace.pre-masters.backup.json is retained in %LOCALAPPDATA%\band.logger. Older app versions reject schema 3; keep backups for deliberate rollback. Do not edit or delete backups.
 
-Extract the entire band.logger-0.2.0-windows-x64.zip. Open the band.logger folder and double-click band.logger.exe. Keep app/ and runtime/ beside it. No Java, Gradle or development environment is needed. This unsigned preview may show a Windows publisher warning.
-
-## Existing data
-
-- [ ] Existing Quaternity members, colors and project details appear unchanged.
-- [ ] Create or switch to a second project; verify it has its own folder and library.
-- [ ] Edit a member and a color; restart and verify they persist.
-
-## Library and review
-
-- [ ] Open Library and connect the intended Google Drive for desktop chart folder. Confirm the folder before scanning.
-- [ ] Browse tune groups and search by title, filename and part (e.g. Bb).
-- [ ] Open Needs review, inspect recognized charts and accept them when satisfied.
-- [ ] Review malformed filenames by assigning the intended tune title, part and revision. Confirm the original filenames stay unchanged.
-- [ ] Add a synthetic PDF outside the app, press Refresh and verify discovery.
-- [ ] Import a synthetic PDF through Import PDF. Confirm the destination filename, verify the copy appears and the original remains.
-- [ ] Try importing under an existing filename; verify it is rejected without overwriting anything.
-- [ ] Refresh twice; verify no duplicate records appear.
-- [ ] Restart; verify the folder, catalog and review decisions persist.
-
-## Safety checks in a temporary test folder only
-
-- [ ] Put different PDFs with the same tune/part/revision in two subfolders. Confirm Revision conflict appears and bulk acceptance does not accept them.
-- [ ] Change a test PDF's contents. Confirm old metadata/checksum remains in History and the new content needs review.
-- [ ] Temporarily make the test source folder unavailable. Refresh should report failure and preserve the catalog.
-- [ ] Exclude a test record; confirm the PDF stays on disk. Restore it from History if needed.
-
-## forScore delivery
-
-- [ ] Under Technical proof, save the forScore test ZIP.
-- [ ] Transfer ZIP through Drive, save it locally on iPad, extract in Apple Files and share the .4ss to forScore.
-- [ ] Open Setlists and verify the proof's two PDF entries. Prior single-entry diagnostics already passed on the owner's iPad; the updated ZIP button needs owner review.
-
-Google Drive handles syncing after a copy; band.logger cannot confirm cloud upload completion. No library masters or supplemental packages are generated in Chunk 2.
-
-Data is in %LOCALAPPDATA%\band.logger. The previous save is workspace.backup.json; the pre-migration copy is workspace.chunk1.backup.json. Keep backups. Owner approved Chunk 2 on October 20, 2026. This checklist is retained for regression testing; approval does not establish that every individual checkbox was performed. Chunk 3 planning is in CHUNK_3_PLAN.md.
+Limits: 64 MiB per PDF, 512 MiB of selected PDF data per member. No supplement generator, full history browser, setlist planner, Android app or direct cloud uploader is included. Drive performs synchronization; band.logger does not confirm recipients imported a package.

@@ -2,7 +2,7 @@
 
 **A project-based workspace for musicians and working bands.**
 
-**Project status:** Chunk 2 accepted; Stage 3A implemented/tested; Windows executable launch blocked by Smart App Control
+**Project status:** Stage 3B Windows app delivered (0.3.1); owner/iPad review pending
 **Established:** October 20, 2026  
 **Primary platform:** Windows desktop  
 **Planned companion platform:** Android  
@@ -311,7 +311,7 @@ The staged plan is defined in `BUILD_CHUNKS.md`.
 |---|---|---|
 | 1 | Application, projects, branding, members, `.4ss` technical proof | Owner reviewed; ZIP iPad diagnostics passed |
 | 2 | Drive integration, imports, and tune catalog | Owner approved October 20, 2026 |
-| 3 | Library master export | 3A preview implemented; executable launch/owner review pending. 3B/3C not started |
+| 3 | Library master export | 3B implemented and Windows package tested; owner/iPad review pending |
 | 4 | Supplements, history, and receipts | Not started |
 
 Every chunk must have a successful build, relevant tests, and a documented verification result.
@@ -420,10 +420,18 @@ Open Library → Connect folder and choose your locally synchronized chart folde
 
 The forScore proof now saves a ZIP. Transfer it through Drive, save locally on iPad, extract in Apple Files, then open the .4ss in forScore. Production library masters remain Chunk 3 work.
 
-## Stage 3A — Library master preview
+## Stage 3A — Library master preview (historical delivery notes)
 
 Version 0.3.0 adds Library master → Create Library Master · Preview, member allocations based on ordered preferences, explicit fallbacks and omissions, searchable chart lists, file issues, and a project-specific export destination. It uses accepted charts from the saved catalog. Newer unresolved or missing preferred revisions block a tune instead of silently falling back or using an older revision. Review charts in Library first. No production master files or manifests are generated in 3A.
 
 Candidate package: dist/band.logger-0.3.0-windows-x64.zip, with executable, runtime, dependencies, launch-status note and manual checklist. Extract the entire ZIP and keep band.logger.exe beside app/ and runtime/. Close any older band.logger process before normal use. No development tools are required by this package.
 
 **Launch verification is blocked on the owner machine:** Windows Smart App Control rejected the unsigned 0.3.0 executable. Compilation, 42 tests, development UI checks and ZIP integrity passed; packaged executable launch did not pass. The earlier 0.2.0 ZIP is retained. Stage 3A is not fully accepted until its Windows package can launch and the owner can review it. No security settings were changed. See CURRENT_STATE.md for evidence and supported signing references.
+
+## Current Windows delivery — Stage 3B / 0.3.1
+
+The prior Windows signing block is resolved after the owner disabled Smart App Control. Both packaged and extracted launch tests now pass. Download the local dist/band.logger-0.3.1-windows-x64.zip, extract all files, close older band.logger windows and run band.logger/band.logger.exe. The runtime is included.
+
+Library master now previews and generates confirmed member ZIPs with .4ss files, instructions and a saved manifest. Review/accept charts in Library, choose an export destination, inspect all members and confirm. Members with zero selected charts are explicitly skipped. Source PDFs and previous exports remain unchanged. A completed export can be recovered if its app-record save fails.
+
+51 tests passed, including prior features, XML/PDF correctness, source-change rejection, collision/partial-failure handling, recovery and schema migration. A real-chart ZIP passed byte verification and persisted after app restart. Actual iPad import remains pending; see MANUAL_TESTING.md and CURRENT_STATE.md. Schema 3 preserves a pre-master backup; older applications reject it. This supersedes the earlier blocked/preview-only notes.

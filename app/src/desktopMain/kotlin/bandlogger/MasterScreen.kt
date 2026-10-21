@@ -22,10 +22,12 @@ import java.nio.file.Path
     var exceptionsOnly by remember(project.id) { mutableStateOf(false) }
     var destinationDraft by remember { mutableStateOf<String?>(null) }
     var notice by remember { mutableStateOf("") }
+    var confirmMaster by remember { mutableStateOf(false) }
+    var recoveryDraft by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Library master", style = MaterialTheme.typography.headlineSmall)
-        if (!started) Text("Preview which chart each member would receive. Stage 3A does not generate library packages.")
+        if (!started) Text("Preview which chart each member would receive. Review allocations, then confirm to generate member ZIP packages.")
         Text("Uses the last saved library scan. Refresh in Library after changing PDFs. Only accepted charts can be selected.", style = MaterialTheme.typography.bodySmall)
         if (!started) Card(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -38,7 +40,7 @@ import java.nio.file.Path
             }
         }
         if (started) {
-            Text("Preview only · Destination: " + (project.exportDestination ?: "Not chosen"), style = MaterialTheme.typography.bodySmall)
+            Text("Destination: " + (project.exportDestination ?: "Not chosen"), style = MaterialTheme.typography.bodySmall)
             TextButton(enabled = !busy, onClick = { destinationDraft = project.exportDestination ?: "" }) { Text("Choose or change destination") }
         }
         if (notice.isNotBlank()) Text(notice, color = MaterialTheme.colorScheme.secondary)
@@ -105,7 +107,89 @@ import java.nio.file.Path
                 }
                 VerticalScrollbar(rememberScrollbarAdapter(listState), Modifier.align(Alignment.CenterEnd).fillMaxHeight())
             }
-            Text("Preview only. ZIP generation and final confirmation arrive in Stage 3B. No master has been recorded.", style = MaterialTheme.typography.bodySmall)
+            Button(enabled = !busy && project.exportDestination != null && preview.members.any { it.selectedCount > 0 },
+                onClick = { confirmMaster = true }) { Text("Review and generate member ZIPs") }
+            if (project.exportDestination == null) Text("Choose a destination before generating.")
+            if (preview.members.none { it.selectedCount > 0 }) Text("No accepted charts selected. Review new charts in Library first.")
+            Text("Each ZIP contains a .4ss file and iPad instructions. Review all fallbacks and omissions before confirming.", style = MaterialTheme.typography.bodySmall)
+        }
+    }
+    project.masters.lastOrNull()?.let { master ->
+        Card(Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Last saved master", style = MaterialTheme.typography.titleMedium)
+                Text(master.createdAt)
+                Text("${master.members.count { it.zipName != null }} member packages · ${master.members.sumOf { it.charts.size }} chart selections")
+                Text(master.folder, style = MaterialTheme.typography.bodySmall)
+                OutlinedButton(enabled = !busy, onClick = {
+                    runCatching { java.awt.Desktop.getDesktop().open(Path.of(master.folder).toFile()) }
+                        .onFailure { notice = "Could not open folder: ${it.message}" }
+                }) { Text("Open master folder") }
+                Text("Recorded file generation, not confirmation of iPad import.", style = MaterialTheme.typography.bodySmall)
+            }
+        }
+    }
+    OutlinedButton(enabled = !busy, onClick = { recoveryDraft = "" }) { Text("Recover a completed master folder") }
+    if (confirmMaster) {
+        var acknowledged by remember { mutableStateOf(false) }
+        AlertDialog(onDismissRequest = { confirmMaster = false }, title = { Text("Confirm Library Master") },
+            text = {
+                Column(Modifier.heightIn(max = 450.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("Destination: ${project.exportDestination}")
+                    preview.members.forEach {
+                        Text("${it.member.name}: ${it.selectedCount} charts, ${it.fallbackCount} fallbacks, ${it.blockedCount + it.missingCount} omitted." +
+                            if (it.selectedCount == 0) " No ZIP will be generated." else "")
+                    }
+                    Text("${preview.issues.size} file issues remain in the catalog. Source PDFs are not modified.")
+                    if (project.masters.isNotEmpty()) Text("A previous master exists. This creates another complete master, not a supplement. Reimporting may create duplicate scores in forScore.")
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(acknowledged, { acknowledged = it })
+                        Text("I reviewed the selections, fallbacks and omissions for every member.")
+                    }
+                }
+            },
+            confirmButton = {
+                Button(enabled = acknowledged && !busy, onClick = {
+                    confirmMaster = false
+                    setBusy(true)
+                    notice = "Verifying PDFs and creating member ZIPs…"
+                    scope.launch {
+                        var published: LibraryMaster? = null
+                        try {
+                            val master = withContext(Dispatchers.IO) { MasterExporter.generate(project, preview) }
+                            published = master
+                            save(project.recordMaster(master))
+                            notice = "Saved ${master.members.count { it.zipName != null }} member ZIPs and the master record. Open the master folder below."
+                        } catch (e: CancellationException) { throw e }
+                        catch (e: Exception) {
+                            notice = if (published == null) "Export failed: ${e.message}. No successful master was recorded."
+                            else "Files are complete at ${published.folder}, but the app record could not be saved: ${e.message}. Use Recover a completed master folder; do not generate again."
+                        } finally { setBusy(false) }
+                    }
+                }) { Text("Generate member ZIPs") }
+            },
+            dismissButton = { TextButton(onClick = { confirmMaster = false }) { Text("Back to preview") } })
+    }
+    recoveryDraft?.let { initial ->
+        var location by remember(initial) { mutableStateOf(initial) }
+        FormDialog("Recover completed master", { recoveryDraft = null }, {
+            require(location.isNotBlank()) { "Choose the completed master folder containing manifest.json." }
+            val folder = location.trim()
+            recoveryDraft = null
+            setBusy(true)
+            scope.launch {
+                try {
+                    val master = withContext(Dispatchers.IO) { MasterExporter.recover(project, folder) }
+                    save(project.recordMaster(master))
+                    notice = "Master record recovered. No files regenerated."
+                } catch (e: CancellationException) { throw e }
+                catch (e: Exception) { notice = "Recovery failed: ${e.message}" }
+                finally { setBusy(false) }
+            }
+        }) {
+            Field("Completed master folder", location) { location = it }
+            OutlinedButton(onClick = { chooseChartFolder("Choose completed master folder")?.let { location = it } }) { Text("Browse folders") }
+            Text("Use this only when ZIP creation finished but saving the app record failed. Package checksums and project identity are verified. Repeating recovery does not duplicate the record.")
         }
     }
     destinationDraft?.let { initial ->

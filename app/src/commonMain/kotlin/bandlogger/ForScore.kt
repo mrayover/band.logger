@@ -10,15 +10,17 @@ object ForScore {
             .replace("\"", "&quot;").replace("'", "&apos;")
             .replace("\t", "&#9;").replace("\n", "&#10;").replace("\r", "&#13;")
     }
+    fun header(title: String): String = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<forScore kind=\"setlist\" version=\"1.0\" title=\"${escape(title)}\">\n"
+    fun scoreElement(score: ProofScore): String {
+        require(score.filename.endsWith(".pdf", true) && !score.filename.contains('/') && !score.filename.contains('\\')) { "Supply a PDF filename, not a path." }
+        require(score.pdf.take(5).toByteArray().decodeToString() == "%PDF-") { "Expected PDF bytes." }
+        return "  <score title=\"${escape(score.title)}\" path=\"${escape(score.filename)}\" data=\"${Base64.encode(score.pdf)}\" />\n"
+    }
+    const val footer = "</forScore>\n"
     fun generate(title: String, scores: List<ProofScore>): String = buildString {
-        append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
-        append("<forScore kind=\"setlist\" version=\"1.0\" title=\"${escape(title)}\">\n")
-        scores.forEach {
-            require(it.filename.endsWith(".pdf", true) && !it.filename.contains('/') && !it.filename.contains('\\')) { "Supply a PDF filename, not a path." }
-            require(it.pdf.take(5).toByteArray().decodeToString() == "%PDF-") { "Expected PDF bytes." }
-            append("  <score title=\"${escape(it.title)}\" path=\"${escape(it.filename)}\" data=\"${Base64.encode(it.pdf)}\" />\n")
-        }
-        append("</forScore>\n")
+        append(header(title))
+        scores.forEach { append(scoreElement(it)) }
+        append(footer)
     }
 }
 // Entirely synthetic one-page PDF; offsets are computed from ASCII bytes.

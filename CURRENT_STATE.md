@@ -1,47 +1,34 @@
-# Current state — Stage 3A, October 20, 2026
+# Current state — Stage 3B, October 20, 2026
 
-Chunks 1 and 2 are owner approved. The owner explicitly authorized "Implement 3a." Stage 3A code is implemented and tested, but Windows executable launch is blocked by Smart App Control. Stage 3A is not fully accepted; 3B, 3C and Chunk 4 have not started.
+Stage 3B is implemented and packaged as 0.3.1. Owner review and actual production forScore import remain pending. Chunks 1 and 2 are accepted. The owner authorized 3B, reported disabling Smart App Control themselves, and requested delivery before usage exhaustion. No Windows security settings were changed by the agent. The prior executable launch blocker is resolved: packaged and extracted launch checks passed.
 
-## Implemented
+## What works
 
-- All existing project/member/theme, library scanning/import/review and synthetic ZIP proof features remain.
-- Library master preview shows each member's ordered part preferences, selected charts, fallbacks, missing parts and blocked tunes.
-- Deterministic one-chart-per-tune selection uses the highest included current revision for the first available preferred part. A missing, unreadable, unreviewed or conflicting latest preferred revision blocks the tune; it does not silently downgrade or switch to a fallback. Identical-content duplicate paths are represented once.
-- Explicitly excluded charts are not selected; unavailable and unclassified records appear in File issues. Unknown member preferences block selection with an explanation.
-- Searchable allocation lists, an exceptions filter and per-member counts.
-- Project-specific export destination with existing-folder validation, saved locally. No export folders/files or master records are created.
-- Shared planning logic has no desktop filesystem dependencies. Preview uses saved catalog metadata; actual source-content verification and generation remain Stage 3B.
+- Existing projects, members, themes, library scanning/import/review and 3A allocation previews.
+- Explicit confirmation of member selections, fallback/omission counts and zero-chart members.
+- One ZIP per member with selected charts, containing a named .4ss and iPad instructions. Members with zero selected charts receive no ZIP and are explicitly listed as skipped.
+- Safe new master folders with manifest.json and persistent project master records. Source paths and SHA-256 content are checked before embedding and again before publishing. Previous exports and source PDFs are preserved.
+- Streaming XML per PDF; files are completed in a staging directory before publication.
+- Last saved master and Open master folder; recovery of completed output if local metadata saving fails. Recovery validates project/catalog identities and ZIP checksums and does not duplicate existing records.
+- Schema 3 adds master records. Schema 1/2 migrate; schema-2 data is preserved in workspace.pre-masters.backup.json before the first save. Older binaries reject schema 3.
 
-## Verification
+## Verified delivery
 
-- PASS: :app:desktopTest — 42 tests, zero failures/errors/skips (28 existing, 14 new).
-- PASS: :app:createDistributable — Windows executable image and bundled runtime compiled.
-- PASS: :app:run --args=--smoke-test in isolated development storage — persistence, fonts, XML, proof ZIP, catalog, member allocation and destination readback.
-- PASS: development UI inspection via :app:run with isolated synthetic fixtures plus a copy of the real catalog. Verified primary/fallback choices, missing/review omissions, exceptions filter, file issues, destination save and project isolation. Copied Quaternity preview correctly showed 248 file issues and 117 classified tunes; no catalog entries were auto-accepted.
-- PASS: archive extraction and SHA-256 comparison of all 207 files. Expected executable, runtime DLL, app configuration and checklist present.
-- BLOCKED: scripts/build-local.ps1 stopped at the first packaged executable launch. Windows Code Integrity event 3077 named VerifiedAndReputableDesktop (Smart App Control), policy GUID {0283ac0f-fff1-49ae-ada1-8a933130cad6}, rejecting the unsigned 0.3.0 executable. No successful bundled/extracted executable smoke test is claimed.
-- NOT RUN: remote GitHub Actions for these uncommitted changes. Existing workflow still requires tests and executable smoke checks.
-- PENDING: owner Windows package review, production forScore import (3B/3C), Android compilation.
+Windows ZIP: dist/band.logger-0.3.1-windows-x64.zip (61,492,901 bytes).
+Extracted executable: dist/band.logger-0.3.1-windows-x64/band.logger/band.logger.exe.
+SHA-256: 4364A206A5F6DEB04537753C5C1AEE5A5363479D41CDA8A264AE6247A002278C.
+Extract the whole ZIP; keep app/ and runtime/ beside the executable. Close older band.logger windows first. No Java or development environment is needed.
 
-## Delivery and blocker
+PASS: 51 automated tests, zero failures/errors/skips; compilation; Windows packaging; bundled and extracted executable smoke tests with developer Java removed from PATH. Smoke tests include master generation, manifest persistence and recovery.
 
-Candidate: dist/band.logger-0.3.0-windows-x64.zip (61,431,650 bytes at creation). Checksum: dist/SHA256-0.3.0.txt. Extract all files; the application entry point is band.logger/band.logger.exe. It includes its runtime and dependencies. The ZIP contains LAUNCH_STATUS.txt and MANUAL_TESTING.md explaining the incomplete launch gate. Existing 0.2.0 delivery remains available.
+PASS: packaged UI confirmation, real-chart generation and restart. Used a private copy of the owner's workspace, preserving all review decisions. Only the previously accepted Bass chart was eligible; generated one Xavier ZIP, verified its decoded PDF against the original SHA-256 and manifest, and reopened the app to verify Last saved master. Live workspace remained byte-identical. The test export is under %LOCALAPPDATA%\band.logger\verification\stage3b-20261020-195541, outside Git. No actual Drive upload was performed.
 
-The owner confirmed they did not knowingly enable restrictions and want the agent to have access. Project authorization does not remove Windows signing enforcement. No policy, registry setting, security exclusion or certificate trust setting was changed. No purchase, signing enrollment or external upload was performed.
+The real library still has 248 entries needing review. Inspect/accept recognized entries in Library before expecting complete member packages. Application approval does not approve chart records.
 
-Microsoft describes trusted code signing as the supported path for the unsigned-app issue:
-https://learn.microsoft.com/en-us/windows/apps/develop/smart-app-control/code-signing-for-smart-app-control
-Smart App Control has no individual-app exception:
-https://support.microsoft.com/en-us/windows/security/threat-malware-protection/smart-app-control-frequently-asked-questions
+## Remaining limits and next step
 
-Resolve an approved signing/distribution approach and repeat the executable launch/package checks before calling 3A delivered and accepted. The unsigned candidate is not guaranteed to launch on this machine.
+Actual iPad import of a production package is awaiting owner verification. Follow MANUAL_TESTING.md: transfer ZIP through Drive, save locally on iPad, extract in Files, then share .4ss to forScore. Filename collisions on import may create copies; annotation transfer is not promised.
 
-## Data and limitations
+Limits: 64 MiB per PDF, 512 MiB selected PDF data per member. Folder/file timestamps use UTC. No supplements, full history browser, per-song assignments, Android app or direct cloud uploader. Interrupted exports may leave an incomplete staging folder; do not distribute it. Completed folders can be recovered after app-record failure.
 
-The production workspace was byte-identical before and after testing. Tests used .tools/stage3a-ui and .tools/stage3a-development-smoke; these are ignored local test data, not the owner's live workspace. No source PDF was moved, renamed or changed. The earlier copy-only transfer of 249 PDFs into Drive remains unchanged.
-
-The last copied real catalog has 249 records, 117 tune groups, one accepted chart and 248 records needing review (including one Bb-2 filename). The owner should inspect/accept recognized new entries in Library before expecting broad allocations. Application approval does not approve catalog entries.
-
-Schema 2 receives an optional exportDestination field. Older data loads with no destination; a save from an older application can discard this setting. Prefer the new version once its launch gate is resolved. Retain backups and the accepted 0.2.0 release.
-
-No production master export, manifests, supplements, song-specific assignments, direct cloud uploader, Android app or SVG rendering was added. 3B/3C remain future stages. All changes are left uncommitted for GitHub Desktop.
+All required progress documents are updated. Changes are uncommitted and unpushed from baseline 798aa54. Remote Actions for 3B has not run. At the final usage checkpoint, 9% remained; feature work stopped and delivery was finalized. Next: owner Windows/iPad review, then the remaining 3C verification when authorized. Do not start Chunk 4 automatically.

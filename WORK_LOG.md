@@ -100,3 +100,16 @@ This supersedes earlier notes that diagnostic iPad import was unresolved. No app
 - .\gradlew.bat :app:run --args=--smoke-test with isolated .tools/stage3a-development-smoke passed. This is development-runtime verification, not a successful packaged executable launch.
 - Assembled candidate ZIP from the compiled image with manual checklist, license notices and LAUNCH_STATUS.txt. Expanded into a fresh path containing spaces; verified executable/config/runtime presence and SHA-256 equality for all 207 files. Candidate size 61,431,650 bytes; checksum in dist/SHA256-0.3.0.txt. Both packaged/extracted launch checks remain BLOCKED, and remote Actions remains NOT RUN.
 - Updated README, BUILD_CHUNKS, CURRENT_STATE, ARCHITECTURE, DECISIONS, MANUAL_TESTING and CHUNK_3_PLAN. Final diff/whitespace and tracked-file checks performed. No dependencies installed, no commits/pushes, no 3B/3C or Chunk 4 implementation.
+
+## Stage 3B — October 20, 2026
+
+- Owner reported disabling Smart App Control and authorized 3B, with a 5%-remaining wrap-up constraint. Agent did not change security settings. Baseline checkout was clean at 798aa54 (more chunk 3a).
+- scripts/package-windows.ps1 -SkipBuild passed both previously blocked Stage 3A executable checks, establishing a working fallback before implementation.
+- Implemented shared manifest models/schema 3; immutable schema-2 backup; streaming XML; verified desktop ZIP staging/publication; confirmation UI; last-master access and recovery. No supplements or Chunk 4 implementation.
+- Initial regression run found one old migration test expecting schema 2; updated expected current schema to 3 while retaining preservation assertions. Added nine MasterExporterTest cases.
+- gradlew.bat :app:desktopTest passed all 51 tests. scripts/build-local.ps1 passed compilation, tests, image generation, packaged smoke, ZIP creation and extracted smoke with no developer Java on PATH. Packaged smoke now generates four synthetic member masters and verifies recovery/persistence.
+- Used computer-use skill to test the extracted 0.3.1 executable against an isolated copy of the real workspace. Confirmed explicit counts: one accepted Bass chart for Xavier, zero for the other members; generated one ZIP after acknowledging those omissions. No chart decisions were changed.
+- Independently parsed the produced .4ss and confirmed decoded PDF SHA-256 equals the original source and manifest. Closed/reopened the actual packaged app; Last saved master and destination persisted. Test data and export remain under local app-data verification, outside Git. The live workspace was byte-identical before/after testing.
+- Artifact: dist/band.logger-0.3.1-windows-x64.zip, 61,492,901 bytes. SHA-256 4364A206A5F6DEB04537753C5C1AEE5A5363479D41CDA8A264AE6247A002278C. Extracted executable also retained in dist/band.logger-0.3.1-windows-x64/band.logger. Older releases preserved.
+- Usage checkpoints showed 69%, 50%, 42%, then 9% remaining. Stopped feature work at 9% with the tested executable already produced; completed documentation and handoff. No additional scope begun.
+- Owner production iPad import remains pending. Remote GitHub Actions not run for these uncommitted changes. Documentation and diff checks completed; no commit or push.

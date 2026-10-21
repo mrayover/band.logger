@@ -1,6 +1,6 @@
 # Chunk 3 plan — Library master exports
 
-Prepared October 20, 2026, after explicit owner acceptance of Chunk 2. The owner subsequently authorized 3A. Its code, tests and development UI are implemented; Windows executable launch is blocked by Smart App Control and owner acceptance remains pending. 3B/3C are not started. Chunk 4 remains outside scope.
+Prepared October 20, 2026. The owner authorized 3A and subsequently 3B. Both are implemented; 0.3.1 Windows packaging and launch tests passed. The earlier Smart App Control blocker is resolved. Owner production iPad verification remains pending; Chunk 4 is outside scope.
 
 ## Estimate and usage approach
 
@@ -52,3 +52,7 @@ Exit: deliver the Windows app and export instructions. Production compatibility 
 ## Stage 3A checkpoint
 
 Implemented: selection/preview, warnings, file issues, destination storage, tests and compiled 0.3.0 image. 42 tests and ZIP integrity passed. Windows launch gate remains blocked by Smart App Control, so the candidate is not a fully accepted delivery. See CURRENT_STATE.md for exact evidence and signing references. Resolve this release blocker before advancing to production exports. The original time estimates above predate this external signing dependency and do not cover certificate enrollment.
+
+## Stage 3B checkpoint
+
+Delivered 0.3.1 Windows ZIP and extracted executable. 51 tests, bundled/extracted package smoke checks, actual selected-PDF export and restart persistence passed. Required Windows checks were completed during 3B; remaining 3C work is owner-led production package review/iPad validation and any resulting fixes. Do not repeat already passed checks without a new change or concern. No more feature work was started after the final 9% usage checkpoint.
