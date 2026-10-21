@@ -15,17 +15,28 @@ import kotlinx.serialization.json.Json
 @Serializable data class Project(
     val id: String, val name: String, val prefix: String = "", val theme: Theme = Theme(),
     val logoReference: String? = null, val members: List<Member> = emptyList(), val catalog: Catalog = Catalog(),
-    val exportDestination: String? = null, val masters: List<LibraryMaster> = emptyList()
+    val exportDestination: String? = null, val masters: List<LibraryMaster> = emptyList(), val events: List<BandEvent> = emptyList()
 )
-@Serializable data class Workspace(val schemaVersion: Int = 3, val projects: List<Project> = emptyList(), val selectedId: String? = null) {
+@Serializable data class Workspace(val schemaVersion: Int = 5, val projects: List<Project> = emptyList(), val selectedId: String? = null) {
     fun validate() {
-        require(schemaVersion == 3) { "This data was created by an unsupported application version." }
+        require(schemaVersion == 5) { "This data was created by an unsupported application version." }
         require(projects.map { it.id }.distinct().size == projects.size) { "Duplicate project identity." }
         require(selectedId == null || projects.any { it.id == selectedId }) { "Selected project is missing." }
         projects.forEach { p ->
             require(p.id.isNotBlank() && p.name.isNotBlank()) { "Project name is required." }
             p.theme.validate()
             p.catalog.validate()
+            val eventIds = p.events.map { it.id }
+            val setIds = p.events.flatMap { it.sets }.map { it.id }
+            val entryIds = p.events.flatMap { it.entries }.map { it.id }
+            require(eventIds.distinct().size == eventIds.size) { "Duplicate event identity." }
+            require(setIds.distinct().size == setIds.size) { "Duplicate set identity." }
+            require(entryIds.distinct().size == entryIds.size) { "Duplicate tune-entry identity." }
+            p.events.forEach { event ->
+                event.validate()
+                require(event.projectId == p.id) { "Event belongs to another project." }
+                require(event.entries.all { entry -> p.catalog.tunes.any { it.id == entry.tuneId } }) { "Event tune belongs to another catalog." }
+            }
             require(p.masters.map { it.id }.distinct().size == p.masters.size)
             p.masters.forEach { it.validate(); require(it.projectId == p.id) }
             require(p.members.map { it.id }.distinct().size == p.members.size)
@@ -43,7 +54,7 @@ object WorkspaceCodec {
     fun encode(value: Workspace): String { value.validate(); return json.encodeToString(value) }
     fun decode(value: String): Workspace {
         val stored = json.decodeFromString<Workspace>(value)
-        val migrated = if (stored.schemaVersion in 1..2) stored.copy(schemaVersion = 3) else stored
+        val migrated = if (stored.schemaVersion in 1..4) stored.copy(schemaVersion = 5) else stored
         return migrated.also { it.validate() }
     }
 }

@@ -57,3 +57,37 @@ This supersedes the 0.3.3 placeholder checklist; older entries remain historical
 - [ ] Confirm existing Library Master exports/recovery, members, themes and four-card Home remain reachable. Exporting is not confirmation of musician receipt/import.
 
 No supplemental ZIP/.4ss generation, supplement numbering, persistent supplement history or optional per-member Supplemental Export Preview is included. Source checks are point-in-time; repeat after external changes. The screen does not poll files continuously or revalidate historical export ZIP files.
+
+## October 21, 2026 — Events / 0.4.0 (current checklist)
+
+This supersedes earlier event-placeholder checklists. Extract the entire band.logger-0.4.0-windows-x64.zip and run band.logger/band.logger.exe beside app/ and runtime/. Close older windows first. Runtime and Lato are bundled.
+
+- [ ] Home → Create Rehearsal: editor opens with Rehearsal selected, a blank required title, optional YYYY-MM-DD date, Set 1 and Unsaved changes.
+- [ ] Try saving a blank title or invalid date (2026-02-30). A visible error appears and the draft remains editable. Leave the date empty or enter a valid date.
+- [ ] Search the current project's catalog, add two tunes, confirm Added disables repeat addition. Remove one; add another. Existing catalog and chart records must remain unchanged.
+- [ ] Save event; All changes saved appears. Return to Upcoming Events and reopen; title/type/date/tune selections match. Past and undated saved events are also shown, dated first.
+- [ ] Change title, date and event type; save, close the application, relaunch and reopen. Existing event, Set 1 and retained entry identities must remain stable in workspace.json.
+- [ ] Create Gig on Home presets Gig. Save an empty, undated gig and reopen it.
+- [ ] With unsaved changes, use Home, Back to events, another project, Create project and the window close button. Each must offer Save and continue, Keep editing and Discard changes. Escape/outside dismissal keeps editing. Invalid/failed Save and continue must retain the dialog and draft.
+- [ ] Switch projects and confirm each lists only its own events and catalog. Create an event in a second project and restart again.
+- [ ] Before the first schema-4 save, preserve an independent copy of your old workspace for owner review. Verify workspace.pre-events.backup.json holds the original schema 1/2/3 data after migration; existing immutable backups stay unchanged. Older binaries reject schema 4: deliberate rollback requires an appropriate preserved pre-migration workspace, which lacks later event edits.
+- [ ] Verify Library browsing/review, Library Master preview/export/recovery, Pending Distribution, Members, Theme and project editing remain reachable. Use synthetic charts for export regression checks.
+
+Selections use catalog tune identities with current non-excluded chart records; chart approval is not required for planning. No file reads/export or chart assignment occurs in the event editor. Previously selected tunes without active charts remain visible with a warning. Save is explicit; normal navigation/close is guarded, but forced termination or a power failure can lose an unsaved draft. There is one initial set, append/remove only, with no event deletion, multiple sets, ordering controls, templates, reference-only .4ss, member/event ZIP export or cover pages.
+
+## October 21, 2026 — Multiple sets / 0.4.1 (current checklist)
+
+This supersedes the single-set limitations above. Extract all of band.logger-0.4.1-windows-x64.zip, close older app windows and run band.logger/band.logger.exe beside app/ and runtime/.
+
+- [ ] Open an existing rehearsal/gig. Its former Set 1 retains all tunes, title/type/date and identities. New events start with Set 1.
+- [ ] At desktop width, verify Tune library on the left (38%) and sets on the right (62%), with compact event controls above. Each panel scrolls independently. Narrow the window; panels stack and remain scrollable.
+- [ ] Search in the library; click + and verify insertion into the highlighted destination. Repeat + on the same tune; each occurrence is independent.
+- [ ] Add Set; the new next-numbered set becomes selected. Click another set's header/Add Song; verify its highlight, library destination label and search focus. Add tunes to both sets without leaving the editor.
+- [ ] Move entries Up/Down. First Up and last Down are disabled. Repeat occurrences move/remove independently; unrelated sets stay unchanged.
+- [ ] Remove an empty set. Remaining sets renumber without changing their IDs/content/order. Remove a populated set: Keep set/dismissal retains it; explicit Remove set and songs removes it. The last set cannot be removed. Removing the active set selects a remaining destination.
+- [ ] Save, close, relaunch, open Upcoming Events and reopen. All set/entry ordering, repeated tunes, title/type/date match. Reopening selects the first set; destination selection/search/scroll position are transient editor state.
+- [ ] Verify Unsaved changes and normal navigation/project-switch/close save/keep/discard behavior after ordering/set edits. Invalid/failed saves retain edits.
+- [ ] Switch projects; events and catalog stay isolated. Verify Library review, Library Master, Pending Distribution, members/themes still work with synthetic charts for destructive/export tests.
+- [ ] On the first save of older data, verify workspace.pre-multisets.backup.json retains original schema 1–4 bytes. Existing pre-events/pre-masters/chunk1 backups stay untouched. Older binaries reject schema 5; deliberate rollback requires the preserved matching older workspace.
+
+No drag/drop, cross-set move command, event exports, templates or cover pages. Move between sets by removing an occurrence and adding it to the desired set. Source PDFs and chart approval are untouched. Save explicitly; forced termination can lose unsaved drafts. Use a comfortable window height (approximately 650 px or taller) for both panels; short windows leave less panel space.

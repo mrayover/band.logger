@@ -2,7 +2,7 @@
 
 **A project-based workspace for musicians and working bands.**
 
-**Project status:** Homepage update delivered (0.3.3); owner reports successful actual Library Master iPad import. See the October 21 update below.
+**Project status:** Two-column setlist editor and persistent multiple sets delivered (0.4.1), alongside existing Library Master and Pending Distribution. See the latest October 21 update below.
 **Established:** October 20, 2026  
 **Primary platform:** Windows desktop  
 **Planned companion platform:** Android  
@@ -451,3 +451,27 @@ Current delivery: dist/band.logger-0.3.3-windows-x64.zip; extract all contents a
 Pending Distribution now calculates approved per-member selections from the single catalog and recorded masters. It shows New Tunes, New Parts, Revised Charts, attention exceptions, initial-master requirements, search, expandable details and baseline inspection. Counts are member–tune selections. Source PDFs are checked read-only on entry/recheck; changed/missing files block selection without changing review state. Use Library / Needs review, then its Needs review tab, to resolve issues (Refresh first after external file changes).
 
 Baseline: latest valid non-empty master for each member, sorted by UTC export time then ID. Skipped members keep earlier non-empty baselines. Export records do not prove receipt/import. No supplemental files, numbering, history or optional Supplemental Export Preview. Schema 3, existing workflows, Home and project highlights remain unchanged. Current ZIP: dist/band.logger-0.3.4-windows-x64.zip; executable: dist/band.logger-0.3.4-windows-x64/band.logger/band.logger.exe. Prior delivery sections remain historical.
+
+## October 21, 2026 — Event foundation / 0.4.0
+
+The owner explicitly authorized a bounded event-creation increment, superseding the earlier deferral for this scope only. Create Rehearsal and Create Gig open an editor; Upcoming Events (Home/sidebar) lists this project's saved events. Title is required, type is editable, date is optional YYYY-MM-DD. Search existing catalog tunes and append/remove selections in one initial Set 1. Save, reopen and continue editing after restart. Empty/undated events are allowed. The list deliberately retains past and undated records, sorted by date then title, with undated records last.
+
+Uses the existing theme/Lato, project/catalog and workspace store. Stable event/set/entry IDs survive saves and edits; entries reference existing tunes. Save is explicit, with dirty status and Save and continue / Keep editing / Discard changes guards for navigation, project creation/switching and normal window close. Failed saves retain the draft. Forced termination/power loss can lose unsaved edits. Catalog choices require current non-excluded chart records; approval is not required for planning. Selections whose active charts later disappear remain retained with a warning.
+
+Schema 4 migrates schemas 1–3 on read, preserves their full original bytes in workspace.pre-events.backup.json before the first write, and keeps existing backups plus the rolling previous-save backup. Older binaries reject schema 4; intentional rollback requires the appropriate pre-migration workspace and loses newer event edits.
+
+Delivery: dist/band.logger-0.4.0-windows-x64.zip. Extract all files and run dist/band.logger-0.4.0-windows-x64/band.logger/band.logger.exe; bundled runtime, no developer Java required. Close old app windows first. This is an unsigned Windows x64 preview. All 82 tests and packaged/extracted smoke tests, including separate-process event reopening/editing, passed. Extracted UI creation/save/restart/reopen/edit, project isolation and unsaved guards passed with synthetic data. See CURRENT_STATE.md and WORK_LOG.md for precise coverage. No new dependencies, PDF changes, library/master/pending behavior changes, commits or pushes.
+
+Deferred: multiple sets, ordering/drag-and-drop, templates, member assignments, event deletion, reference-only .4ss/event ZIP exports, cover pages and automatic draft recovery. Next: owner review of this event foundation, then a separately authorized initial-set ordering increment before larger setlist/export work. Previous roadmap and delivery sections remain historical.
+
+## October 21, 2026 — Two-column setlist editor / 0.4.1
+
+This supersedes the single-set restrictions in 0.4.0. Open any rehearsal/gig from Upcoming Events. The compact event header retains title/type/date, save status and Back to events. Library search and + actions occupy 38% of desktop content width; the ordered setlist occupies 62%. Both use independently scrolling lists; below 700 dp editor width the panels stack. Existing project sidebar, theme and Lato remain.
+
+Add Set creates/selects the next numbered set. Select a header or Add Song to choose the destination and focus search. + appends immediately; repeated tunes are allowed as distinct stable entries. Up/Down changes the persisted order in that set, with boundary actions disabled. Remove affects only the chosen occurrence. Remove Set requires confirmation for populated sets, renumbers remaining sets without changing their IDs/content, and cannot remove the last set. Removing the destination selects another remaining set. Save/restart preserves all event/set/entry data and order; active destination, search, scroll and window size are transient (reopening selects the first set).
+
+Schema 5 retains the existing initialSet representation and adds ordered additionalSets. Existing single-set events load as Set 1 without identity/song loss. First write from schemas 1–4 preserves original bytes in workspace.pre-multisets.backup.json; earlier migration backups and rolling/atomic-save protections remain. Older apps reject schema 5 instead of silently dropping sets. Existing catalog/master/pending behavior is unchanged; no new dependencies or source-PDF changes.
+
+Delivery: dist/band.logger-0.4.1-windows-x64.zip; extracted EXE: dist/band.logger-0.4.1-windows-x64/band.logger/band.logger.exe. Extract all, keep app/ and runtime/, close older app windows and launch; Java/Gradle is not required. Unsigned Windows x64 preview. All 97 tests pass; packaged/extracted second-process smoke and synthetic UI desktop/narrow/search/add/order/save/restart/reopen checks passed. Previous Windows archives remain byte-identical. See CURRENT_STATE.md, WORK_LOG.md and the included MANUAL_TESTING checklist for precise coverage.
+
+No drag/drop, direct move-between-sets, exports, templates, cover pages, venues, notes, recordings or supplement generation. Cross-set moves use remove then add. Save explicitly; forced termination can lose unsaved drafts. Comfortable height is approximately 650 px or taller. Next: owner review using the new checklist, then a separately authorized reference-only forScore export design/device-matching validation. No commits, pushes or releases performed.

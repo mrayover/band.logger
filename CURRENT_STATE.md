@@ -1,3 +1,47 @@
+# Current state — Two-column editor and multiple sets, October 21, 2026 / 0.4.1
+
+Supersedes older single-set restrictions/status below; all history is retained.
+
+Event editor: compact title/type/date/save/status/back header, 38% searchable library with + buttons, 62% setlist builder. Panels scroll independently and stack below 700 dp editor width. Add Set creates/selects the next set; header/Add Song selects a highlighted destination and focuses search. Repeated tunes are independent occurrences. Up/Down changes persisted order within a set; boundary actions disable. Remove affects one occurrence. Populated-set removal asks for confirmation; last-set removal is disabled/invalid; remaining sets renumber with stable IDs/content. Event creation/reopen/edit, project isolation, existing explicit save/dirty/navigation/project/close guards, Library Master and Pending Distribution remain.
+
+Schema 5 extends the existing initialSet with ordered additionalSets. Single-set schema-4 events retain their event/set/entry identities and songs as Set 1. Schemas 1–4 load without disk writes; first save preserves original bytes in workspace.pre-multisets.backup.json, retaining previous immutable/rolling/atomic backups. Older apps reject schema 5; intentional rollback needs the matching pre-migration workspace. Active destination/search/scroll/window state is transient; reopen selects Set 1. No owner workspace migration occurred during testing.
+
+PASS: 97 tests (82 retained/adapted + 15 new), zero failures/errors/skips; compilation; standard Windows packaging; app-image and extracted smoke, including second-process reopen/reorder of multiple sets/repeats with stable IDs, unchanged masters and project isolation. Extracted checks run in a path with spaces with JAVA_HOME empty and system-only PATH. All 207 extracted files SHA-256 match the ZIP; every previous Windows archive is byte-identical to its before-session hash. Live workspace unchanged.
+
+PASS synthetic extracted UI: desktop two columns, compact header, destination highlight/search focus, no-match/matching search, + into selected Set 2, repetition, Down control and actual saved ID order, Add Set 3/automatic destination, independent right scrolling, populated-set confirmation/Keep set, narrow stacked layout at about 800 px window width, save/close/restart/list/reopen with three sets/four entries. Readback confirmed unchanged unrelated Set 1/catalog and persisted reordered occurrence IDs. Actual destructive UI removal, library scrolling with a long catalog, every dirty-dialog branch, manual Up, full owner real-library regression and additional iPad tests were not run; removal/Up/dirty persistence and old feature regressions have automated coverage.
+
+ZIP: dist/band.logger-0.4.1-windows-x64.zip (61,707,285 bytes).
+EXE: dist/band.logger-0.4.1-windows-x64/band.logger/band.logger.exe.
+SHA-256: 0E9D3F947880E0E0225E17DA4E1956599A1BC9159D00569AAB82B08AB530D87B (dist/SHA256-0.4.1.txt).
+Extract all, keep app/ and runtime/, close older app windows and launch. No Java/Gradle installation required. Unsigned Windows x64 preview. No dependencies installed, original PDFs modified, remote workflow runs, commits, pushes or releases. Prior uncommitted work preserved and extended.
+
+Limits: no drag/drop/direct cross-set move, exports, templates, cover pages, venue/calendar/notes/recording/supplement work. Move between sets by remove/add. No automatic draft recovery; forced termination can lose unsaved edits. Comfortable height is about 650 px or taller; very short windows reduce panel space. Next: owner review with MANUAL_TESTING.md, then separately authorize reference-only forScore export planning/device identity matching. No additional functionality begun.
+
+---
+# Current state — Event creation and persistence, October 21, 2026 / 0.4.0
+
+This section supersedes older event-placeholder and schema-version statements below; historical entries are preserved.
+
+Create Rehearsal / Create Gig now open the themed editor with required title/type and optional YYYY-MM-DD date. Search the current project's existing catalog, append/remove tunes in one initial Set 1, explicitly save, reopen from Upcoming Events (Home/sidebar), close/restart and continue editing. Event/set/tune-entry identities remain stable. Empty and undated events are allowed; the list also retains past events, dated first. Entries reference existing tunes without duplicating catalog records. No source charts, Library Master or Pending Distribution behavior changed.
+
+Unsaved changes are explicit. Navigation, project creation/switching and normal window close offer Save and continue, Keep editing or Discard changes. Failed/invalid saves retain the draft. Forced termination or power failure can lose unsaved changes; no automatic draft recovery is implemented.
+
+Schema 4 migrates schemas 1–3 in memory, preserving project settings/catalogs/master records. First write retains original bytes in workspace.pre-events.backup.json, alongside previous immutable backups and workspace.backup.json. Older binaries reject schema 4; deliberate rollback requires an appropriate pre-migration workspace without subsequent edits. Test runs never migrated or changed the live workspace.
+
+PASS: all 82 tests (67 existing + 15 new), zero failures/errors/skips; compilation; standard Windows packaging; app-image and extracted smoke tests including event migration/creation/persistence plus a second executable process reopening/editing with identities/isolation preserved. Extracted check runs in a path containing spaces with JAVA_HOME empty and system-only PATH. Existing storage/font/XML/ZIP/catalog/master/recovery/pending smoke checks pass. All 207 extracted files match ZIP SHA-256.
+
+PASS extracted synthetic UI: both homepage creation actions/preset types, title validation, tune addition, saved/unsaved indicators, project-switch guard/Keep editing, full close/restart, saved-event list/reopen/edit, close guard/Save and continue, identity readback, separate-project empty list, and empty undated gig save. Live workspace remained byte-identical. Full owner real-library UI regression, all dialog branches, narrow-window/accessibility review, manual date edge cases and additional iPad tests were not performed; automated regressions cover domain/storage and date validation. No commits, pushes or remote Actions run.
+
+ZIP: dist/band.logger-0.4.0-windows-x64.zip (61,667,083 bytes).
+EXE: dist/band.logger-0.4.0-windows-x64/band.logger/band.logger.exe.
+SHA-256: 84A1EC25D12D9F47F1AEB7933895F02DFFDDBB92388780C80BD764EC532ECEB3 (also dist/SHA256-0.4.0.txt).
+Extract all files, retain app/ and runtime/, close older app windows, then launch. No Java/Gradle installation required. Unsigned Windows x64 preview. Previous successful builds retained.
+
+Limits: one set, one occurrence of each tune, append/remove only; no event deletion, multiple sets, advanced ordering, drag/drop, templates, member assignments, reference-only .4ss, event/member ZIP generation or cover pages. New choices require active current-source chart records, but approval is independent of planning; retained selections without active charts show a warning.
+
+Next: owner review with the 0.4.0 MANUAL_TESTING checklist, then separately authorize simple ordering within Set 1 before broader setlist/export work. No additional functionality started.
+
+---
 # Current state — Pending Distribution, October 21, 2026 / 0.3.4
 
 This supersedes the placeholder status below; all previous entries are retained as history.

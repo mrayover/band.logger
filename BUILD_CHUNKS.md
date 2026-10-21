@@ -694,3 +694,15 @@ Owner reports the actual Library Master imported into forScore on iPad and tunes
 ## October 21, 2026 — Pending Distribution bounded increment
 
 Implemented the read-only catalog-versus-master pending comparison and interface, a preparatory increment toward Chunk 4, not completion of that chunk. All 67 automated tests passed, including 16 new pending/source tests; Windows 0.3.4 packaged and extracted smoke tests passed. No supplement generation or optional per-member Supplemental Export Preview was implemented. Original roadmap numbering and acceptance criteria remain. Next: owner review, then separately continue the read-only supplement preview before authorizing actual export/history work.
+
+## October 21, 2026 — Event foundation / 0.4.0
+
+Owner's explicit session request authorizes minimal rehearsal/gig creation and persistence despite the original Chunks 1–4 setlist deferral. This is a bounded foundation, not completion of the full setlist builder or supplement roadmap. Home creation actions, one initial set using existing catalog tune references, explicit save, project-owned saved-event list, reopening/editing, restart persistence and unsaved-change guards are implemented. Schema 4 migration preserves original data/backups. All 82 tests (67 prior + 15 event tests) and packaged/extracted executable smoke tests passed; synthetic extracted UI save/restart/edit and project isolation passed. Delivery: 0.4.0, with previous successful builds preserved.
+
+Multiple sets, advanced ordering, drag/drop, templates, reference-only .4ss, member/event ZIP exports and cover pages remain explicitly deferred. No scope was added after completion. Next: owner review, then separately authorize simple ordering within Set 1. Original chunk numbering/acceptance history remains unchanged.
+
+## October 21, 2026 — Two-column editor and multiple sets / 0.4.1
+
+The owner's explicit request authorizes multiple numbered sets, destination selection, repeated tune occurrences, Up/Down ordering and song/set removal, while retaining persistent event creation and project isolation. This bounded increment supersedes those 0.4.0 limitations; it does not authorize full exports/templates/cover pages or unrelated roadmap work. Desktop uses 38/62 panels with independent scrolling and narrow stacking. Schema 5 adds ordered additional sets to the existing event shape, with immutable pre-multisets backups and stable identities. Prior uncommitted work was preserved and extended.
+
+All 97 tests (82 retained/adapted + 15 new) passed. Standard 0.4.1 Windows packaging, packaged/extracted smoke and second-process multi-set restart/reorder passed; synthetic extracted UI desktop/narrow/search/destination/repetition/ordering/confirmation-cancel/save/restart passed. Every previous Windows archive remained byte-identical. No original PDFs, dependency installs, GitHub Actions workflow changes, commits or pushes. Next: owner review, then separately authorize reference-only export planning and forScore identity-matching verification. No additional functionality started.

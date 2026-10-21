@@ -33,6 +33,27 @@ fun main(args: Array<String>) {
         Files.writeString(dir.resolve("scan-summary.txt"), "Files: ${files.size}\nTunes: ${catalog.tunes.size}\nUnrecognized names: ${catalog.charts.count { it.metadata == null }}\nInvalid PDF headers: ${files.count { it.error != null }}\nConflicts: ${catalog.charts.count { catalog.conflicts(it) }}")
         exitProcess(0)
     }
+    if ("--event-restart-check" in args) {
+        val dir = dataDirectory()
+        val store = FileWorkspaceStore(dir.resolve("event-smoke.json"))
+        val workspace = store.load()
+        val project = workspace.projects.first()
+        check(project.events.map { it.type }.toSet() == EventType.entries.toSet())
+        check(project.events.all { it.sets.size == 2 && it.entries.size == 3 && it.entries.all { entry -> entry.tuneId == project.catalog.tunes.single().id } })
+        check(workspace.projects.last().events.isEmpty())
+        val idsBefore = project.events.flatMap { it.sets }.map { it.id } to project.events.flatMap { it.entries }.map { it.id }.toSet()
+        val event = project.events.first()
+        val edited = event.copy(title = "Reopened and edited").moveEntry(event.sets.last().id, event.sets.last().entries.last().id, -1)
+        val saved = EventDraft(edited, event).saveTo(workspace, store)
+        check(!saved.draft.isDirty)
+        val after = FileWorkspaceStore(dir.resolve("event-smoke.json")).load()
+        check((after.projects.first().events.flatMap { it.sets }.map { it.id } to after.projects.first().events.flatMap { it.entries }.map { it.id }.toSet()) == idsBefore)
+        check(after.projects.first().events.first() == edited)
+        check(after.projects.first().events.first().title == "Reopened and edited")
+        check(after.projects.first().masters == project.masters)
+        Files.writeString(dir.resolve("event-restart-passed.txt"), "New process reopened multiple sets and repeated tunes, edited order, and preserved identities, masters and project isolation.")
+        exitProcess(0)
+    }
     if ("--smoke-test" in args) {
         val dir = dataDirectory()
         Files.createDirectories(dir)
@@ -70,7 +91,25 @@ fun main(args: Array<String>) {
         Files.write(charts.resolve("Q New Tune -r00- C.pdf"), syntheticPdf())
         val pendingProject = baselineProject.copy(catalog = baselineProject.catalog.reconcile(LocalCharts.scan(charts.toString()), "Q", 2L, ::newId).acceptNew())
         check(PendingPlanner.calculate(pendingProject).count(PendingKind.NEW_TUNE) == 4)
-        Files.writeString(dir.resolve("smoke-passed.txt"), "Storage, fonts, XML, ZIP, chart scan, preview, master generation, recovery and pending distribution passed.")
+        val eventPath = dir.resolve("event-smoke.json")
+        val eventStore = FileWorkspaceStore(eventPath)
+        val oldWorkspace = Workspace().saveProject(baselineProject).saveProject(Project("event-other", "Other band")).select(baselineProject.id)
+        val legacyText = WorkspaceCodec.encode(oldWorkspace).replace("\"schemaVersion\": 5", "\"schemaVersion\": 3")
+        Files.writeString(eventPath, legacyText)
+        var eventWorkspace = eventStore.load()
+        EventType.entries.forEach { type ->
+            var event = newEvent(baselineProject, type, ::newId).copy(title = "Smoke ${type.name}", date = "2026-10-21")
+                .addTune(baselineProject, catalog.tunes.single().id, ::newId)
+            event = event.addSet(::newId)
+            val destination = event.sets.last().id
+            event = event.addTune(baselineProject, catalog.tunes.single().id, ::newId, destination)
+                .addTune(baselineProject, catalog.tunes.single().id, ::newId, destination)
+            eventWorkspace = EventDraft(event).saveTo(eventWorkspace, eventStore).workspace
+        }
+        check(eventWorkspace.projects.first().masters == baselineProject.masters)
+        check(Files.readString(eventPath.resolveSibling("workspace.pre-events.backup.json")) == legacyText)
+        check(eventStore.load() == eventWorkspace)
+        Files.writeString(dir.resolve("smoke-passed.txt"), "Storage, fonts, XML, ZIP, scan, master generation/recovery, pending and event creation/migration/persistence passed.")
         exitProcess(0)
     }
     // Keep two windows/processes from overwriting the same metadata snapshot.
@@ -85,12 +124,13 @@ fun main(args: Array<String>) {
     }
     Runtime.getRuntime().addShutdownHook(Thread { lock.release(); channel.close() })
     application {
-        Window(onCloseRequest = ::exitApplication, title = "band.logger", state = rememberWindowState(width = 1120.dp, height = 800.dp)) {
-            App()
+        var closeRequested by remember { mutableStateOf(false) }
+        Window(onCloseRequest = { closeRequested = true }, title = "band.logger", state = rememberWindowState(width = 1120.dp, height = 800.dp)) {
+            App(closeRequested, { closeRequested = false }, ::exitApplication)
         }
     }
 }
-@Composable fun App() {
+@Composable fun App(closeRequested: Boolean = false, resetClose: () -> Unit = {}, close: () -> Unit = {}) {
     val directory = remember { dataDirectory() }
     val store = remember { FileWorkspaceStore(directory.resolve("workspace.json")) }
     var loadError by remember { mutableStateOf<String?>(null) }
@@ -101,6 +141,9 @@ fun main(args: Array<String>) {
     var themeEditor by remember { mutableStateOf(false) }
     var page by remember { mutableStateOf("Home") }
     var busy by remember { mutableStateOf(false) }
+    var eventDraft by remember { mutableStateOf<EventDraft?>(null) }
+    var pendingLeave by remember { mutableStateOf<(() -> Unit)?>(null) }
+    var eventError by remember { mutableStateOf<String?>(null) }
     val project = workspace.projects.find { it.id == workspace.selectedId }
     val theme = project?.theme ?: Theme()
     val typography = Typography().let { t -> t.copy(
@@ -114,6 +157,33 @@ fun main(args: Array<String>) {
     fun persist(next: Workspace) {
         try { store.save(next); workspace = next; message = "Saved on this computer." }
         catch (e: Exception) { message = "Could not save: ${e.message}"; throw e }
+    }
+    fun leave(action: () -> Unit) {
+        if (eventDraft?.isDirty == true) pendingLeave = action
+        else { eventDraft = null; eventError = null; action() }
+    }
+    fun saveEventDraft(): Boolean {
+        val draft = eventDraft ?: return true
+        return try {
+            val saved = draft.saveTo(workspace, store)
+            workspace = saved.workspace
+            eventDraft = saved.draft
+            message = "Event saved on this computer."
+            eventError = null
+            true
+        } catch (e: Exception) { eventError = e.message ?: "Could not save event."; false }
+    }
+    fun openEvent(value: BandEvent, existing: Boolean) {
+        eventDraft = EventDraft(value, if (existing) value else null)
+        eventError = null
+        page = "Event editor"
+    }
+    LaunchedEffect(closeRequested) {
+        if (closeRequested) {
+            resetClose()
+            if (busy) message = "Please wait for the current operation to finish before closing."
+            else leave(close)
+        }
     }
     MaterialTheme(colorScheme = darkColorScheme(
         primary = hex(theme.accent), onPrimary = hex(theme.background),
@@ -138,7 +208,7 @@ fun main(args: Array<String>) {
                         val selected = p.id == project?.id
                         OutlinedButton(
                             enabled = !busy,
-                            onClick = { runCatching { persist(workspace.select(p.id)) }; page = "Home" },
+                            onClick = { leave { runCatching { persist(workspace.select(p.id)); page = "Home" } } },
                             modifier = Modifier.fillMaxWidth(),
                             colors = if (selected) {
                                 ButtonDefaults.outlinedButtonColors(
@@ -153,28 +223,34 @@ fun main(args: Array<String>) {
                         }
                     }
 
-                    Button(enabled = !busy, onClick = { projectEditor = Project(newId(), "") }, modifier = Modifier.fillMaxWidth()) { Text("Create project") }
+                    Button(enabled = !busy, onClick = { leave { projectEditor = Project(newId(), "") } }, modifier = Modifier.fillMaxWidth()) { Text("Create project") }
                     if (workspace.projects.none { it.name == "Quaternity" }) {
-                        TextButton(enabled = !busy, onClick = { projectEditor = quaternity(newId(), ::newId) }) { Text("Start with Quaternity") }
+                        TextButton(enabled = !busy, onClick = { leave { projectEditor = quaternity(newId(), ::newId) } }) { Text("Start with Quaternity") }
                     }
                     Spacer(Modifier.height(20.dp))
-                    if (project != null) listOf("Home", "Library", "Library master", "Pending Distribution", "Members", "Theme", "Technical proof").forEach { item ->
-                        TextButton(enabled = !busy, onClick = { page = item }) { Text(if (page == item) "• $item" else item) }
+                    if (project != null) listOf("Home", "Upcoming Events", "Library", "Library master", "Pending Distribution", "Members", "Theme", "Technical proof").forEach { item ->
+                        TextButton(enabled = !busy, onClick = { leave { page = item } }) { Text(if (page == item) "• $item" else item) }
                     }
                     Spacer(Modifier.height(24.dp))
-                    Text("0.3.4 · PREVIEW", style = MaterialTheme.typography.labelSmall)
+                    Text("0.4.1 · PREVIEW", style = MaterialTheme.typography.labelSmall)
                     Text("Saved locally. No account needed.", style = MaterialTheme.typography.bodySmall)
                 }
-                Column(Modifier.weight(1f).padding(36.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+                Column(Modifier.weight(1f).fillMaxHeight().padding(if (page == "Event editor") 20.dp else 36.dp).then(if (page == "Event editor") Modifier else Modifier.verticalScroll(rememberScrollState())), verticalArrangement = Arrangement.spacedBy(if (page == "Event editor") 8.dp else 20.dp)) {
                     if (project == null) {
                         Text("Make room for the music.", style = MaterialTheme.typography.displaySmall)
                         Text("Create a project for your band or ensemble. Each project has its own members, chart preferences, and visual identity.")
                         Text("Choose “Start with Quaternity” to review the suggested four-member setup.")
                     } else {
-                        Text(project.name, style = MaterialTheme.typography.displaySmall)
+                        Text(project.name, style = if (page == "Event editor") MaterialTheme.typography.titleLarge else MaterialTheme.typography.displaySmall)
                         Text("$page  /  Project workspace", color = hex(theme.secondary))
                         when (page) {
-                            "Home" -> key(project.id) { HomeScreen(project, { projectEditor = project }, { page = "Pending Distribution" }) }
+                            "Home" -> key(project.id) { HomeScreen(project, { projectEditor = project }, { page = "Pending Distribution" }, { openEvent(newEvent(project, it, ::newId), false) }, { page = "Upcoming Events" }) }
+                            "Upcoming Events" -> key(project.id) { EventsScreen(project, { openEvent(newEvent(project, it, ::newId), false) }, { openEvent(it, true) }) }
+                            "Event editor" -> eventDraft?.let { draft ->
+                                key(project.id, draft.value.id) {
+                                    EventEditorScreen(project, draft, eventError, { eventDraft = draft.copy(value = it); eventError = null }, { saveEventDraft() }, { leave { page = "Upcoming Events" } }, Modifier.weight(1f))
+                                }
+                            }
                             "Pending Distribution" -> key(project.id) { PendingDistributionScreen(project, { page = "Library master" }, { page = "Library" }) }
                             "Library" -> key(project.id) { LibraryScreen(project, busy, { busy = it }) { updated -> persist(workspace.saveProject(updated)) } }
                             "Library master" -> key(project.id) { MasterScreen(project, busy, { busy = it }) { updated -> persist(workspace.saveProject(updated)) } }
@@ -225,6 +301,25 @@ fun main(args: Array<String>) {
                     if (message.isNotBlank()) Text(message, color = hex(theme.secondary))
                 }
             }
+        }
+        if (pendingLeave != null) {
+            AlertDialog(onDismissRequest = { pendingLeave = null },
+                title = { Text("Unsaved event changes") },
+                text = { Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("Save this event before leaving, or discard your changes.")
+                    eventError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                } },
+                confirmButton = { Button(onClick = {
+                    if (saveEventDraft()) {
+                        val action = pendingLeave; pendingLeave = null; eventDraft = null; action?.invoke()
+                    }
+                }) { Text("Save and continue") } },
+                dismissButton = { Row {
+                    TextButton(onClick = { pendingLeave = null }) { Text("Keep editing") }
+                    TextButton(onClick = {
+                        val action = pendingLeave; pendingLeave = null; eventDraft = null; eventError = null; action?.invoke()
+                    }) { Text("Discard changes") }
+                } })
         }
         projectEditor?.let { draft ->
             ProjectDialog(draft, { projectEditor = null }) { updated ->

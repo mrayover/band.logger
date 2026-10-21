@@ -23,8 +23,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun HomeScreen(project: Project, editProject: () -> Unit, openDistribution: () -> Unit) {
-    var comingSoon by remember(project.id) { mutableStateOf<String?>(null) }
+fun HomeScreen(project: Project, editProject: () -> Unit, openDistribution: () -> Unit, createEvent: (EventType) -> Unit, openEvents: () -> Unit) {
+
     val primary = MaterialTheme.colorScheme.primary
     val secondary = MaterialTheme.colorScheme.secondary
     BoxWithConstraints(Modifier.fillMaxWidth()) {
@@ -32,17 +32,17 @@ fun HomeScreen(project: Project, editProject: () -> Unit, openDistribution: () -
         val narrow = maxWidth < 500.dp
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             if (narrow) {
-                HomeCard("Create Rehearsal", "Plan what to work on", primary, 0, Modifier.fillMaxWidth()) { comingSoon = "Create Rehearsal" }
-                HomeCard("Create Gig", "Build a performance", primary, 1, Modifier.fillMaxWidth()) { comingSoon = "Create Gig" }
-                HomeCard("Upcoming Events", null, secondary, 2, Modifier.fillMaxWidth()) { comingSoon = "Upcoming Events" }
+                HomeCard("Create Rehearsal", "Plan what to work on", primary, 0, Modifier.fillMaxWidth()) { createEvent(EventType.REHEARSAL) }
+                HomeCard("Create Gig", "Build a performance", primary, 1, Modifier.fillMaxWidth()) { createEvent(EventType.GIG) }
+                HomeCard("Upcoming Events", null, secondary, 2, Modifier.fillMaxWidth()) { openEvents() }
                 HomeCard("Pending Distribution", null, secondary, 3, Modifier.fillMaxWidth(), openDistribution)
             } else {
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    HomeCard("Create Rehearsal", "Plan what to work on", primary, 0, Modifier.weight(1f)) { comingSoon = "Create Rehearsal" }
-                    HomeCard("Create Gig", "Build a performance", primary, 1, Modifier.weight(1f)) { comingSoon = "Create Gig" }
+                    HomeCard("Create Rehearsal", "Plan what to work on", primary, 0, Modifier.weight(1f)) { createEvent(EventType.REHEARSAL) }
+                    HomeCard("Create Gig", "Build a performance", primary, 1, Modifier.weight(1f)) { createEvent(EventType.GIG) }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    HomeCard("Upcoming Events", null, secondary, 2, Modifier.weight(1f)) { comingSoon = "Upcoming Events" }
+                    HomeCard("Upcoming Events", null, secondary, 2, Modifier.weight(1f)) { openEvents() }
                     HomeCard("Pending Distribution", null, secondary, 3, Modifier.weight(1f), openDistribution)
                 }
             }
@@ -52,12 +52,7 @@ fun HomeScreen(project: Project, editProject: () -> Unit, openDistribution: () -
         Text("${project.members.size} members · Filename prefix: ${project.prefix.ifBlank { "None" }}", modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
         TextButton(onClick = editProject) { Text("Edit project") }
     }
-    comingSoon?.let { title ->
-        AlertDialog(onDismissRequest = { comingSoon = null },
-            title = { Text("$title — Coming soon") },
-            text = { Text("Rehearsal planning, gig creation and upcoming events are planned for a future update. No event has been created.") },
-            confirmButton = { TextButton(onClick = { comingSoon = null }) { Text("Back to Home") } })
-    }
+
 }
 
 @Composable

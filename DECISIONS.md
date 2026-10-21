@@ -79,3 +79,24 @@ This supersedes earlier notes that diagnostic iPad import was unresolved. No app
 - New part means a selected part never exported for this member/tune; switching back to an already exported part is a revised selection. Missing/unapproved/conflicting preferred charts block rather than silently fall back.
 - Read-only live source checks run on entry/recheck and cannot save catalog state. Summary counts member–tune selections, with initial-master selections excluded. Generated exports do not imply imported/received.
 - Deliver 0.3.4 without overwriting previous ZIPs. Optional Supplemental Export Preview deferred to protect delivery reserve. Latest usage checkpoint jumped from 36% to 13% remaining during UI checks; no additional features started.
+
+## October 21, 2026 — Event foundation decisions
+
+- The owner's current request takes precedence over the original rehearsal/setlist deferral for this minimal scope. The sketch informs later design; only title/type/date, catalog selection, one initial set, save and reopen are implemented now.
+- Reuse project-owned JSON metadata and stable catalog tune references. No database replacement, PDF copies, chart acceptance changes, alternate catalog or master/pending behavior changes.
+- Schema 4 prevents older writers dropping event metadata. Preserve original schemas 1–3 in an immutable pre-events backup on first write, retaining older backups. Migration alone does not write disk.
+- One tune occurrence per event in this increment; append/remove only. Empty/undated events are valid; title/type and real optional YYYY-MM-DD date are validated. Event/type/date edits and retained tune entries keep all identities.
+- Upcoming Events is the entry point to all saved events, including past/undated, so no saved record becomes inaccessible. No event deletion or calendar filtering in this scope.
+- Explicit save with dirty indicators and save/keep/discard navigation/close guards. Mark clean only after storage succeeds. No automatic crash-recovery draft store; unsaved edits can be lost on forced termination/power failure.
+- Select tunes with active current-source chart records; planning does not imply chart approval or distribution eligibility. Retain/warn about selections without active charts rather than silently dropping them.
+- Deliver 0.4.0 without overwriting any prior version ZIP. Full setlist builder, multiple sets, ordering controls, drag/drop, templates, event/member .4ss/ZIP exports and cover pages require subsequent authorization.
+
+## October 21, 2026 — Multiple-set decisions / 0.4.1
+
+- Owner explicitly authorizes two-column building, multiple sets, repeated tunes and Up/Down controls; the screenshot sets the layout direction. Keep all export/template/cover-page/drag/drop work deferred.
+- Extend the existing serialized event with ordered additionalSets rather than replace its initialSet. Schema 5 prevents old writers losing added sets; legacy event/set/entry IDs remain intact. Add immutable pre-multisets backup and retain every previous backup.
+- Compute Set N from current ordered position. Keep at least one set; non-empty removal requires confirmation. Removing an active set resolves to the first remaining set; adding automatically selects the new last set. Do not impose a small set-count limit.
+- Repeated catalog tunes have independent occurrence IDs; movement/removal affects the chosen occurrence only. Cross-set movement is remove/add in this scope.
+- Use 38/62 desktop panels, independent lazy scrolling and a compact fixed header; stack below 700 dp editor content width. Preserve existing project sidebar/theme/Lato and all other screen scroll behavior.
+- Destination/search/scroll/window state remains transient; reopen selects the first set. Stored event data/order and existing explicit save/dirty/close protection remain durable. No autosave or crash recovery added.
+- Deliver unused version 0.4.1, preserve prior successful ZIPs byte-for-byte, retain GitHub Actions and leave Git operations to the owner. Next is owner review, then separately scoped reference-only forScore export planning/identity-matching validation.
