@@ -1,26 +1,31 @@
 # Architecture
 
-## Foundation
+## Shared foundation
 
-Kotlin 2.2.20, Compose Multiplatform 1.9.3, kotlinx.serialization 1.9.0, Gradle Wrapper 8.14.3 and JDK 21. The application module has a desktop JVM target and platform-neutral commonMain/commonTest source sets. This preserves the requested Kotlin/Compose direction.
+Kotlin 2.2.20, Compose Multiplatform 1.9.3, serialization 1.9.0, Gradle Wrapper 8.14.3 and JDK 21. Existing toolchain retained. commonMain contains projects, members, themes, chart metadata, tunes, catalog reconciliation, review rules, JSON and forScore XML. No Windows or java.* filesystem dependencies enter commonMain. Desktop UI and storage/provider integration stay in desktopMain. Android foundation remains compatible shared code and provider interfaces; no Android application is delivered.
 
-commonMain owns Project, Theme, Member, Workspace, schema validation, JSON encoding and forScore generation. IDs are stable strings; desktop supplies UUIDs. Every project owns its members and theme. Updates replace the selected project by ID; project selection is persisted. Future tune, chart and export records must refer to stable project IDs.
+## Catalog and filenames
 
-WorkspaceStore abstracts persistence. ChartSource and ExportDestination establish future provider boundaries without implementing Chunk 2. Android must implement these with app-private storage and URI/provider access. No filesystem paths, Windows classes or Java libraries enter commonMain.
+Each Project owns a Catalog with an opaque source reference, tunes and chart snapshots. Desktop resolves that reference to a real folder path; future Android providers must use URI-based references. ChartSource/ExportDestination remain future provider boundaries. Windows traversal and copy logic are isolated in LocalCharts.
 
-desktopMain owns the Compose presentation, native save dialog, UUID source and FileWorkspaceStore. It stores workspace.json in %LOCALAPPDATA%\band.logger. A schemaVersion prevents unsupported future data from being silently interpreted. Writes validate first, write a sibling temporary file, back up the previous save, and replace the file atomically where supported. An unreadable workspace displays a blocking error and is not silently reset.
+Parser: optional configured prefix, title, -rNN- (2–4 digits), supported part and .pdf. Prefix, part, revision marker and extension are case-insensitive. Canonical parts: C, Bb, Eb, Bass, Drums, Guitar, Piano. Tune keys trim/collapse whitespace and lowercase; punctuation and diacritics remain significant to avoid automatic false merges. Manual metadata review can group an ambiguous file into a known title without renaming it.
 
-The UI currently performs small local metadata writes synchronously. Larger chart IO belongs in background coroutines in future chunks. No source chart file is read or changed in Chunk 1.
+Stable IDs are independent of filenames. Repeated path/content matches retain IDs and review state. Changed bytes preserve prior snapshots and create a new record. Different hashes claiming the same tune/part/revision in the same source are conflicts, including retained historical versions, until explicitly resolved. Missing files retain records. Switching folders retains old records in History. New well-named files are batch-reviewable; ambiguous/changed/conflicting files require individual attention. Exclusion affects catalog visibility only.
 
-## Windows delivery
+## Filesystem safety
 
-Compose createDistributable uses jpackage/jlink to produce band.logger.exe, app libraries and a bundled Java runtime. scripts/package-windows.ps1 tests the application, builds the image, runs the packaged executable's diagnostic mode and creates a ZIP plus SHA-256 hash. It bundles the manual checklist and font license. The runtime's legal notices remain included.
+Scans recursively read PDFs without following symbolic links, hash bytes in bounded buffers, inspect headers and compare size/modification metadata around reads. Any filesystem traversal/read error aborts the scan before reconciliation is saved. Invalid PDF headers are review entries. This is not a complete PDF renderer/validator.
 
-GitHub Actions runs this script on Windows for pushes, pull requests and manual dispatch, then uploads the ZIP and test report. Workflow execution requires publication by the owner; adding the workflow locally does not execute it on GitHub. Artifacts expire after 90 days and are not permanent releases.
+Imports validate destination filenames, reject collisions and Windows reserved names, copy to a temporary file in the destination, verify hashes, then move to the final name without replacement. Temporary files created by that operation are cleaned up. Source files are never deleted or renamed. If copy succeeds but subsequent refresh fails, the user is told to refresh instead of importing again.
 
-## forScore proof
+Scan/import IO runs off the UI thread. Project switching and competing operations are disabled while work is in progress, preventing stale project snapshots from overwriting new edits. Cancellation before catalog save leaves metadata unchanged; successfully copied files can be rediscovered on refresh.
 
-The common generator writes UTF-8 XML with forScore kind="setlist", version="1.0" and title. Ordered score elements carry escaped title/path attributes and Base64 PDF data. The synthetic PDF uses calculated object offsets and contains original test text. Desktop tests parse XML and compare decoded bytes. The save dialog creates a new file only; an existing destination is never overwritten.
+## Persistence and migration
 
-Specification: https://forscore.co/developers-file-types/. Embedded PDFs require forScore 14.3+. Real iPad import remains a separate owner gate. No annotation-preservation promise is made.
-A process-level file lock prevents concurrent application instances from overwriting the same workspace. Package verification extracts the ZIP into a path with spaces and executes it with JAVA_HOME cleared and developer tools removed from PATH.
+Versioned JSON in %LOCALAPPDATA%\band.logger\workspace.json. Schema 1 migrates to 2 with empty catalogs and all project data retained. First migration save creates an immutable workspace.chunk1.backup.json; every save preserves the previous version in workspace.backup.json. Writes validate, use a sibling temporary file and atomic replacement when supported. Unreadable data blocks editing rather than resetting. A process file lock prevents concurrent app writers. Prior binaries reject the new schema.
+
+## forScore and Windows packaging
+
+forScore XML remains unchanged: ordered score elements with escaped attributes and Base64 PDFs. The proof button now wraps .4ss plus instructions in a ZIP and refuses overwrites. Owner verified the ZIP → Drive → local extraction → forScore route with both placeholder and embedded-PDF diagnostics. Direct Drive handoff failed; conversion/corruption has not been established.
+
+Compose createDistributable produces an executable with a bundled runtime. scripts/package-windows.ps1 runs tests, builds, smoke-tests storage/fonts/XML/ZIP/scanning, packages version 0.2.0, extracts into a path containing spaces and runs without developer Java. The GitHub Windows workflow provides the ZIP and test report after publication. No copyrighted charts, databases or private copy receipts are included in the repository or package.

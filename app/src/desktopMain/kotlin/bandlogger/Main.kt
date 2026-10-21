@@ -23,6 +23,16 @@ fun hex(value: String) = Color(0xFF000000 or value.removePrefix("#").toLong(16))
 val lato = FontFamily(Font("fonts/Lato-Regular.ttf"), Font("fonts/Lato-Bold.ttf", FontWeight.Bold))
 
 fun main(args: Array<String>) {
+    if (args.firstOrNull() == "--scan-source") {
+        val source = LocalCharts.folder(java.nio.file.Path.of(args[1]))
+        val files = LocalCharts.scan(source)
+        val catalog = Catalog(source = source).reconcile(files, "Q", System.currentTimeMillis(), ::newId)
+        val dir = dataDirectory()
+        Files.createDirectories(dir)
+        Files.writeString(dir.resolve("scan-audit.json"), WorkspaceCodec.encode(Workspace().saveProject(Project("audit", "Read-only audit", "Q", catalog = catalog))))
+        Files.writeString(dir.resolve("scan-summary.txt"), "Files: ${files.size}\nTunes: ${catalog.tunes.size}\nUnrecognized names: ${catalog.charts.count { it.metadata == null }}\nInvalid PDF headers: ${files.count { it.error != null }}\nConflicts: ${catalog.charts.count { catalog.conflicts(it) }}")
+        exitProcess(0)
+    }
     if ("--smoke-test" in args) {
         val dir = dataDirectory()
         Files.createDirectories(dir)
@@ -32,7 +42,16 @@ fun main(args: Array<String>) {
         check(store.load() == initial)
         check(Thread.currentThread().contextClassLoader.getResource("fonts/Lato-Regular.ttf") != null)
         Files.writeString(dir.resolve("synthetic-proof.4ss"), proofXml())
-        Files.writeString(dir.resolve("smoke-passed.txt"), "Storage, bundled fonts and XML generation passed.")
+        val proofZip = dir.resolve("synthetic-proof.zip")
+        if (!Files.exists(proofZip)) writeProofZip(proofZip)
+        val charts = dir.resolve("test-charts")
+        Files.createDirectories(charts)
+        Files.write(charts.resolve("Q Smoke Tune -r00- C.pdf"), syntheticPdf())
+        val catalog = Catalog(source = charts.toString()).reconcile(LocalCharts.scan(charts.toString()), "Q", 1L, ::newId).acceptNew()
+        check(catalog.active().size == 1 && catalog.status(catalog.active().single()) == "Ready")
+        store.save(initial.copy(projects = initial.projects.map { it.copy(catalog = catalog) }))
+        check(store.load().projects.single().catalog == catalog)
+        Files.writeString(dir.resolve("smoke-passed.txt"), "Storage, fonts, XML, ZIP and chart scan passed.")
         exitProcess(0)
     }
     // Keep two windows/processes from overwriting the same metadata snapshot.
@@ -62,6 +81,7 @@ fun main(args: Array<String>) {
     var memberEditor by remember { mutableStateOf<Member?>(null) }
     var themeEditor by remember { mutableStateOf(false) }
     var page by remember { mutableStateOf("Home") }
+    var busy by remember { mutableStateOf(false) }
     val project = workspace.projects.find { it.id == workspace.selectedId }
     val theme = project?.theme ?: Theme()
     val typography = Typography().let { t -> t.copy(
@@ -95,20 +115,20 @@ fun main(args: Array<String>) {
                     Spacer(Modifier.height(24.dp))
                     Text("PROJECTS", color = hex(theme.secondary))
                     workspace.projects.forEach { p ->
-                        OutlinedButton(onClick = { runCatching { persist(workspace.select(p.id)) }; page = "Home" }, modifier = Modifier.fillMaxWidth()) {
+                        OutlinedButton(enabled = !busy, onClick = { runCatching { persist(workspace.select(p.id)) }; page = "Home" }, modifier = Modifier.fillMaxWidth()) {
                             Text((if (p.id == project?.id) "• " else "") + p.name)
                         }
                     }
-                    Button(onClick = { projectEditor = Project(newId(), "") }, modifier = Modifier.fillMaxWidth()) { Text("Create project") }
+                    Button(enabled = !busy, onClick = { projectEditor = Project(newId(), "") }, modifier = Modifier.fillMaxWidth()) { Text("Create project") }
                     if (workspace.projects.none { it.name == "Quaternity" }) {
-                        TextButton(onClick = { projectEditor = quaternity(newId(), ::newId) }) { Text("Start with Quaternity") }
+                        TextButton(enabled = !busy, onClick = { projectEditor = quaternity(newId(), ::newId) }) { Text("Start with Quaternity") }
                     }
                     Spacer(Modifier.height(20.dp))
-                    if (project != null) listOf("Home", "Members", "Theme", "Technical proof").forEach { item ->
-                        TextButton(onClick = { page = item }) { Text(if (page == item) "• $item" else item) }
+                    if (project != null) listOf("Home", "Library", "Members", "Theme", "Technical proof").forEach { item ->
+                        TextButton(enabled = !busy, onClick = { page = item }) { Text(if (page == item) "• $item" else item) }
                     }
                     Spacer(Modifier.height(24.dp))
-                    Text("CHUNK 1 · PREVIEW", style = MaterialTheme.typography.labelSmall)
+                    Text("CHUNK 2 · PREVIEW", style = MaterialTheme.typography.labelSmall)
                     Text("Saved locally. No account needed.", style = MaterialTheme.typography.bodySmall)
                 }
                 Column(Modifier.weight(1f).padding(36.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(20.dp)) {
@@ -128,8 +148,9 @@ fun main(args: Array<String>) {
                                     Button(onClick = { projectEditor = project }) { Text("Edit project") }
                                 } }
                                 Text("Next chapters", style = MaterialTheme.typography.titleLarge)
-                                Text("Chart library and Drive connection — planned for Chunk 2.\nLibrary masters and supplements — planned for later chunks.")
+                                Text("Connect your chart folder under Library to browse tunes, review files and import PDFs. Library masters and supplements are planned for later chunks.")
                             }
+                            "Library" -> key(project.id) { LibraryScreen(project, busy, { busy = it }) { updated -> persist(workspace.saveProject(updated)) } }
                             "Members" -> {
                                 Text("Roles describe what each person plays. Chart preferences are ordered, with the preferred part first.")
                                 Button(onClick = { memberEditor = Member(newId(), "", emptyList(), emptyList()) }) { Text("Add member") }
@@ -155,22 +176,22 @@ fun main(args: Array<String>) {
                             }
                             "Technical proof" -> {
                                 Text("Try a synthetic forScore import", style = MaterialTheme.typography.headlineSmall)
-                                Text("Creates two ordered PDF entries in an open-format .4ss file. These contain test text only. Requires forScore 14.3 or later; actual iPad import is awaiting your review.")
+                                Text("Creates two ordered PDF entries in an open-format .4ss file. These contain test text only. The ZIP transfer route and embedded PDF import have been verified on your iPad. Requires forScore 14.3 or later.")
                                 Button(onClick = {
                                     val dialog = FileDialog(null as Frame?, "Save synthetic forScore proof", FileDialog.SAVE)
-                                    dialog.file = "band.logger-synthetic-proof.4ss"
+                                    dialog.file = "band.logger-synthetic-proof.zip"
                                     dialog.isVisible = true
                                     if (dialog.file != null) {
                                         runCatching {
-                                            val filename = if (dialog.file.endsWith(".4ss", true)) dialog.file else dialog.file + ".4ss"
+                                            val filename = if (dialog.file.endsWith(".zip", true)) dialog.file else dialog.file + ".zip"
                                             val target = java.nio.file.Path.of(dialog.directory, filename)
-                                            Files.writeString(target, proofXml(), CREATE_NEW)
+                                            writeProofZip(target)
                                             message = "Proof saved: $target"
                                         }.onFailure { message = "Could not export; choose a new filename. ${it.message}" }
                                     }
                                     dialog.dispose()
-                                }) { Text("Save synthetic .4ss") }
-                                Text("Transfer the file to your iPad using Files or AirDrop, share it to forScore, and check both entries open in order. This is a format proof, not a band library export.")
+                                }) { Text("Save forScore test ZIP") }
+                                Text("Transfer the ZIP through Drive, save it locally on the iPad, extract it in Apple Files, then share the extracted .4ss to forScore and check both entries open in order. This is a format proof, not a band library export.")
                             }
                         }
                     }

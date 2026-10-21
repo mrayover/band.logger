@@ -55,3 +55,27 @@ Owner confirmed that BOTH diagnostic files imported successfully after transfer 
 Use ZIP as the default transfer packaging for future band.logger exports: ZIP → Google Drive → save locally on iPad → extract → share extracted .4ss to forScore. The ZIP contains the actual .4ss; it is a transport wrapper, not a different forScore format. Direct Drive handoff failed in the owner's tests; file corruption or conversion by Drive has not been proven.
 
 This supersedes earlier notes that diagnostic iPad import was unresolved. No application code or executable changed in this documentation update. The current Chunk 1 export button still saves a bare .4ss; automatic ZIP export remains to be implemented. Chunk 2 remains unauthorized pending explicit owner approval.
+
+## Chunk 2 — October 20, 2026
+
+- Checked actual repository; clean main at 7188efb (Update Chunk 1), tracking origin/main. Read README and BUILD_CHUNKS before implementation. No AGENTS.md found in checkout.
+- Owner explicitly authorized Chunk 2 and requested updates and tidy files. Preserved no-commit/no-push preference.
+- Added shared catalog/parser/reconciliation, safe desktop scanning/import, Library/Needs Review/History, schema migration backup and default proof ZIP packaging.
+- Owner designated source/destination chart folders, then clarified COPY ONLY. Copied 249 PDFs (79,363,295 bytes) to the designated Drive library, verified source and destination SHA-256, retained all originals. No existing destination content overwritten. Receipt kept under local application transfer-receipts, outside Git. Local verification does not confirm cloud sync completion.
+- `gradlew.bat :app:desktopTest`: passed after UI integration; final current test run 28 tests, 0 failures, 0 skipped (CatalogTest 11, LocalChartsTest 8, existing tests 9).
+- Packaging, real-library scan and UI review are in progress; final results follow below.
+
+### Chunk 2 final verification
+
+- `scripts/build-local.ps1`: passed after the folder-picker improvement; 28 tests, zero failures/skips; Compose application image and version 0.2.0 ZIP built. Packaged smoke tests cover storage, bundled fonts, XML, ZIP and chart scanning. ZIP extraction/launch passed with JAVA_HOME empty, system-only PATH and spaces in the extraction path.
+- Packaged `band.logger.exe --scan-source <owner-selected Drive folder>`: passed, 249 PDFs, 117 tunes, one unrecognized name, zero invalid PDF headers and zero revision conflicts. Audit outputs remained in ignored local tooling storage.
+- GitHub Actions API read: published Chunk 1 commit 7188efbdd4ad9dd356f46c963b58d29c6149ca88 Windows application run completed successfully: https://github.com/mrayover/band.logger/actions/runs/39484440944. Chunk 2 remote workflow has not run because these changes are uncommitted/unpushed.
+- UI smoke tests: extracted 0.2.0 executable launches; folder confirmation and real scan work; search finds the requested tune; review dialog saves an unchanged recognized Bass classification; repeat Refresh retains 249 records and review state; switching to Marcus - Solo shows no inherited library.
+- Improved folder selection after observing the unowned native chooser could fall behind the main window. Added a path entry field and supplied an owner for Browse dialogs. Rebuilt and reran all tests/package checks.
+- Recovery: old running app showed Marcus - Solo and Quaternity while workspace.json was an earlier one-project snapshot. workspace.backup.json contained the newer two-project setup. Preserved both originals in the local app-data recovery directory before restoring the newer backup. Verified two projects, schema 2 and workspace.chunk1.backup.json after the app's first catalog save. Root cause of the pre-existing discrepancy is unknown; no silent data-loss claim is made.
+- A preview replacement initially encountered a process-held JAR. Waited for the exact preview process to exit, replaced only that generated version directory, and verified the new application. Saved workspaces and charts were untouched by preview cleanup.
+- Final independent readback: schema 2, two projects, 249 Quaternity chart records, 117 tunes, one accepted sample, zero Solo charts, immutable migration backup present. Rehashed all 249 desktop originals and Drive destinations after UI tests: every checksum matched the private receipt.
+- Current app still requires owner acceptance. No production export or Chunk 3 implementation. No commit or push performed.
+
+- Final visual restart check passed: both projects, the selected Quaternity project, connected Drive folder, 249 chart records and 248 remaining review entries persisted. Left the extracted Chunk 2 preview open on Library for owner review.
+- Cleanup completed: seven disposable build smoke/extraction directories and redundant downloaded toolchain archives removed; extracted toolchains, test reports, both Windows release ZIPs, originals in sorted and all workspace recovery/migration backups retained. Git diff whitespace check passed. No charts or local workspace data are staged/tracked.

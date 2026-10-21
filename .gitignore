@@ -6,3 +6,8 @@ dist/
 local.properties
 *.log
 .idea/
+# Private charts and local workspace data must never enter the source repository.
+*.pdf
+*.4ss
+workspace*.json
+transfer-receipts/

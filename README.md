@@ -2,7 +2,7 @@
 
 **A project-based workspace for musicians and working bands.**
 
-**Project status:** Chunk 1 Windows preview built and tested; owner acceptance pending
+**Project status:** Chunk 2 Windows preview built and tested; owner review pending
 **Established:** October 20, 2026  
 **Primary platform:** Windows desktop  
 **Planned companion platform:** Android  
@@ -309,8 +309,8 @@ The staged plan is defined in `BUILD_CHUNKS.md`.
 
 | Chunk | Scope | Status |
 |---|---|---|
-| 1 | Application, projects, branding, members, `.4ss` technical proof | Implemented; owner review pending |
-| 2 | Drive integration, imports, and tune catalog | Not started |
+| 1 | Application, projects, branding, members, `.4ss` technical proof | Owner reviewed; ZIP iPad diagnostics passed |
+| 2 | Drive integration, imports, and tune catalog | Built and tested; owner review pending |
 | 3 | Library master export | Not started |
 | 4 | Supplements, history, and receipts | Not started |
 
@@ -403,14 +403,19 @@ Every completed development chunk must produce a usable, downloadable Windows de
 
 The actual local repository is `C:\Users\mrove\Projects\band.logger\band.logger`. Use this existing checkout; do not recreate it.
 
-## Running the Chunk 1 Windows preview
+## Running the Chunk 2 Windows preview
 
-Obtain `dist/band.logger-0.1.0-windows-x64.zip` from the local build, or the Windows application workflow artifact after the owner commits and pushes. Extract the whole ZIP and launch `band.logger/band.logger.exe`. Keep its app and runtime folders together. Windows 10/11 x64 is the target. No Java or development environment is needed. This preview is unsigned.
+Obtain `dist/band.logger-0.2.0-windows-x64.zip` from the local build, or the Windows application workflow artifact after the owner commits and pushes. Extract the whole ZIP and launch `band.logger/band.logger.exe`. Keep its app and runtime folders together. Windows 10/11 x64 is the target. No Java or development environment is needed. This preview is unsigned.
 
-Project creation/editing/switching, editable Quaternity starter members, ordered chart preferences, per-project colors, local persistence, bundled Lato and synthetic `.4ss` export are implemented. SVG rendering is pending; branding is a labeled text placeholder. Chart library and Drive features below remain planned for subsequent chunks.
+Project creation/editing/switching, editable Quaternity starter members, ordered chart preferences, per-project colors, local persistence, bundled Lato and synthetic `.4ss` export are implemented. SVG rendering is pending; branding is a labeled text placeholder. Chunk 2 adds a per-project source folder, searchable tune catalog, safe PDF imports, refresh, revision history and Needs Review. Google Drive for desktop performs cloud synchronization.
 
-Use `MANUAL_TESTING.md` for review. Local data is under `%LOCALAPPDATA%\band.logger`. See `CURRENT_STATE.md` for limitations and `WORK_LOG.md` for results. Chunk 1 is not fully accepted until owner review; do not begin Chunk 2 without approval.
+Use `MANUAL_TESTING.md` for review. Local data is under `%LOCALAPPDATA%\band.logger`. See `CURRENT_STATE.md` for limitations and `WORK_LOG.md` for results. Chunk 1 was reviewed and Chunk 2 explicitly authorized. Chunk 2 needs owner review; do not begin Chunk 3 without approval.
 
 ### Development builds
 
 Run `scripts/build-local.ps1` to use the local toolchain (or download it if absent), run tests and package the application. The Gradle Wrapper and pinned dependencies provide reproducible build configuration. Internet is required for the first build. `.tools`, build output and `dist` are ignored.
+### Chunk 2 library workflow
+
+Open Library → Connect folder and choose your locally synchronized chart folder. Scanning does not modify PDFs. Refresh after adding charts outside the app. Review new or ambiguous entries under Needs review. Import PDF copies one chosen PDF into that folder under the filename you confirm and refuses to overwrite an existing file. Metadata corrections do not rename originals. Different projects keep independent catalog records.
+
+The forScore proof now saves a ZIP. Transfer it through Drive, save locally on iPad, extract in Apple Files, then open the .4ss in forScore. Production library masters remain Chunk 3 work.

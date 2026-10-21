@@ -1,46 +1,37 @@
-# Current state — October 20, 2026
+# Current state — Chunk 2, October 20, 2026
 
-Chunk 1 Windows preview is implemented, built and tested. Owner acceptance is pending. Chunk 2 is not authorized.
+Chunk 1 was reviewed by the owner. Both synthetic iPad diagnostics passed using ZIP transfer through Drive followed by local extraction. The owner explicitly authorized Chunk 2. Chunk 3 is not authorized.
 
-Implemented: Kotlin Multiplatform domain layer; Compose Windows UI; project creation/editing/switching; optional Quaternity starter with four editable members; project-specific colors; member names, multiple roles and ordered preferences; bundled Lato; versioned JSON persistence with previous-save backup; non-destructive handling of unreadable data; synthetic open-format .4ss generation; automated tests; Windows packaging script and GitHub Actions workflow.
+## Implemented
 
-Branding uses an explicit typographic placeholder. Optional logo references are stored but artwork rendering is not implemented. The supplied SVG has not been copied or published.
+- All Chunk 1 project/member/theme features remain.
+- Per-project chart folder connection and switching, recursive read-only PDF scans, manual Refresh, title/part/filename search and tune grouping.
+- Stable tune and chart identities, independent part revisions, SHA-256 content hashes, file metadata, previous-content history, missing-file states and folder history.
+- Needs Review for new, malformed, changed, conflicting or invalid-PDF records. Accept recognized new charts in a batch, edit individual catalog metadata, or exclude a catalog record without deleting its PDF.
+- Import PDF copies one chosen file under the confirmed filename into the source folder. Existing files cannot be overwritten. Google Drive for desktop performs any cloud synchronization.
+- Synthetic forScore export now produces a ZIP containing the .4ss and iPad instructions.
+- Schema 1 data migrates to schema 2, preserving projects, members and themes. The first save preserves workspace.chunk1.backup.json as well as the rolling backup.
 
-Android foundation: models, validation, serialization, export XML and storage/source/destination interfaces are in commonMain without Windows or java.* dependencies. No Android UI, APK or SDK target is delivered or claimed tested in Chunk 1. A future Android module will bind these interfaces to app-private storage and Android file/Drive providers. Desktop UI is intentionally isolated.
+## Verification
 
-Known limitations: no Drive scanning, catalog, production chart exports, user accounts or synchronization; no deletion interface; no automatic backup recovery; no app installer/signing/auto-update; no actual iPad import verification. Custom colors can reduce readability. Logo reference is metadata only.
+Compilation and all 28 automated tests passed (0 failures, 0 skipped). The Windows ZIP passed bundled and extracted executable smoke tests with development Java removed from PATH. UI checks passed for folder connection, real-library scan, search, individual review/save, repeat refresh and project isolation. Saved data verifies two projects, 249 chart records, 117 tunes and the migration backup. Full owner review remains pending.
 
-Windows deliverable target: dist/band.logger-0.1.0-windows-x64.zip. Run the executable after extracting the whole archive. Build output and local toolchains are ignored by Git.
+249 chart PDFs were copied from the owner-designated sorted folder to the requested Google Drive library. Every source/destination SHA-256 matched and all originals were retained. A private receipt is stored under %LOCALAPPDATA%\band.logger\transfer-receipts. This verifies local copies, not completion of Google Drive cloud synchronization.
 
-Review checklist: MANUAL_TESTING.md. Verified build and test results are recorded in WORK_LOG.md. Do not infer successful checks from implementation descriptions.
-## Verified delivery
+## Delivery and limits
 
-- Compilation and 9 automated tests passed (0 failures, 0 skipped).
-- Windows app image and 61 MB ZIP created successfully.
-- Packaged executable smoke test passed, including storage, font resources and synthetic export.
-- Extracted ZIP executable passed with JAVA_HOME cleared and a system-only PATH, from a path containing spaces.
-- Agent visually verified launch, Quaternity starter form/save, member view, theme view, and persistence after application restart. Quaternity was saved in the local workspace during this check.
-- Remote GitHub Actions execution, Android application compilation, full owner checklist and real iPad import have not been performed.
+Windows preview: dist/band.logger-0.2.0-windows-x64.zip. Extract all files and run band.logger.exe. No development tools are needed. Manual review: MANUAL_TESTING.md.
 
-Next step: owner extracts and reviews the Windows ZIP using MANUAL_TESTING.md, reports issues, and approves Chunk 1 before any Chunk 2 work.
-## Owner review — forScore import issue
+Manual refresh only; no live filesystem watcher. PDF header checks do not establish full PDF renderability. Symbolic links are skipped. Network or permission errors abort the scan and preserve the saved catalog. Very large or online-only libraries may take time to hydrate and hash. Catalog metadata corrections do not rename source files. Historical records retain checksums/metadata, not backup copies of overwritten source PDF bytes.
 
-Owner reports that the Windows features work, but opening the exported .4ss on iPad launches forScore at the previous score without an apparent new setlist. Real-device import has therefore NOT passed. Chunk 1 acceptance remains pending; Chunk 2 is not authorized.
+No production library-master exports, supplements, direct cloud API, Android app, automatic sync status, SVG rendering, signing or installer. APK compilation is not claimed. Public software license remains undecided.
 
-Rechecked the generator and local packaged proof against https://forscore.co/developers-file-types/: required root attributes, score path and Base64 data match the documented structure. No root cause or fix has been established. Need the forScore version, import route and, if necessary, the exact file transferred to the iPad.
+Do not run the older Chunk 1 binary against schema 2 data; it will reject the newer schema. The preserved Chunk 1 backup supports deliberate rollback. Owner acceptance of Chunk 2 and approval of Chunk 3 are still required.
+## Owner machine setup
 
-Diagnostic files in ignored dist/forscore-diagnostics: BL-Test-A.4ss contains one placeholder and no PDF; BL-Test-B.4ss contains one synthetic PDF with ASCII-only names. Both parse as XML and the second preserves the original Base64 payload. These are diagnostic alternatives, not a confirmed application fix. The Windows executable is unchanged.
+Quaternity is connected to the requested Drive library. 249 PDF files were indexed into 117 tune groups. One filename ending in Bb-2.pdf is unrecognized and remains for owner review; no files were renamed. One recognized Bass record was accepted during the UI save test; 247 other recognized new records can be batch accepted after review, and the ambiguous file requires an individual decision.
 
-### Drive transfer follow-up
+During upgrade verification, the old running preview showed two projects while the main saved file contained an earlier single-project snapshot. The newer rolling backup contained both Marcus - Solo and Quaternity. Preserved both files under the local app data recovery directory, restored the newer backup, and verified both projects in Chunk 2. The cause of the prior discrepancy is not established. The subsequent migration backup and saved catalog were verified.
 
-Owner confirms forScore newer than version 15 and transfer through Google Drive on iPad (download, then open with forScore). forScore returns to its previous score; no imported score or setlist appears. Windows screenshot shows correct .4ss filenames for the original proof and both diagnostics. A reported XML type label is consistent with the documented open XML format; it does not establish invalid content.
-
-Prepared dist/band.logger-iPad-import-test.zip with unchanged diagnostic A and B. Read both entries back from the archive, verified exact text equality and XML parsing. Next device check: save ZIP into Apple Files / On My iPad, extract locally, then share the extracted A file to forScore. This isolates Drive's individual-file handoff; Drive type handling is a hypothesis, not a confirmed cause. No application code changed and no import fix is claimed. Chunk 1 remains pending.
-
-## Verified iPad import — October 20, 2026
-
-Owner confirmed that BOTH diagnostic files imported successfully after transfer as a ZIP through Google Drive, saving locally on the iPad, extracting in Apple Files, and opening the extracted .4ss in forScore. Test A verified setlist/placeholder creation. Test B verified a setlist with an embedded synthetic PDF. The synthetic open-format import gate has passed for these diagnostic fixtures on the owner's iPad. Production chart export and the original two-entry special-character proof are not independently established by these results.
-
-Use ZIP as the default transfer packaging for future band.logger exports: ZIP → Google Drive → save locally on iPad → extract → share extracted .4ss to forScore. The ZIP contains the actual .4ss; it is a transport wrapper, not a different forScore format. Direct Drive handoff failed in the owner's tests; file corruption or conversion by Drive has not been proven.
-
-This supersedes earlier notes that diagnostic iPad import was unresolved. No application code or executable changed in this documentation update. The current Chunk 1 export button still saves a bare .4ss; automatic ZIP export remains to be implemented. Chunk 2 remains unauthorized pending explicit owner approval.
+Final checksum recheck confirmed every desktop original and Drive copy still matched the transfer receipt after scanning/UI checks. Google Drive cloud synchronization remains outside the app's verification.
+Final visual restart verification passed. The extracted 0.2.0 preview is open on Library for owner review. Changes remain uncommitted and unpushed.

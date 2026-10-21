@@ -16,7 +16,7 @@ class DomainTest {
         assertFailsWith<IllegalArgumentException> { Workspace().saveProject(Project("x", " ")) }
         assertFailsWith<IllegalArgumentException> { Theme(accent = "red").validate() }
         assertFailsWith<IllegalArgumentException> { Workspace().select("missing") }
-        assertFailsWith<IllegalArgumentException> { Workspace(schemaVersion = 2).validate() }
+        assertFailsWith<IllegalArgumentException> { Workspace(schemaVersion = 99).validate() }
     }
     @Test fun memberEditsRoundTrip() {
         val p = Project("p", "Band", members = listOf(Member("m", "New name", listOf("Sax", "EWI"), listOf("Bb", "C"))))

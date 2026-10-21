@@ -14,16 +14,17 @@ import kotlinx.serialization.json.Json
 @Serializable data class Member(val id: String, val name: String, val roles: List<String>, val preferences: List<String>)
 @Serializable data class Project(
     val id: String, val name: String, val prefix: String = "", val theme: Theme = Theme(),
-    val logoReference: String? = null, val members: List<Member> = emptyList()
+    val logoReference: String? = null, val members: List<Member> = emptyList(), val catalog: Catalog = Catalog()
 )
-@Serializable data class Workspace(val schemaVersion: Int = 1, val projects: List<Project> = emptyList(), val selectedId: String? = null) {
+@Serializable data class Workspace(val schemaVersion: Int = 2, val projects: List<Project> = emptyList(), val selectedId: String? = null) {
     fun validate() {
-        require(schemaVersion == 1) { "This data was created by an unsupported application version." }
+        require(schemaVersion == 2) { "This data was created by an unsupported application version." }
         require(projects.map { it.id }.distinct().size == projects.size) { "Duplicate project identity." }
         require(selectedId == null || projects.any { it.id == selectedId }) { "Selected project is missing." }
         projects.forEach { p ->
             require(p.id.isNotBlank() && p.name.isNotBlank()) { "Project name is required." }
             p.theme.validate()
+            p.catalog.validate()
             require(p.members.map { it.id }.distinct().size == p.members.size)
             p.members.forEach { require(it.id.isNotBlank() && it.name.isNotBlank()) { "Member name is required." } }
         }
@@ -37,7 +38,11 @@ import kotlinx.serialization.json.Json
 object WorkspaceCodec {
     private val json = Json { prettyPrint = true; ignoreUnknownKeys = true; encodeDefaults = true }
     fun encode(value: Workspace): String { value.validate(); return json.encodeToString(value) }
-    fun decode(value: String): Workspace = json.decodeFromString<Workspace>(value).also { it.validate() }
+    fun decode(value: String): Workspace {
+        val stored = json.decodeFromString<Workspace>(value)
+        val migrated = if (stored.schemaVersion == 1) stored.copy(schemaVersion = 2) else stored
+        return migrated.also { it.validate() }
+    }
 }
 interface WorkspaceStore { fun load(): Workspace; fun save(value: Workspace) }
 // Android implements these boundaries using app-private storage and SAF/Drive URIs.

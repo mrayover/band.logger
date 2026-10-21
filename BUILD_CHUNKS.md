@@ -666,3 +666,9 @@ Decisions that materially change the data model or user workflow must be brought
 Every completed development chunk must produce a usable, downloadable Windows desktop application. Build and supply an `.exe` with all required runtime components and dependencies, preferably inside a self-contained ZIP that launches without a development environment. Establish automated Windows packaging in GitHub Actions in Chunk 1 and deliver an updated package after every subsequent chunk. Test compilation, packaging, and functionality; preserve all previously completed functionality; include a simple manual testing checklist with every delivery. A chunk is not fully accepted until the owner has had the opportunity to run and review its Windows application. Do not begin the next chunk without owner approval. Local build packages may be delivered before publication; GitHub Actions artifacts require the owner to commit and push through GitHub Desktop.
 
 The actual local repository is `C:\Users\mrove\Projects\band.logger\band.logger`. Use this existing checkout; do not recreate it.
+
+## October 20, 2026 — Chunk 2 authorization and delivery clarification
+
+The owner reviewed Chunk 1, verified both forScore diagnostics via ZIP/local extraction and authorized Chunk 2. Default forScore transfer packaging is now ZIP with the original .4ss inside. Include this convenience fix in Chunk 2. Do not start Chunk 3 without the next owner approval.
+
+For Chunk 2 use the existing Google Drive for desktop folder integration, not OAuth or a custom uploader. The owner requested copying charts into their chosen Drive library and explicitly clarified COPY ONLY: retain all originals in sorted. Keep private files outside Git. Every chunk still requires a self-contained Windows application and owner review.
