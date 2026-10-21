@@ -7,7 +7,10 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
-import java.util.zip.ZipFile
+import java.util.zip.ZipInputStream
+import java.io.ByteArrayOutputStream
+import java.io.ByteArrayInputStream
+import java.io.InputStream
 import javax.xml.parsers.DocumentBuilderFactory
 import org.xml.sax.InputSource
 import java.io.StringReader
@@ -55,6 +58,26 @@ object EventExporter {
             append("Set ${set.number}: Missing chart — ${entry.title} · ${entry.reason}\n")
         } }
     }
+    internal fun verifyCopy(input: InputStream, expected: ByteArray) {
+        require(input.readNBytes(expected.size + 1).contentEquals(expected)) {
+            "The written member ZIP could not be verified. Try again or choose a local export folder."
+        }
+    }
+    internal fun verifyPackage(bytes: ByteArray, xmlName: String, expectedXml: String, expectedReadme: String) {
+        val expected = mapOf(xmlName to expectedXml, "READ-ME.txt" to expectedReadme)
+        val seen = mutableSetOf<String>()
+        ZipInputStream(ByteArrayInputStream(bytes)).use { zip ->
+            while (true) {
+                val entry = zip.nextEntry ?: break
+                require(!entry.isDirectory && entry.name in expected && seen.add(entry.name)) { "Unexpected member ZIP contents." }
+                val text = zip.readBytes().toString(Charsets.UTF_8)
+                require(text == expected.getValue(entry.name)) { "Member ZIP contents changed." }
+                if (entry.name == xmlName) validateXml(text)
+                zip.closeEntry() // consumes and checks the entry CRC
+            }
+        }
+        require(seen == expected.keys) { "Incomplete member ZIP." }
+    }
     fun generate(project: Project, plan: EventExportPlan, destination: String,
                  acknowledgeMissing: Boolean = false, acknowledgeUndated: Boolean = false,
                  id: String = UUID.randomUUID().toString(), now: Instant = Instant.now()): EventExportResult {
@@ -77,20 +100,24 @@ object EventExporter {
             Files.writeString(stage.resolve("INCOMPLETE.txt"), "Incomplete event export. Do not distribute.", StandardOpenOption.CREATE_NEW)
             plan.members.forEach { member ->
                 val zipPath = stage.resolve("${member.baseName}.zip")
-                ZipOutputStream(Files.newOutputStream(zipPath, StandardOpenOption.CREATE_NEW)).use { zip ->
+                val xml = EventExportPlanner.xml(member)
+                val instructions = readme(plan, member)
+                val buffer = ByteArrayOutputStream()
+                ZipOutputStream(buffer).use { zip ->
                     zip.putNextEntry(ZipEntry("${member.baseName}.4ss"))
-                    zip.write(EventExportPlanner.xml(member).toByteArray(Charsets.UTF_8))
+                    zip.write(xml.toByteArray(Charsets.UTF_8))
                     zip.closeEntry()
                     zip.putNextEntry(ZipEntry("READ-ME.txt"))
-                    zip.write(readme(plan, member).toByteArray(Charsets.UTF_8))
+                    zip.write(instructions.toByteArray(Charsets.UTF_8))
                     zip.closeEntry()
                 }
-                ZipFile(zipPath.toFile()).use { zip ->
-                    require(zip.size() == 2)
-                    val xml = zip.getInputStream(zip.getEntry("${member.baseName}.4ss")).use { it.readBytes().toString(Charsets.UTF_8) }
-                    require(xml == EventExportPlanner.xml(member))
-                    validateXml(xml)
-                }
+                // Finish the central directory before writing to a virtual/cloud drive.
+                val archive = buffer.toByteArray()
+                verifyPackage(archive, "${member.baseName}.4ss", xml, instructions)
+                Files.write(zipPath, archive, StandardOpenOption.CREATE_NEW)
+                // Drive can briefly report a stale file length to random-access ZipFile.
+                // Sequentially verify every byte instead of consulting that metadata.
+                Files.newInputStream(zipPath).use { verifyCopy(it, archive) }
             }
             Files.delete(stage.resolve("INCOMPLETE.txt"))
             Files.move(stage, target) // no replacement: a racing existing folder fails safely

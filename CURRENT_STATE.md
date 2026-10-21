@@ -1,3 +1,19 @@
+# Current state — Google Drive ZIP export fix, October 21, 2026 / 0.5.1
+
+Supersedes the unqualified 0.5.0 export-success status below for Google Drive destinations. Owner committed 0.5.0 at clean main 9f4ccbf, then reported zip END header not found. Root cause reproduced: immediate random-access ZIP reopening on G: fails even though a sequential read returns valid complete archive bytes.
+
+Fixed: complete/validate each member ZIP in memory, then write it to the existing stage and verify every byte sequentially. No reliance on transient destination file size; unchanged staging/publication/no-overwrite, exact XML contents/CRC checks and reference-only output. No event/catalog/master/schema/reference-naming changes or new dependencies. One small reference archive is held in memory per member.
+
+PASS: 123 tests (120 existing + 3 new), zero failures/errors/skips; compilation; normal packaged/extracted smoke/restart; additional app-image and extracted executable smoke exporting all member reference ZIPs to an isolated child of the actual G: destination. Synthetic PDFs/master tests stayed local. PASS local extracted UI with four members, two sets split 8/10 and 18 song occurrences; generated/parsed four ZIPs with 18 score references/two correct heading placeholders each, no data attributes. Synthetic workspace unchanged. All 207 extracted release files match ZIP hashes, every prior Windows ZIP preserved byte-for-byte, existing app-data workspace unchanged. Owner's original app/dialog left open; no real event export or edits performed.
+
+Additional G: UI Generate click was blocked by automatic approval review as an external synced-data write. No retry/bypass; the safe local-only UI alternative passed. Do not describe that extra Drive UI action as executed. Owner actual event retry, independent Drive sync/iPad delivery and iPad placeholder/repeat/reference verification remain outstanding.
+
+ZIP: dist/band.logger-0.5.1-windows-x64.zip (61,771,654 bytes).
+EXE: dist/band.logger-0.5.1-windows-x64/band.logger/band.logger.exe.
+SHA-256: 6D4BB9CF27277D2F00159981957EF01A0C605BED13DA2259BD947E8E35CA14F4 (dist/SHA256-0.5.1.txt).
+Extract all, close the 0.5.0 window, keep app/ and runtime/ together and launch 0.5.1. No Java/Gradle installation required. Unsigned Windows x64 preview. Retry the existing saved event with the same destination, then proceed to the owner iPad gate. Prior packages/history retained. No commits, pushes, releases or remote workflow runs; no additional functionality started.
+
+---
 # Current state — Member-specific event exports, October 21, 2026 / 0.5.0
 
 Owner tested/approved 0.4.1 and updated Git; continued clean main at 84f9204. This supersedes earlier event-export deferrals below; history is retained.

@@ -112,28 +112,40 @@ fun main(args: Array<String>) {
         val eventProject = eventWorkspace.projects.first()
         val eventPlan = EventExportPlanner.preview(eventProject, eventProject.events.first().id)
         val eventSnapshot = WorkspaceCodec.encode(eventWorkspace)
-        val eventOutput = EventExporter.generate(eventProject, eventPlan, exportDir.toString())
+        val eventOutput = EventExporter.generate(eventProject, eventPlan, System.getProperty("bandlogger.eventSmokeDestination") ?: exportDir.toString())
         check(eventOutput.zipNames.size == eventProject.members.size)
         eventOutput.zipNames.forEach { name ->
-            java.util.zip.ZipFile(eventOutput.folder.resolve(name).toFile()).use { zip ->
-                check(zip.size() == 2)
-                val entries = zip.entries().asSequence().toList()
-                check(entries.none { it.name.endsWith(".pdf", true) })
-                val xml = zip.getInputStream(entries.single { it.name.endsWith(".4ss") }).use { it.readBytes().toString(Charsets.UTF_8) }
-                EventExporter.validateXml(xml)
-                val factory = javax.xml.parsers.DocumentBuilderFactory.newInstance()
-                factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
-                val root = factory.newDocumentBuilder().parse(org.xml.sax.InputSource(java.io.StringReader(xml))).documentElement
-                check(root.getElementsByTagName("score").length == 3)
-                val headings = root.getElementsByTagName("placeholder")
-                check(headings.length == 2)
-                check((headings.item(0) as org.w3c.dom.Element).getAttribute("title") == "Set 1")
-                check((headings.item(1) as org.w3c.dom.Element).getAttribute("title") == "Set 2")
-                val scores = root.getElementsByTagName("score")
-                for (i in 0 until scores.length) {
-                    val score = scores.item(i) as org.w3c.dom.Element
-                    check(!score.hasAttribute("data") && score.getAttribute("path") == "Q Smoke Tune -r00- C.pdf")
+            val member = eventPlan.members.single { "${it.baseName}.zip" == name }
+            java.util.zip.ZipInputStream(Files.newInputStream(eventOutput.folder.resolve(name))).use { zip ->
+                var count = 0
+                var sawXml = false
+                var sawReadme = false
+                while (true) {
+                    val entry = zip.nextEntry ?: break
+                    count++
+                    check(!entry.name.endsWith(".pdf", true))
+                    val content = zip.readBytes().toString(Charsets.UTF_8)
+                    if (entry.name == "${member.baseName}.4ss") {
+                        check(!sawXml); sawXml = true
+                        check(content == EventExportPlanner.xml(member))
+                        EventExporter.validateXml(content)
+                        val factory = javax.xml.parsers.DocumentBuilderFactory.newInstance()
+                        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+                        val root = factory.newDocumentBuilder().parse(org.xml.sax.InputSource(java.io.StringReader(content))).documentElement
+                        check(root.getElementsByTagName("score").length == 3)
+                        val headings = root.getElementsByTagName("placeholder")
+                        check(headings.length == 2)
+                        check((headings.item(0) as org.w3c.dom.Element).getAttribute("title") == "Set 1")
+                        check((headings.item(1) as org.w3c.dom.Element).getAttribute("title") == "Set 2")
+                        val scores = root.getElementsByTagName("score")
+                        for (i in 0 until scores.length) {
+                            val score = scores.item(i) as org.w3c.dom.Element
+                            check(!score.hasAttribute("data") && score.getAttribute("path") == "Q Smoke Tune -r00- C.pdf")
+                        }
+                    } else { check(entry.name == "READ-ME.txt" && !sawReadme); sawReadme = true }
+                    zip.closeEntry()
                 }
+                check(count == 2 && sawXml && sawReadme)
             }
         }
         check(WorkspaceCodec.encode(eventStore.load()) == eventSnapshot)
@@ -261,7 +273,7 @@ fun main(args: Array<String>) {
                         TextButton(enabled = !busy, onClick = { leave { page = item } }) { Text(if (page == item) "• $item" else item) }
                     }
                     Spacer(Modifier.height(24.dp))
-                    Text("0.5.0 · PREVIEW", style = MaterialTheme.typography.labelSmall)
+                    Text("0.5.1 · PREVIEW", style = MaterialTheme.typography.labelSmall)
                     Text("Saved locally. No account needed.", style = MaterialTheme.typography.bodySmall)
                 }
                 Column(Modifier.weight(1f).fillMaxHeight().padding(if (page == "Event editor") 20.dp else 36.dp).then(if (page == "Event editor") Modifier else Modifier.verticalScroll(rememberScrollState())), verticalArrangement = Arrangement.spacedBy(if (page == "Event editor") 8.dp else 20.dp)) {

@@ -2,7 +2,7 @@
 
 **A project-based workspace for musicians and working bands.**
 
-**Project status:** Member-specific reference-only event exports delivered (0.5.0); 0.4.1 editor owner-approved. See the latest October 21 update below.
+**Project status:** Reference-only event exports corrected for Google Drive ZIP validation (0.5.1). See the latest October 21 update below.
 **Established:** October 20, 2026  
 **Primary platform:** Windows desktop  
 **Planned companion platform:** Android  
@@ -489,3 +489,11 @@ All XML is parsed before writing, then member ZIPs are staged, reopened/parsed a
 Delivery: dist/band.logger-0.5.0-windows-x64.zip; EXE: dist/band.logger-0.5.0-windows-x64/band.logger/band.logger.exe. Extract all, retain app/ and runtime/, close older app windows and launch without installing Java/Gradle. Unsigned Windows x64 preview. All 120 tests (97 prior + 23 new) pass, as do packaged/extracted executable smoke tests with parsed reference-only event ZIPs and prior restart checks. Extracted synthetic UI preview/acknowledgements/generation/Open Export Folder passed; generated member XML and workspace immutability checked independently. All 207 extraction files and every prior Windows ZIP match SHA-256 checks. No commit/push/release/upload.
 
 Owner iPad verification is still required: ZIP through Drive → save locally in Files → extract → share .4ss to forScore; check set headings, repeats, exact installed filename matches and missing placeholders. Prior successful Library Master import does not establish this new reference-only workflow. Next: perform that device gate and report results before separately authorizing more export work. No supplements, templates, cover pages, embedded-PDF event output, per-song overrides or persistent event-export history implemented. Interrupted exports can leave hidden staging folders; do not distribute them. Long destination paths may need a shorter root.
+
+## October 21, 2026 — Drive ZIP validation correction / 0.5.1
+
+Owner reported 0.5.0 failed with zip END header not found while generating to Google Drive for desktop. Reproduced on the actual G: provider with an isolated synthetic archive: immediate ZipFile reopen failed, while sequential reads returned a valid complete archive. One metadata probe reported length 1 for 358 readable bytes; querying metadata before opening could mask the timing issue. The previous local-only verification did not catch this virtual-drive behavior.
+
+0.5.1 completes each reference-only ZIP in memory, validates its entries/XML sequentially, writes the complete bytes, then compares every byte through a sequential input stream without using the destination's reported random-access length. Normal staging/no-overwrite protections remain. No schema, naming, reference-resolution, chart, event or distribution changes.
+
+Use dist/band.logger-0.5.1-windows-x64.zip and dist/band.logger-0.5.1-windows-x64/band.logger/band.logger.exe. Extract all, close the 0.5.0 window, then launch 0.5.1 and retry the saved event with the same destination. All 123 tests pass; normal packaged/extracted smoke and additional packaged/extracted synthetic exports on G: pass. Local extracted UI with four members/two sets/18 occurrences generated valid complete packages. The additional UI click to G: was rejected by automatic approval review as an external transfer; it was not retried or bypassed. A local-only UI test completed instead. No real event export or event edits were performed by the agent; owner should retry their actual event. iPad verification remains pending. Prior builds preserved, no commit/push.

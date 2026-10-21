@@ -111,3 +111,16 @@ The owner approved 0.4.1 and updated Git before this increment. Extract all of b
 Transfer each member ZIP through Google Drive, save locally in iPad Files, extract, then share its .4ss (not READ-ME.txt) to forScore. Verify the named setlist, Set 1/Set 2/Set 3 placeholders, exact tune sequence including repeated occurrences, fallback member parts and chart opening. Each referenced filename must already be installed; a generated master does not prove that. Test explicit missing-chart placeholders and a known uninstalled filename. Record any forScore duplicate-occurrence/title/placeholder behavior. No claim of event-export iPad compatibility until this owner test passes.
 
 No event PDFs are read/copied/embedded/modified. Existing Library Master remains a separate embedded-PDF workflow. No supplements, templates, cover pages, per-song overrides or persistent event-export history. Event export does not save/edit an event or mark charts distributed/received. Workspace schema remains 5. Save explicitly; forced termination can lose unsaved drafts. An interrupted export can leave a hidden .bandlogger-event-* staging folder; do not distribute incomplete output. Package filename labels may sanitize/truncate Windows-unsafe text without editing saved titles. Long destinations can exceed Windows path limits; use a shorter root if needed.
+
+## October 21, 2026 — Google Drive ZIP fix / 0.5.1
+
+Use band.logger-0.5.1-windows-x64.zip instead of 0.5.0 when exporting to Google Drive for desktop. The reported zip END header not found error was reproduced on G: immediately after writing a valid archive; sequential reads of the same archive succeeded.
+
+- [ ] Extract the entire 0.5.1 ZIP and close the old app before launching the new executable.
+- [ ] Open the saved Eden Wine Lounge event, Export for Members, and keep the existing Google Drive destination.
+- [ ] Generate member ZIPs. Verify completion and Open Export Folder, one ZIP per member and no overwrite of previous exports.
+- [ ] Copy a generated ZIP to a local folder/extract it and inspect its one complete .4ss and READ-ME.txt. No PDFs/data attributes; saved headings, order and chart references remain.
+- [ ] Repeat once to verify a new export folder; check existing event/catalog/master data unchanged.
+- [ ] Continue the owner iPad gate above. The fix changes archive validation, not reference matching or the file format.
+
+Archives are now completed and their contents validated in memory, then written and compared byte-for-byte through sequential reads. This avoids Drive's stale random-access file-length behavior. Reference-only payloads stay small; one member archive is held in memory at a time. Workspace schema/metadata, source PDFs, member baselines and output naming remain unchanged. Interruptions can still leave hidden incomplete staging folders; do not distribute them.

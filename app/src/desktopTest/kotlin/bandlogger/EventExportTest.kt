@@ -205,4 +205,30 @@ class EventExportTest {
         assertFailsWith<IllegalArgumentException> { ForScore.referenceElement("Bad", "path/a.pdf") }
         assertFailsWith<IllegalArgumentException> { ForScore.placeholderElement("Bad\u0001") }
     }
-}
+    @Test fun copyVerificationIgnoresStaleReportedLengthAndChecksEveryByte() {
+        val expected = ByteArray(4096) { (it % 251).toByte() }
+        val cloudStream = object : java.io.ByteArrayInputStream(expected) {
+            override fun available() = 1 // virtual-drive metadata can lag behind completed writes
+        }
+        EventExporter.verifyCopy(cloudStream, expected)
+    }
+    @Test fun copyVerificationRejectsTruncatedChangedAndExtraBytes() {
+        val expected = byteArrayOf(1, 2, 3, 4)
+        listOf(byteArrayOf(1), byteArrayOf(1, 2, 9, 4), byteArrayOf(1, 2, 3, 4, 5)).forEach { bytes ->
+            assertFailsWith<IllegalArgumentException> { EventExporter.verifyCopy(java.io.ByteArrayInputStream(bytes), expected) }
+        }
+    }
+    @Test fun completedReferenceArchivesValidateSequentiallyWithExactContents() {
+        val p = project()
+        val result = generate(p)
+        result.zipNames.forEach { name ->
+            val member = plan(p).members.single { "${it.baseName}.zip" == name }
+            val path = result.folder.resolve(name)
+            ZipFile(path.toFile()).use { zip ->
+                val readme = zip.getInputStream(zip.getEntry("READ-ME.txt")).use { it.readBytes().decodeToString() }
+                val bytes = Files.readAllBytes(path)
+                EventExporter.verifyPackage(bytes, "${member.baseName}.4ss", EventExportPlanner.xml(member), readme)
+                assertFailsWith<IllegalArgumentException> { EventExporter.verifyPackage(bytes, "wrong.4ss", EventExportPlanner.xml(member), readme) }
+            }
+        }
+    }}

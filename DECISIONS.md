@@ -110,3 +110,10 @@ This supersedes earlier notes that diagnostic iPad import was unresolved. No app
 - Use existing configured export root by default with Events subfolder. A dialog override is transient. Stage/validate all member ZIPs before publishing; never overwrite old packages. No direct Drive API, PDF IO/embedding/copying, chart acceptance/distribution updates or new export-history schema.
 - Retain filename-matching caveat: master generation is not proof of installation. Owner must verify the new reference-only workflow on iPad; previously approved embedded Library Master does not establish placeholder/repetition/reference behavior here.
 - Deliver new unused 0.5.0, preserve all earlier ZIP hashes and GitHub Actions. No commits/pushes/releases. Next task is owner iPad validation before further export scope.
+
+## October 21, 2026 — ZIP validation defect / 0.5.1
+
+- Treat the owner's 0.5.0 failure as a provider integration defect despite passing local tests. Reproduce at the actual Drive destination with synthetic files; never edit chart files or real event data for diagnosis.
+- Complete reference-only ZIPs in memory and validate exact entries/XML; verify the written bytes sequentially rather than immediately trusting cloud-provider random-access file length. Preserve CRC/XML checks and no-overwrite staging.
+- Add regression coverage for inaccurate stream availability and truncated/changed/extra copies. Extend executable integration smoke to an isolated G: output while keeping synthetic PDFs local.
+- Release unused 0.5.1 and retain every prior ZIP. Additional Drive UI write was denied by automatic approval review and not retried; safe local UI alternative completed. No optional features or schema changes. Owner retry and iPad verification remain next steps.
