@@ -127,11 +127,26 @@ fun main(args: Array<String>) {
                     Text("YOUR MUSIC. TOGETHER.", style = MaterialTheme.typography.labelSmall)
                     Spacer(Modifier.height(24.dp))
                     Text("PROJECTS", color = hex(theme.secondary))
+
                     workspace.projects.forEach { p ->
-                        OutlinedButton(enabled = !busy, onClick = { runCatching { persist(workspace.select(p.id)) }; page = "Home" }, modifier = Modifier.fillMaxWidth()) {
-                            Text((if (p.id == project?.id) "• " else "") + p.name)
+                        val selected = p.id == project?.id
+                        OutlinedButton(
+                            enabled = !busy,
+                            onClick = { runCatching { persist(workspace.select(p.id)) }; page = "Home" },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = if (selected) {
+                                ButtonDefaults.outlinedButtonColors(
+                                    containerColor = hex(p.theme.accent),
+                                    contentColor = hex(p.theme.background)
+                                )
+                            } else {
+                                ButtonDefaults.outlinedButtonColors()
+                            }
+                        ) {
+                            Text((if (selected) "• " else "") + p.name)
                         }
                     }
+
                     Button(enabled = !busy, onClick = { projectEditor = Project(newId(), "") }, modifier = Modifier.fillMaxWidth()) { Text("Create project") }
                     if (workspace.projects.none { it.name == "Quaternity" }) {
                         TextButton(enabled = !busy, onClick = { projectEditor = quaternity(newId(), ::newId) }) { Text("Start with Quaternity") }
