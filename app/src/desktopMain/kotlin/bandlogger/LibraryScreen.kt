@@ -14,8 +14,8 @@ import java.io.File
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
 
-fun chooseChartFolder(): String? {
-    val chooser = JFileChooser().apply { dialogTitle = "Choose your chart library folder"; fileSelectionMode = JFileChooser.DIRECTORIES_ONLY }
+fun chooseChartFolder(title: String = "Choose your chart library folder"): String? {
+    val chooser = JFileChooser().apply { dialogTitle = title; fileSelectionMode = JFileChooser.DIRECTORIES_ONLY }
     return if (chooser.showOpenDialog(java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager().activeWindow) == JFileChooser.APPROVE_OPTION) chooser.selectedFile.absolutePath else null
 }
 fun choosePdf(): Path? {

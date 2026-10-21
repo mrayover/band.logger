@@ -79,3 +79,24 @@ This supersedes earlier notes that diagnostic iPad import was unresolved. No app
 
 - Final visual restart check passed: both projects, the selected Quaternity project, connected Drive folder, 249 chart records and 248 remaining review entries persisted. Left the extracted Chunk 2 preview open on Library for owner review.
 - Cleanup completed: seven disposable build smoke/extraction directories and redundant downloaded toolchain archives removed; extracted toolchains, test reports, both Windows release ZIPs, originals in sorted and all workspace recovery/migration backups retained. Git diff whitespace check passed. No charts or local workspace data are staged/tracked.
+
+## Chunk 2 acceptance and Chunk 3 planning — October 20, 2026
+
+- Owner explicitly approved Chunk 2 and requested progress documentation plus a staged plan/estimate mindful of account usage. No Chunk 3 application code was requested in this turn or implemented.
+- Re-read README.md and BUILD_CHUNKS.md; reviewed current state, decisions, architecture and the manual checklist. Confirmed the actual existing checkout, clean at def0a90 (Chunk 2 update), with origin pointing to mrayover/band.logger. No repository recreation, commit or push.
+- Marked Chunk 2 accepted in current status documents. Retained historical work-log entries and unchecked manual items; owner approval does not mean every checklist test was individually reported.
+- Added CHUNK_3_PLAN.md: 3A selection/preview 45–75 minutes, 3B ZIP generation/manifests 60–90 minutes, 3C verification/delivery 30–60 minutes. Total estimate 2h15–3h45 plus owner/device review, with contingency for problems. Each stage has a runnable Windows preview and resumable handoff.
+- Latest account snapshot at planning time: 47% remaining in the current five-hour allowance and 92% in the weekly allowance. These are transient account values, not project time budgets or guarantees.
+- Documentation-only change. No dependencies, source charts or application data changed; the prior 28-test/package result still describes the delivered 0.2.0 build. Application tests were not rerun because executable behavior did not change. Documentation whitespace and status checks performed after editing.
+
+## Stage 3A implementation and verification — October 20, 2026
+
+- Owner authorized "Implement 3a"; continued existing checkout and preserved prior planning edits. README/BUILD_CHUNKS had been read completely in the preceding planning turn; checked stage plan, source, tests and scripts. No AGENTS.md found at checked project/parent paths.
+- Added commonMain/MasterPreview.kt, desktopMain/MasterScreen.kt, MasterPreviewTest (12) and MasterDestinationTest (2). Extended Project with optional exportDestination, app navigation, folder-picker title, packaged smoke logic and package version 0.3.0.
+- First .\gradlew.bat :app:desktopTest passed all 42 tests. Repeated .\gradlew.bat :app:desktopTest :app:createDistributable after the compact preview layout change: passed.
+- .\scripts\build-local.ps1 compiled successfully but FAILED at Start-Process for the new executable. Read-only Windows event inspection identified Code Integrity 3077 / VerifiedAndReputableDesktop / Smart App Control rejecting unsigned version 0.3.0. Owner reported no intentional restriction change. No security policy or trust setting changed.
+- Used normal .\gradlew.bat :app:run with JAVA_TOOL_OPTIONS directing data to ignored .tools/stage3a-ui. It contained a copy of the current workspace plus synthetic primary/fallback/missing/review scenarios. Used the computer-use skill to inspect the development UI, filter exceptions, inspect file issues, save a test destination and switch to the copied Quaternity project. Confirmed Quaternity did not inherit the synthetic destination and still showed 248 file issues. Closed the isolated UI after tests.
+- On-disk readback confirmed destination only on the synthetic project. SHA-256 of the actual owner's workspace was unchanged before/after testing. No actual chart acceptance, source-file changes or Drive writes.
+- .\gradlew.bat :app:run --args=--smoke-test with isolated .tools/stage3a-development-smoke passed. This is development-runtime verification, not a successful packaged executable launch.
+- Assembled candidate ZIP from the compiled image with manual checklist, license notices and LAUNCH_STATUS.txt. Expanded into a fresh path containing spaces; verified executable/config/runtime presence and SHA-256 equality for all 207 files. Candidate size 61,431,650 bytes; checksum in dist/SHA256-0.3.0.txt. Both packaged/extracted launch checks remain BLOCKED, and remote Actions remains NOT RUN.
+- Updated README, BUILD_CHUNKS, CURRENT_STATE, ARCHITECTURE, DECISIONS, MANUAL_TESTING and CHUNK_3_PLAN. Final diff/whitespace and tracked-file checks performed. No dependencies installed, no commits/pushes, no 3B/3C or Chunk 4 implementation.

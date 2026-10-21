@@ -29,3 +29,15 @@ Versioned JSON in %LOCALAPPDATA%\band.logger\workspace.json. Schema 1 migrates t
 forScore XML remains unchanged: ordered score elements with escaped attributes and Base64 PDFs. The proof button now wraps .4ss plus instructions in a ZIP and refuses overwrites. Owner verified the ZIP → Drive → local extraction → forScore route with both placeholder and embedded-PDF diagnostics. Direct Drive handoff failed; conversion/corruption has not been established.
 
 Compose createDistributable produces an executable with a bundled runtime. scripts/package-windows.ps1 runs tests, builds, smoke-tests storage/fonts/XML/ZIP/scanning, packages version 0.2.0, extracts into a path containing spaces and runs without developer Java. The GitHub Windows workflow provides the ZIP and test report after publication. No copyrighted charts, databases or private copy receipts are included in the repository or package.
+
+## Next planned increment
+
+Chunk 2 is owner accepted as of October 20, 2026. No implementation contracts changed in this planning update. CHUNK_3_PLAN.md proposes shared deterministic member selection plus desktop source validation, ZIP generation and durable export manifests, retaining platform boundaries. These additions are planned, not implemented; schema changes and failure/recovery behavior must be documented when built.
+
+## Stage 3A implementation
+
+MasterPreview.kt in commonMain is a pure catalog snapshot planner. It never reads files or updates acceptance state. It groups current records from the selected source by stable tune ID, sorts tunes deterministically, normalizes supported member preference labels and selects the highest included revision of the first available preferred part. Any unresolved latest candidate blocks that tune before fallback, preventing silent downgrade. Catalog conflict rules include non-excluded historical content. Identical duplicate content is resolved by stable path/ID order. Excluded charts may be skipped with visible file issues; unsupported preferences block that member.
+
+MasterScreen.kt presents member lists, counts, exceptions, search and file issues. Desktop destination validation runs off the UI thread with existing busy/project-switch protection. Project.exportDestination is an optional opaque string in schema 2, default null; desktop stores a normalized folder reference. No migration is needed to read existing schema-2 data. Older binaries can drop this new setting when saving.
+
+Version 0.3.0 packaging retains the standard Windows workflow and extends the smoke routine with preview/destination checks. Local compiled image generation passed, but Smart App Control blocked executable launch; manual archive assembly was used only to produce a clearly labeled candidate. No smoke-test bypass was added to the build script or CI. Actual source verification, staged export writes and persistent manifests remain 3B design work.

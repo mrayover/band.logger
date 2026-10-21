@@ -1,37 +1,47 @@
-# Current state — Chunk 2, October 20, 2026
+# Current state — Stage 3A, October 20, 2026
 
-Chunk 1 was reviewed by the owner. Both synthetic iPad diagnostics passed using ZIP transfer through Drive followed by local extraction. The owner explicitly authorized Chunk 2. Chunk 3 is not authorized.
+Chunks 1 and 2 are owner approved. The owner explicitly authorized "Implement 3a." Stage 3A code is implemented and tested, but Windows executable launch is blocked by Smart App Control. Stage 3A is not fully accepted; 3B, 3C and Chunk 4 have not started.
 
 ## Implemented
 
-- All Chunk 1 project/member/theme features remain.
-- Per-project chart folder connection and switching, recursive read-only PDF scans, manual Refresh, title/part/filename search and tune grouping.
-- Stable tune and chart identities, independent part revisions, SHA-256 content hashes, file metadata, previous-content history, missing-file states and folder history.
-- Needs Review for new, malformed, changed, conflicting or invalid-PDF records. Accept recognized new charts in a batch, edit individual catalog metadata, or exclude a catalog record without deleting its PDF.
-- Import PDF copies one chosen file under the confirmed filename into the source folder. Existing files cannot be overwritten. Google Drive for desktop performs any cloud synchronization.
-- Synthetic forScore export now produces a ZIP containing the .4ss and iPad instructions.
-- Schema 1 data migrates to schema 2, preserving projects, members and themes. The first save preserves workspace.chunk1.backup.json as well as the rolling backup.
+- All existing project/member/theme, library scanning/import/review and synthetic ZIP proof features remain.
+- Library master preview shows each member's ordered part preferences, selected charts, fallbacks, missing parts and blocked tunes.
+- Deterministic one-chart-per-tune selection uses the highest included current revision for the first available preferred part. A missing, unreadable, unreviewed or conflicting latest preferred revision blocks the tune; it does not silently downgrade or switch to a fallback. Identical-content duplicate paths are represented once.
+- Explicitly excluded charts are not selected; unavailable and unclassified records appear in File issues. Unknown member preferences block selection with an explanation.
+- Searchable allocation lists, an exceptions filter and per-member counts.
+- Project-specific export destination with existing-folder validation, saved locally. No export folders/files or master records are created.
+- Shared planning logic has no desktop filesystem dependencies. Preview uses saved catalog metadata; actual source-content verification and generation remain Stage 3B.
 
 ## Verification
 
-Compilation and all 28 automated tests passed (0 failures, 0 skipped). The Windows ZIP passed bundled and extracted executable smoke tests with development Java removed from PATH. UI checks passed for folder connection, real-library scan, search, individual review/save, repeat refresh and project isolation. Saved data verifies two projects, 249 chart records, 117 tunes and the migration backup. Full owner review remains pending.
+- PASS: :app:desktopTest — 42 tests, zero failures/errors/skips (28 existing, 14 new).
+- PASS: :app:createDistributable — Windows executable image and bundled runtime compiled.
+- PASS: :app:run --args=--smoke-test in isolated development storage — persistence, fonts, XML, proof ZIP, catalog, member allocation and destination readback.
+- PASS: development UI inspection via :app:run with isolated synthetic fixtures plus a copy of the real catalog. Verified primary/fallback choices, missing/review omissions, exceptions filter, file issues, destination save and project isolation. Copied Quaternity preview correctly showed 248 file issues and 117 classified tunes; no catalog entries were auto-accepted.
+- PASS: archive extraction and SHA-256 comparison of all 207 files. Expected executable, runtime DLL, app configuration and checklist present.
+- BLOCKED: scripts/build-local.ps1 stopped at the first packaged executable launch. Windows Code Integrity event 3077 named VerifiedAndReputableDesktop (Smart App Control), policy GUID {0283ac0f-fff1-49ae-ada1-8a933130cad6}, rejecting the unsigned 0.3.0 executable. No successful bundled/extracted executable smoke test is claimed.
+- NOT RUN: remote GitHub Actions for these uncommitted changes. Existing workflow still requires tests and executable smoke checks.
+- PENDING: owner Windows package review, production forScore import (3B/3C), Android compilation.
 
-249 chart PDFs were copied from the owner-designated sorted folder to the requested Google Drive library. Every source/destination SHA-256 matched and all originals were retained. A private receipt is stored under %LOCALAPPDATA%\band.logger\transfer-receipts. This verifies local copies, not completion of Google Drive cloud synchronization.
+## Delivery and blocker
 
-## Delivery and limits
+Candidate: dist/band.logger-0.3.0-windows-x64.zip (61,431,650 bytes at creation). Checksum: dist/SHA256-0.3.0.txt. Extract all files; the application entry point is band.logger/band.logger.exe. It includes its runtime and dependencies. The ZIP contains LAUNCH_STATUS.txt and MANUAL_TESTING.md explaining the incomplete launch gate. Existing 0.2.0 delivery remains available.
 
-Windows preview: dist/band.logger-0.2.0-windows-x64.zip. Extract all files and run band.logger.exe. No development tools are needed. Manual review: MANUAL_TESTING.md.
+The owner confirmed they did not knowingly enable restrictions and want the agent to have access. Project authorization does not remove Windows signing enforcement. No policy, registry setting, security exclusion or certificate trust setting was changed. No purchase, signing enrollment or external upload was performed.
 
-Manual refresh only; no live filesystem watcher. PDF header checks do not establish full PDF renderability. Symbolic links are skipped. Network or permission errors abort the scan and preserve the saved catalog. Very large or online-only libraries may take time to hydrate and hash. Catalog metadata corrections do not rename source files. Historical records retain checksums/metadata, not backup copies of overwritten source PDF bytes.
+Microsoft describes trusted code signing as the supported path for the unsigned-app issue:
+https://learn.microsoft.com/en-us/windows/apps/develop/smart-app-control/code-signing-for-smart-app-control
+Smart App Control has no individual-app exception:
+https://support.microsoft.com/en-us/windows/security/threat-malware-protection/smart-app-control-frequently-asked-questions
 
-No production library-master exports, supplements, direct cloud API, Android app, automatic sync status, SVG rendering, signing or installer. APK compilation is not claimed. Public software license remains undecided.
+Resolve an approved signing/distribution approach and repeat the executable launch/package checks before calling 3A delivered and accepted. The unsigned candidate is not guaranteed to launch on this machine.
 
-Do not run the older Chunk 1 binary against schema 2 data; it will reject the newer schema. The preserved Chunk 1 backup supports deliberate rollback. Owner acceptance of Chunk 2 and approval of Chunk 3 are still required.
-## Owner machine setup
+## Data and limitations
 
-Quaternity is connected to the requested Drive library. 249 PDF files were indexed into 117 tune groups. One filename ending in Bb-2.pdf is unrecognized and remains for owner review; no files were renamed. One recognized Bass record was accepted during the UI save test; 247 other recognized new records can be batch accepted after review, and the ambiguous file requires an individual decision.
+The production workspace was byte-identical before and after testing. Tests used .tools/stage3a-ui and .tools/stage3a-development-smoke; these are ignored local test data, not the owner's live workspace. No source PDF was moved, renamed or changed. The earlier copy-only transfer of 249 PDFs into Drive remains unchanged.
 
-During upgrade verification, the old running preview showed two projects while the main saved file contained an earlier single-project snapshot. The newer rolling backup contained both Marcus - Solo and Quaternity. Preserved both files under the local app data recovery directory, restored the newer backup, and verified both projects in Chunk 2. The cause of the prior discrepancy is not established. The subsequent migration backup and saved catalog were verified.
+The last copied real catalog has 249 records, 117 tune groups, one accepted chart and 248 records needing review (including one Bb-2 filename). The owner should inspect/accept recognized new entries in Library before expecting broad allocations. Application approval does not approve catalog entries.
 
-Final checksum recheck confirmed every desktop original and Drive copy still matched the transfer receipt after scanning/UI checks. Google Drive cloud synchronization remains outside the app's verification.
-Final visual restart verification passed. The extracted 0.2.0 preview is open on Library for owner review. Changes remain uncommitted and unpushed.
+Schema 2 receives an optional exportDestination field. Older data loads with no destination; a save from an older application can discard this setting. Prefer the new version once its launch gate is resolved. Retain backups and the accepted 0.2.0 release.
+
+No production master export, manifests, supplements, song-specific assignments, direct cloud uploader, Android app or SVG rendering was added. 3B/3C remain future stages. All changes are left uncommitted for GitHub Desktop.

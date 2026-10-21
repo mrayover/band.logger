@@ -2,7 +2,7 @@
 
 **A project-based workspace for musicians and working bands.**
 
-**Project status:** Chunk 2 Windows preview built and tested; owner review pending
+**Project status:** Chunk 2 accepted; Stage 3A implemented/tested; Windows executable launch blocked by Smart App Control
 **Established:** October 20, 2026  
 **Primary platform:** Windows desktop  
 **Planned companion platform:** Android  
@@ -310,8 +310,8 @@ The staged plan is defined in `BUILD_CHUNKS.md`.
 | Chunk | Scope | Status |
 |---|---|---|
 | 1 | Application, projects, branding, members, `.4ss` technical proof | Owner reviewed; ZIP iPad diagnostics passed |
-| 2 | Drive integration, imports, and tune catalog | Built and tested; owner review pending |
-| 3 | Library master export | Not started |
+| 2 | Drive integration, imports, and tune catalog | Owner approved October 20, 2026 |
+| 3 | Library master export | 3A preview implemented; executable launch/owner review pending. 3B/3C not started |
 | 4 | Supplements, history, and receipts | Not started |
 
 Every chunk must have a successful build, relevant tests, and a documented verification result.
@@ -409,7 +409,7 @@ Obtain `dist/band.logger-0.2.0-windows-x64.zip` from the local build, or the Win
 
 Project creation/editing/switching, editable Quaternity starter members, ordered chart preferences, per-project colors, local persistence, bundled Lato and synthetic `.4ss` export are implemented. SVG rendering is pending; branding is a labeled text placeholder. Chunk 2 adds a per-project source folder, searchable tune catalog, safe PDF imports, refresh, revision history and Needs Review. Google Drive for desktop performs cloud synchronization.
 
-Use `MANUAL_TESTING.md` for review. Local data is under `%LOCALAPPDATA%\band.logger`. See `CURRENT_STATE.md` for limitations and `WORK_LOG.md` for results. Chunk 1 was reviewed and Chunk 2 explicitly authorized. Chunk 2 needs owner review; do not begin Chunk 3 without approval.
+Use `MANUAL_TESTING.md` for review. Local data is under `%LOCALAPPDATA%\band.logger`. See `CURRENT_STATE.md` for limitations and `WORK_LOG.md` for results. Chunks 1 and 2 are owner approved. Chunk 2 was accepted October 20, 2026. Stage 3A preview is implemented; see CURRENT_STATE.md for the Windows launch blocker and CHUNK_3_PLAN.md for remaining stages.
 
 ### Development builds
 
@@ -419,3 +419,11 @@ Run `scripts/build-local.ps1` to use the local toolchain (or download it if abse
 Open Library → Connect folder and choose your locally synchronized chart folder. Scanning does not modify PDFs. Refresh after adding charts outside the app. Review new or ambiguous entries under Needs review. Import PDF copies one chosen PDF into that folder under the filename you confirm and refuses to overwrite an existing file. Metadata corrections do not rename originals. Different projects keep independent catalog records.
 
 The forScore proof now saves a ZIP. Transfer it through Drive, save locally on iPad, extract in Apple Files, then open the .4ss in forScore. Production library masters remain Chunk 3 work.
+
+## Stage 3A — Library master preview
+
+Version 0.3.0 adds Library master → Create Library Master · Preview, member allocations based on ordered preferences, explicit fallbacks and omissions, searchable chart lists, file issues, and a project-specific export destination. It uses accepted charts from the saved catalog. Newer unresolved or missing preferred revisions block a tune instead of silently falling back or using an older revision. Review charts in Library first. No production master files or manifests are generated in 3A.
+
+Candidate package: dist/band.logger-0.3.0-windows-x64.zip, with executable, runtime, dependencies, launch-status note and manual checklist. Extract the entire ZIP and keep band.logger.exe beside app/ and runtime/. Close any older band.logger process before normal use. No development tools are required by this package.
+
+**Launch verification is blocked on the owner machine:** Windows Smart App Control rejected the unsigned 0.3.0 executable. Compilation, 42 tests, development UI checks and ZIP integrity passed; packaged executable launch did not pass. The earlier 0.2.0 ZIP is retained. Stage 3A is not fully accepted until its Windows package can launch and the owner can review it. No security settings were changed. See CURRENT_STATE.md for evidence and supported signing references.

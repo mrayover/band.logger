@@ -22,10 +22,10 @@ try {
     Copy-Item 'THIRD_PARTY_NOTICES.md' $image
     Copy-Item 'app\src\desktopMain\resources\fonts\OFL.txt' (Join-Path $image 'Lato-OFL.txt')
     New-Item -ItemType Directory -Force 'dist' | Out-Null
-    Compress-Archive -Path $image -DestinationPath 'dist\band.logger-0.2.0-windows-x64.zip' -Force
+    Compress-Archive -Path $image -DestinationPath 'dist\band.logger-0.3.0-windows-x64.zip' -Force
     # Test the actual archive in a fresh path containing spaces, with no developer Java on PATH.
     $extracted = Join-Path $root ('app\build\ZIP review ' + [guid]::NewGuid().ToString('N'))
-    Expand-Archive 'dist\band.logger-0.2.0-windows-x64.zip' $extracted
+    Expand-Archive 'dist\band.logger-0.3.0-windows-x64.zip' $extracted
     $previousJava = $env:JAVA_HOME
     $previousPath = $env:PATH
     $previousOptions = $env:JAVA_TOOL_OPTIONS
@@ -41,6 +41,6 @@ try {
         $env:PATH = $previousPath
         $env:JAVA_TOOL_OPTIONS = $previousOptions
     }
-    Get-FileHash 'dist\band.logger-0.2.0-windows-x64.zip' -Algorithm SHA256 |
+    Get-FileHash 'dist\band.logger-0.3.0-windows-x64.zip' -Algorithm SHA256 |
         Format-List | Out-File 'dist\SHA256.txt'
 } finally { Pop-Location }

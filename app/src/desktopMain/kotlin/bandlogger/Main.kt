@@ -51,7 +51,13 @@ fun main(args: Array<String>) {
         check(catalog.active().size == 1 && catalog.status(catalog.active().single()) == "Ready")
         store.save(initial.copy(projects = initial.projects.map { it.copy(catalog = catalog) }))
         check(store.load().projects.single().catalog == catalog)
-        Files.writeString(dir.resolve("smoke-passed.txt"), "Storage, fonts, XML, ZIP and chart scan passed.")
+        val previewProject = store.load().projects.single().copy(exportDestination = dir.toString())
+        store.save(initial.copy(projects = listOf(previewProject)))
+        val master = MasterPlanner.preview(store.load().projects.single())
+        check(master.members.size == 4 && master.members.all { it.selectedCount == 1 })
+        check(master.members.all { it.fallbackCount == 1 })
+        check(store.load().projects.single().exportDestination == dir.toString())
+        Files.writeString(dir.resolve("smoke-passed.txt"), "Storage, fonts, XML, ZIP, chart scan and member preview passed.")
         exitProcess(0)
     }
     // Keep two windows/processes from overwriting the same metadata snapshot.
@@ -124,11 +130,11 @@ fun main(args: Array<String>) {
                         TextButton(enabled = !busy, onClick = { projectEditor = quaternity(newId(), ::newId) }) { Text("Start with Quaternity") }
                     }
                     Spacer(Modifier.height(20.dp))
-                    if (project != null) listOf("Home", "Library", "Members", "Theme", "Technical proof").forEach { item ->
+                    if (project != null) listOf("Home", "Library", "Library master", "Members", "Theme", "Technical proof").forEach { item ->
                         TextButton(enabled = !busy, onClick = { page = item }) { Text(if (page == item) "• $item" else item) }
                     }
                     Spacer(Modifier.height(24.dp))
-                    Text("CHUNK 2 · PREVIEW", style = MaterialTheme.typography.labelSmall)
+                    Text("STAGE 3A · PREVIEW", style = MaterialTheme.typography.labelSmall)
                     Text("Saved locally. No account needed.", style = MaterialTheme.typography.bodySmall)
                 }
                 Column(Modifier.weight(1f).padding(36.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(20.dp)) {
@@ -148,9 +154,10 @@ fun main(args: Array<String>) {
                                     Button(onClick = { projectEditor = project }) { Text("Edit project") }
                                 } }
                                 Text("Next chapters", style = MaterialTheme.typography.titleLarge)
-                                Text("Connect your chart folder under Library to browse tunes, review files and import PDFs. Library masters and supplements are planned for later chunks.")
+                                Text("Connect your chart folder under Library to browse tunes, review files and import PDFs. Preview member allocations under Library master. Package generation is the next stage.")
                             }
                             "Library" -> key(project.id) { LibraryScreen(project, busy, { busy = it }) { updated -> persist(workspace.saveProject(updated)) } }
+                            "Library master" -> key(project.id) { MasterScreen(project, busy, { busy = it }) { updated -> persist(workspace.saveProject(updated)) } }
                             "Members" -> {
                                 Text("Roles describe what each person plays. Chart preferences are ordered, with the preferred part first.")
                                 Button(onClick = { memberEditor = Member(newId(), "", emptyList(), emptyList()) }) { Text("Add member") }

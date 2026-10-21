@@ -672,3 +672,11 @@ The actual local repository is `C:\Users\mrove\Projects\band.logger\band.logger`
 The owner reviewed Chunk 1, verified both forScore diagnostics via ZIP/local extraction and authorized Chunk 2. Default forScore transfer packaging is now ZIP with the original .4ss inside. Include this convenience fix in Chunk 2. Do not start Chunk 3 without the next owner approval.
 
 For Chunk 2 use the existing Google Drive for desktop folder integration, not OAuth or a custom uploader. The owner requested copying charts into their chosen Drive library and explicitly clarified COPY ONLY: retain all originals in sorted. Keep private files outside Git. Every chunk still requires a self-contained Windows application and owner review.
+
+## October 20, 2026 — Chunk 2 accepted; Chunk 3 planning
+
+The owner explicitly approved Chunk 2 and requested updated progress documentation plus a plan and estimate before the next implementation phase. This supersedes earlier statements that Chunk 2 owner review is pending. Chunk 3 has not started. CHUNK_3_PLAN.md divides its existing scope into selection/preview, generation/manifests, and verification/handoff, estimated at 2 hours 15 minutes to 3 hours 45 minutes plus owner iPad review. Each stage provides a runnable Windows preview and a documented handoff; the full Chunk 3 acceptance criteria above remain in force. Account quota cannot be translated into a guaranteed number of development hours. No Chunk 4 work is authorized.
+
+## October 20, 2026 — Stage 3A implementation checkpoint
+
+Owner authorized 3A only. Member selection/preview, exceptions, file issues and saved export destination are implemented in 0.3.0. All 42 tests and compilation passed. The candidate Windows ZIP passed 207-file integrity verification. Windows Smart App Control blocked the unsigned executable during the package launch check; development UI verification does not replace this gate. Stage 3A is not fully accepted. Resolve trusted signing/distribution and rerun the packaged checks before acceptance. Production ZIP exports/manifests (3B), final production/device validation (3C), and Chunk 4 remain unimplemented.

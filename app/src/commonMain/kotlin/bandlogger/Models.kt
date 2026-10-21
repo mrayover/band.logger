@@ -14,7 +14,8 @@ import kotlinx.serialization.json.Json
 @Serializable data class Member(val id: String, val name: String, val roles: List<String>, val preferences: List<String>)
 @Serializable data class Project(
     val id: String, val name: String, val prefix: String = "", val theme: Theme = Theme(),
-    val logoReference: String? = null, val members: List<Member> = emptyList(), val catalog: Catalog = Catalog()
+    val logoReference: String? = null, val members: List<Member> = emptyList(), val catalog: Catalog = Catalog(),
+    val exportDestination: String? = null
 )
 @Serializable data class Workspace(val schemaVersion: Int = 2, val projects: List<Project> = emptyList(), val selectedId: String? = null) {
     fun validate() {

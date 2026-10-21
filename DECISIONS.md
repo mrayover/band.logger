@@ -14,7 +14,7 @@
 - Generate .4ss directly from the official XML format using synthetic PDFs only. Device verification is pending.
 - No commits, pushes, releases or uploads are performed on the owner's behalf.
 
-Pending: owner review of Chunk 1; real iPad proof import; final SVG use and public repository status; final icon; application license; signing and permanent GitHub Release distribution.
+Current pending decisions: final SVG use and public repository status; final icon; application license; signing and permanent GitHub Release distribution. Chunk 1 synthetic iPad diagnostics passed and Chunks 1 and 2 are owner approved; production master import remains a Chunk 3 verification gate.
 ## Verified iPad import — October 20, 2026
 
 Owner confirmed that BOTH diagnostic files imported successfully after transfer as a ZIP through Google Drive, saving locally on the iPad, extracting in Apple Files, and opening the extracted .4ss in forScore. Test A verified setlist/placeholder creation. Test B verified a setlist with an embedded synthetic PDF. The synthetic open-format import gate has passed for these diagnostic fixtures on the owner's iPad. Production chart export and the original two-entry special-character proof are not independently established by these results.
@@ -35,3 +35,20 @@ This supersedes earlier notes that diagnostic iPad import was unresolved. No app
 - Schema 2 adds per-project catalog data, migrating schema 1 and preserving an immutable pre-migration backup.
 - ZIP wrapper is now the default for the synthetic forScore proof. No library master/supplement implementation yet.
 - Keep the previous Windows ZIP for rollback. Remove only clearly generated temporary build copies when safe; retain development tools and private chart originals.
+
+## Chunk 2 acceptance and usage-conscious planning — October 20, 2026
+
+- Owner accepted Chunk 2 and requested a plan before implementation of the next phase. Current approval supersedes earlier pending Chunk 2 review notes.
+- Plan Chunk 3 in three bounded stages with tested Windows previews and concise handoffs. This does not lower full Chunk 3 acceptance requirements or authorize Chunk 4.
+- Reuse member preference order, the existing forScore generator, per-project catalog and verified ZIP transfer route. Make fallbacks and missing/ambiguous charts visible before generation.
+- Preserve chart-review decisions: owner acceptance of the application does not automatically accept all indexed chart records for production export.
+- Active-work estimates do not predict Codex quota consumption. Reassess after each stage rather than promise the whole chunk fits in a remaining allowance.
+
+## Stage 3A — October 20, 2026
+
+- Owner authorized 3A only. Implement member allocation preview and destination persistence; no production generation or master records.
+- Use one chart per tune/member, ordered preferred parts, then independent highest revision for that part. Block unresolved latest preferred charts instead of silently using older data or a fallback. Explicit exclusions can be skipped; their records remain visible.
+- Normalize supported preference labels case-insensitively. Any unsupported label blocks allocation with a visible explanation, preserving the owner's intended order.
+- Add optional destination metadata within schema 2. Older saved data remains readable; warn that older application saves can discard the new field.
+- Version 0.3.0 is a Stage 3A preview candidate, not full Chunk 3. The accepted 0.2.0 ZIP is retained.
+- Local Windows Smart App Control blocked the unsigned candidate. No Windows security changes or per-app workarounds were made. Trusted signing is now an unresolved delivery dependency. Do not call 3A fully accepted until executable launch and owner review pass.
