@@ -28,3 +28,17 @@ The preview uses the saved scan. Generation rechecks selected source paths and c
 Schema 3 adds durable master records. Before the first save from schema 2, workspace.pre-masters.backup.json is retained in %LOCALAPPDATA%\band.logger. Older app versions reject schema 3; keep backups for deliberate rollback. Do not edit or delete backups.
 
 Limits: 64 MiB per PDF, 512 MiB of selected PDF data per member. No supplement generator, full history browser, setlist planner, Android app or direct cloud uploader is included. Drive performs synchronization; band.logger does not confirm recipients imported a package.
+## October 21, 2026 — Homepage / 0.3.3 checklist
+
+This is the current checklist; the Stage 3B instructions above are retained as history. Extract the entire band.logger-0.3.3-windows-x64.zip and launch band.logger/band.logger.exe beside app/ and runtime/. Close older app windows first. Java and development tools are not required.
+
+- [ ] Home shows Create Rehearsal / Create Gig above Upcoming Events / Pending Distribution, with equal cards, Lato, primary accents above and secondary accents below.
+- [ ] Click each of the first three cards: an explicit Coming soon dialog appears; dismiss it and confirm no event was created.
+- [ ] Pending Distribution opens its dedicated explanation, with no invented counts or records. Open Library master and return using Home. Check the sidebar destination too.
+- [ ] Tab through cards, check the visible focus border, and activate with Enter/Space. Check mouse hover borders.
+- [ ] Resize wide and narrow: two columns become one below 500 dp of content width, all cards remain accessible by scrolling.
+- [ ] Switch projects: names, configured colors and the existing accent-filled active-project highlight follow the selection. Edit project remains accessible.
+- [ ] Check Members, Theme, Library browsing/search/review and Library master; restart and check project selection/data persist.
+- [ ] When testing imports/exports, use a temporary synthetic library; verify ZIP/.4ss, manifest and recovery through the existing checklist above. Original charts must remain unchanged.
+
+Owner report received October 21: the actual Library Master imported successfully into forScore on the owner's iPad and the tunes were present. This supersedes the earlier pending-import statements; no additional iPad tests or annotation behavior are claimed.

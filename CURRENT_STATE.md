@@ -1,3 +1,32 @@
+# Current state — Homepage increment, October 21, 2026
+
+Version 0.3.3 is the current tested Windows delivery. Earlier Stage 3B status is retained below as historical context; this section supersedes its pending production-iPad-import and delivery-version statements.
+
+- Home: four equal clickable cards, two columns on desktop / one below 500 dp content width, bundled Lato, primary accents for rehearsal/gig and secondary accents for events/distribution, visible hover/focus states.
+- Create Rehearsal, Create Gig and Upcoming Events: explicit Coming soon dialogs only. No event records/editors.
+- Pending Distribution: working dedicated navigation destination with an accurate explanation that queue tracking/supplements are not implemented; links to Library master and Home, and a sidebar entry. No fabricated records/counts.
+- Project header, editing, sidebar and the owner's existing accent-filled selected-project highlight (commit 40bbc29) retained. Existing members, themes, library imports/scanning/review, masters, .4ss/ZIP exports, manifests and recovery code retained. No schema or dependency change.
+- Owner-reported verification: the actual Library Master successfully imported into forScore on their iPad and the tunes were present. No additional device testing, annotation transfer or remaining Stage 3C acceptance is inferred.
+
+## Current delivery and verification
+
+- ZIP: dist/band.logger-0.3.3-windows-x64.zip (61,516,722 bytes).
+- EXE: dist/band.logger-0.3.3-windows-x64/band.logger/band.logger.exe.
+- SHA-256: 3878A41632466D7002088011D26E39659306D11C61A5204B1478A393FFB611F8; also dist/SHA256-0.3.3.txt.
+- PASS: compilation and all 51 existing automated tests (zero failures/errors/skips).
+- PASS: standard Windows packaging, bundled smoke test, extracted smoke test in a path containing spaces with JAVA_HOME empty/system-only PATH; storage/fonts/XML/ZIP/scan/preview/master generation/recovery.
+- PASS: delivered ZIP versus extracted files SHA-256 equality (209 archive entries).
+- PASS: packaged UI four-card layout, three Coming soon dialogs, dismissal, keyboard Tab/Enter and focus border, Pending Distribution card and Library master link, project switching/highlight, narrow single-column layout and scrolling. Tested using an isolated workspace copy; the live workspace remained byte-identical. Selection change persisted in the test copy.
+- Not rerun manually this session: complete import/review/export/recovery UI flows, arbitrary custom palettes, full restart UI inspection or iPad tests. Existing automated regressions cover the data/export operations.
+
+Extract the whole ZIP and keep app/ and runtime/ beside the executable. Close older app windows first. No installed Java/Gradle is needed. Unsigned Windows x64 preview; GitHub Actions is preserved but no remote build, commit or push was performed.
+
+Archive note: an existing locally labeled 0.3.2 ZIP was inadvertently replaced during the first packaging pass. Its intact extracted contents were recompressed into that ZIP; original archive bytes are not retained. Its runnable extracted app and earlier 0.3.1/0.3.0/0.2.0/0.1.0 archives remain. The new package uses 0.3.3 and packaging now refuses existing version ZIPs. See WORK_LOG.md.
+
+Next: owner review of 0.3.3 with MANUAL_TESTING.md, then finish any outstanding Stage 3C checks before separately authorizing supplements. Event database/editors, setlists, supplements and PDF cover pages remain deferred.
+
+---
+
 # Current state — Stage 3B, October 20, 2026
 
 Stage 3B is implemented and packaged as 0.3.1. Owner review and actual production forScore import remain pending. Chunks 1 and 2 are accepted. The owner authorized 3B, reported disabling Smart App Control themselves, and requested delivery before usage exhaustion. No Windows security settings were changed by the agent. The prior executable launch blocker is resolved: packaged and extracted launch checks passed.

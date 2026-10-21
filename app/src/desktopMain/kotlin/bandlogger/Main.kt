@@ -152,11 +152,11 @@ fun main(args: Array<String>) {
                         TextButton(enabled = !busy, onClick = { projectEditor = quaternity(newId(), ::newId) }) { Text("Start with Quaternity") }
                     }
                     Spacer(Modifier.height(20.dp))
-                    if (project != null) listOf("Home", "Library", "Library master", "Members", "Theme", "Technical proof").forEach { item ->
+                    if (project != null) listOf("Home", "Library", "Library master", "Pending Distribution", "Members", "Theme", "Technical proof").forEach { item ->
                         TextButton(enabled = !busy, onClick = { page = item }) { Text(if (page == item) "• $item" else item) }
                     }
                     Spacer(Modifier.height(24.dp))
-                    Text("STAGE 3B · PREVIEW", style = MaterialTheme.typography.labelSmall)
+                    Text("0.3.3 · PREVIEW", style = MaterialTheme.typography.labelSmall)
                     Text("Saved locally. No account needed.", style = MaterialTheme.typography.bodySmall)
                 }
                 Column(Modifier.weight(1f).padding(36.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(20.dp)) {
@@ -168,16 +168,8 @@ fun main(args: Array<String>) {
                         Text(project.name, style = MaterialTheme.typography.displaySmall)
                         Text("$page  /  Project workspace", color = hex(theme.secondary))
                         when (page) {
-                            "Home" -> {
-                                Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                                    Text("A place for your ensemble", style = MaterialTheme.typography.headlineSmall)
-                                    Text("${project.members.size} members · Filename prefix: ${project.prefix.ifBlank { "None" }}")
-                                    Text("Brand placeholder · ${project.name}", color = hex(theme.secondary))
-                                    Button(onClick = { projectEditor = project }) { Text("Edit project") }
-                                } }
-                                Text("Next chapters", style = MaterialTheme.typography.titleLarge)
-                                Text("Connect your chart folder under Library to browse tunes, review files and import PDFs. Preview member allocations under Library master. Generate confirmed member ZIPs under Library master.")
-                            }
+                            "Home" -> key(project.id) { HomeScreen(project, { projectEditor = project }, { page = "Pending Distribution" }) }
+                            "Pending Distribution" -> PendingDistributionScreen({ page = "Library master" }, { page = "Home" })
                             "Library" -> key(project.id) { LibraryScreen(project, busy, { busy = it }) { updated -> persist(workspace.saveProject(updated)) } }
                             "Library master" -> key(project.id) { MasterScreen(project, busy, { busy = it }) { updated -> persist(workspace.saveProject(updated)) } }
                             "Members" -> {

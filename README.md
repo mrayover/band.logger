@@ -2,7 +2,7 @@
 
 **A project-based workspace for musicians and working bands.**
 
-**Project status:** Stage 3B Windows app delivered (0.3.1); owner/iPad review pending
+**Project status:** Homepage update delivered (0.3.3); owner reports successful actual Library Master iPad import. See the October 21 update below.
 **Established:** October 20, 2026  
 **Primary platform:** Windows desktop  
 **Planned companion platform:** Android  
@@ -428,10 +428,20 @@ Candidate package: dist/band.logger-0.3.0-windows-x64.zip, with executable, runt
 
 **Launch verification is blocked on the owner machine:** Windows Smart App Control rejected the unsigned 0.3.0 executable. Compilation, 42 tests, development UI checks and ZIP integrity passed; packaged executable launch did not pass. The earlier 0.2.0 ZIP is retained. Stage 3A is not fully accepted until its Windows package can launch and the owner can review it. No security settings were changed. See CURRENT_STATE.md for evidence and supported signing references.
 
-## Current Windows delivery — Stage 3B / 0.3.1
+## Historical Windows delivery — Stage 3B / 0.3.1
 
 The prior Windows signing block is resolved after the owner disabled Smart App Control. Both packaged and extracted launch tests now pass. Download the local dist/band.logger-0.3.1-windows-x64.zip, extract all files, close older band.logger windows and run band.logger/band.logger.exe. The runtime is included.
 
 Library master now previews and generates confirmed member ZIPs with .4ss files, instructions and a saved manifest. Review/accept charts in Library, choose an export destination, inspect all members and confirm. Members with zero selected charts are explicitly skipped. Source PDFs and previous exports remain unchanged. A completed export can be recovered if its app-record save fails.
 
 51 tests passed, including prior features, XML/PDF correctness, source-change rejection, collision/partial-failure handling, recovery and schema migration. A real-chart ZIP passed byte verification and persisted after app restart. Actual iPad import remains pending; see MANUAL_TESTING.md and CURRENT_STATE.md. Schema 3 preserves a pre-master backup; older applications reject it. This supersedes the earlier blocked/preview-only notes.
+
+## October 21, 2026 — Homepage increment (0.3.3)
+
+Current behavior supersedes the earlier homepage and pending-iPad notes above. Home now has four large equal cards, arranged in two columns at desktop widths and one column when content width is below 500 dp. Bundled Lato, project primary/secondary accents, hover/focus borders, the project header, project editing and the existing accent-filled selected-project button are retained.
+
+Create Rehearsal, Create Gig and Upcoming Events each show a Coming soon dialog. Pending Distribution opens a dedicated sidebar destination explaining that queue tracking and supplements are not implemented, with links to the working Library master screen and Home. There are no fabricated distribution counts. Existing library, member, theme, master export, manifest and recovery functionality remains in place; no schema, source-PDF or dependency change.
+
+The owner confirmed that the actual Library Master successfully imported into forScore on their iPad and the tunes were present. This is owner-reported production import verification, not an agent-performed device test or proof of annotation transfer. The remaining Stage 3C checklist is not automatically marked complete.
+
+Current delivery: dist/band.logger-0.3.3-windows-x64.zip; extract all contents and run band.logger/band.logger.exe. See CURRENT_STATE.md and WORK_LOG.md for final verification. Earlier version-specific sections are historical.

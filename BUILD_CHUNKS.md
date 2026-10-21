@@ -684,3 +684,9 @@ Owner authorized 3A only. Member selection/preview, exceptions, file issues and 
 ## October 20, 2026 — Stage 3B Windows delivery
 
 Owner authorized 3B and reported disabling Smart App Control. The prior executable blocker is resolved. Version 0.3.1 implements confirmed member ZIP generation, manifests, source validation and recovery. All 51 tests, packaged/extracted executable smoke tests and a real-chart packaged UI export/restart check passed. Owner Windows review and actual production forScore import remain pending. Full Chunk 3 acceptance and later chunks are not implied. Preserve the user's requested usage reserve; finalization began at 9% remaining.
+
+## October 21, 2026 — Incremental homepage improvement / 0.3.3
+
+Owner authorized a homepage redesign and Windows delivery, without expanding the established roadmap. Four equal themed cards replace Next chapters; three future event actions show Coming soon, and Pending Distribution has a dedicated explanatory destination linking to Library master. No event storage, editor, supplement generation or cover-page work was started. Existing selected-project accent highlight (baseline commit 40bbc29, New Color On Projects) is preserved and now documented.
+
+Owner reports the actual Library Master imported into forScore on iPad and tunes were present, superseding the earlier pending production-import report. This does not imply additional device checks or blanket acceptance of remaining checklist items. Roadmap numbering and historical entries are unchanged. Version 0.3.3 avoids an existing local 0.3.2 archive; see WORK_LOG.md for packaging results and archive collision recovery.

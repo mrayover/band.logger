@@ -113,3 +113,52 @@ This supersedes earlier notes that diagnostic iPad import was unresolved. No app
 - Artifact: dist/band.logger-0.3.1-windows-x64.zip, 61,492,901 bytes. SHA-256 4364A206A5F6DEB04537753C5C1AEE5A5363479D41CDA8A264AE6247A002278C. Extracted executable also retained in dist/band.logger-0.3.1-windows-x64/band.logger. Older releases preserved.
 - Usage checkpoints showed 69%, 50%, 42%, then 9% remaining. Stopped feature work at 9% with the tested executable already produced; completed documentation and handoff. No additional scope begun.
 - Owner production iPad import remains pending. Remote GitHub Actions not run for these uncommitted changes. Documentation and diff checks completed; no commit or push.
+
+## October 21, 2026 — Homepage redesign and Windows 0.3.3 delivery
+
+### Baseline and scope
+
+Reviewed README.md, BUILD_CHUNKS.md, CURRENT_STATE.md, WORK_LOG.md, ARCHITECTURE.md, DECISIONS.md, MANUAL_TESTING.md, desktop navigation/theme implementation, build scripts and Windows workflow before implementation. Existing checkout was clean at 40bbc29 (New Color On Projects). Initial sandboxed git reads failed because the checkout is outside the chat workspace; authorized escalated repository access succeeded. No AGENTS.md was found at the checked repository/parent paths. No repository recreation or restructure.
+
+The owner's pre-existing active-project button uses that project's primary accent as its filled selection color. Preserved unchanged and documented here. Owner also reports the actual Library Master successfully imported into forScore on iPad and the tunes were present. This supersedes earlier pending production-import notes; no additional device tests or annotation claims.
+
+### Exact files changed
+
+- Added app/src/desktopMain/kotlin/bandlogger/HomeScreen.kt: four themed equal-size cards, responsive single-column fallback, clock/microphone/calendar/cube vectors, hover/focus borders, Coming soon dialogs and Pending Distribution explanation.
+- app/src/desktopMain/kotlin/bandlogger/Main.kt: route Home to the new component, add Pending Distribution sidebar/destination, show 0.3.3 preview label. Retain project header, sidebar, selected-project highlight and Edit project action.
+- app/build.gradle.kts: package version 0.3.3.
+- scripts/package-windows.ps1: version 0.3.3 ZIP/checksum paths and early refusal to overwrite an existing version ZIP.
+- README.md: update status and append homepage/navigation/current-delivery description; label prior delivery historical.
+- CURRENT_STATE.md: prepend current verified state, package paths, owner report and remaining limitations; retain prior state below.
+- BUILD_CHUNKS.md: append incremental improvement without roadmap renumbering.
+- ARCHITECTURE.md and DECISIONS.md: append UI/routing/no-schema decisions and version choice.
+- MANUAL_TESTING.md: append current homepage/keyboard/resize/navigation/regression checklist; included in final ZIP.
+- WORK_LOG.md: this appended entry.
+
+### Implementation choices and exclusions
+
+184 dp equal card heights, 16 dp gaps, 18 dp corners, centered icons/text. Two columns at content widths of at least 500 dp, otherwise one; existing scrolling retained. Existing bundled Lato and each project's primary/secondary colors are reused. Written icon requirements control where the screenshot differs. Project metadata/Edit project stays available below cards. Coming soon state is local to the selected project and creates no records. Pending Distribution explains the absence of queue tracking/supplements and opens the existing Library master; no fake counts or records.
+
+No model/schema, chart handling, storage, member preferences, export/manifest/recovery or dependency changes. No event database, supplement generator, setlist editor or PDF cover-page work. No original chart files modified or relocated. No GitHub workflow edits, commits, pushes or publication.
+
+### Tests and delivery results
+
+- scripts/build-local.ps1 first pass: Kotlin compilation and :app:desktopTest / :app:createDistributable succeeded (51 tests). Interrupted packaging on discovering an existing local 0.3.2 archive; see collision note below.
+- scripts/build-local.ps1 final 0.3.3 run: PASS, build successful in 29 seconds. All 51 tests: CatalogTest 11, DesktopTest 5, DomainTest 4, LocalChartsTest 8, MasterDestinationTest 2, MasterExporterTest 9, MasterPreviewTest 12; zero failures/errors/skips. No new implementation-mirroring tests added for this presentation-only change.
+- Existing packaged and extracted --smoke-test processes: PASS, exit 0 and completion markers. Checks include persistence, bundled fonts, XML/ZIP, synthetic chart scan, preview, master generation/manifests and recovery. Extraction check uses a path containing spaces with JAVA_HOME empty and PATH limited to Windows directories.
+- Expanded final ZIP into dist/band.logger-0.3.3-windows-x64. Verified SHA-256 equality of every extracted file against archive streams (209 archive entries). ZIP is 61,516,722 bytes; SHA-256 3878A41632466D7002088011D26E39659306D11C61A5204B1478A393FFB611F8, recorded in dist/SHA256-0.3.3.txt.
+- Used Computer Use skill on the extracted executable and an isolated workspace copy under ignored .tools/homepage-ui-20261021. PASS: wide layout, all three future-action dialogs, Escape/button dismissal, Tab focus and Enter activation, Pending Distribution explanation and link to Library master, project switching and retained highlight, single-column layout at approximately 750 px window width and scrolling to lower cards. The first capture returned the occluding chat surface; activating the specifically selected app corrected capture. No input was sent to the chat surface.
+- Test selection persisted to disk. Actual live workspace SHA-256 remained identical before/after verification; original app window remained open and untouched. Closed the isolated test process at completion.
+- git diff --check: PASS (only line-ending normalization warnings). GitHub Actions not run remotely. No iPad test performed by agent. Full manual import/export/recovery, arbitrary custom palette checks and restart UI inspection were not repeated this session; automated regressions passed.
+
+### Packaging collision and preservation
+
+Source package version was 0.3.1, but ignored dist already contained a locally labeled 0.3.2 ZIP and its extraction (holding a nested 0.3.1 app/archive). The first packaging pass used 0.3.2 and replaced that ZIP before interruption. Preserved the intermediate new archive as dist/homepage-intermediate-20261021.zip and reconstructed the prior 0.3.2 ZIP from its intact extracted contents. Original ZIP bytes/checksum are not preserved; do not claim byte-identical restoration. The original extracted app remained intact and running; all earlier version archives remain. Chose 0.3.3 for the final delivery and added an early archive-exists guard. Future builds must choose a new version instead of silently replacing a completed ZIP.
+
+### Handoff and remaining work
+
+Current executable: C:\Users\mrove\Projects\band.logger\band.logger\dist\band.logger-0.3.3-windows-x64\band.logger\band.logger.exe.
+Current ZIP: C:\Users\mrove\Projects\band.logger\band.logger\dist\band.logger-0.3.3-windows-x64.zip.
+Extract the whole archive, keep app/ and runtime/ alongside the EXE, close old app windows and launch. No Java/Gradle installation required. Unsigned Windows x64 preview. Owner should follow the appended MANUAL_TESTING checklist. Production forScore import is owner-confirmed as above, but additional Stage 3C checks are not implied.
+
+Usage monitored at start (99% remaining), build (90%) and UI verification (69%). Feature scope stayed limited; no threshold-driven truncation was necessary. Next task: owner homepage review and any remaining Stage 3C verification, then separately plan/authorize pending-distribution/supplement work. Existing development history is retained.

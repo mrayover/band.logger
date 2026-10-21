@@ -61,3 +61,12 @@ This supersedes earlier notes that diagnostic iPad import was unresolved. No app
 - Schema 3 protects saved masters from older application writers and preserves a pre-migration backup.
 - Recover completed output after metadata-save failure instead of regenerating it. Recovery is checksum-checked and idempotent.
 - 0.3.1 is the usable Windows Stage 3B delivery. Production iPad compatibility remains owner-verification work. Stop new work before the user's usage reserve is exhausted; finalization began at 9% remaining.
+
+## October 21, 2026 — Homepage scope and owner verification
+
+- Preserve the owner's existing accent-filled selected-project button (40bbc29); log it without reimplementing it.
+- Use equal 184 dp cards, 16 dp gaps, centered vector icons and bundled Lato; collapse to one column below 500 dp content width. Clock for rehearsal and calendar for upcoming events follow the written request where the reference image differs.
+- Future event cards show explicit Coming soon dialogs. Pending Distribution is an honest explanatory navigation destination, not an empty queue suggesting tracking exists. Link to the already functional Library master.
+- No new data schema, dependencies, event/setlist editors, supplements or cover pages.
+- Owner reports successful actual Library Master import and tunes present in forScore on iPad. Do not infer additional tests or annotation preservation.
+- Deliver as 0.3.3 because a local 0.3.2 archive already existed despite source version 0.3.1. Guard against overwriting existing version ZIPs; retain versioned checksums. No commit or push.
