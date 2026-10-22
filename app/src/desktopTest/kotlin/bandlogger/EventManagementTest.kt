@@ -119,9 +119,9 @@ class EventManagementTest {
     }
     @Test fun schemaSevenMigrationPreservesOriginalAndHistoryAcrossRepeatedSaves() {
         val f = fixture(); f.publish()
-        val text = WorkspaceCodec.encode(Workspace().saveProject(f.project)).replace("\"schemaVersion\": 8", "\"schemaVersion\": 7")
+        val text = WorkspaceCodec.encode(Workspace().saveProject(f.project)).replace("\"schemaVersion\": 9", "\"schemaVersion\": 7")
         val path = f.root.resolve("legacy.json"); Files.writeString(path, text)
-        val store = FileWorkspaceStore(path); assertEquals(8, store.load().schemaVersion); store.save(store.load()); store.save(store.load())
+        val store = FileWorkspaceStore(path); assertEquals(9, store.load().schemaVersion); store.save(store.load()); store.save(store.load())
         assertEquals(text, Files.readString(f.root.resolve("workspace.pre-event-exports.backup.json")))
         assertEquals(f.project.eventExports, store.load().projects.single().eventExports)
     }

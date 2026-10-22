@@ -27,8 +27,17 @@ fun EventExportDialog(project: Project, eventId: String, setBusy: (Boolean) -> U
                 if (plan == null) Text(planned.exceptionOrNull()?.message ?: "Could not preview this event.", color = MaterialTheme.colorScheme.error)
                 else {
                     Text(plan.event.title, style = MaterialTheme.typography.titleLarge)
-                    Text("Reference-only setlists. No PDFs are included or read. Each musician must already have the recorded filenames installed in forScore. Recorded master and supplement exports do not prove installation.")
+                    Text("Music charts reference the exact recorded filenames already installed in forScore. Music-chart PDFs are never included or read. Recorded exports do not prove installation.")
                     if (result == null) {
+                        Row {
+                            Checkbox(project.includeBrandedSetCovers, { checked ->
+                                runCatching { saveProject(project.copy(includeBrandedSetCovers = checked)) }
+                                    .onFailure { error = "Could not remember cover preference: ${it.message}" }
+                            }, enabled = !generating)
+                            Text("Include branded set covers")
+                        }
+                        Text(if (project.includeBrandedSetCovers) "One generated cover replaces each set heading, inside the same .4ss. Re-imports may create duplicate cover PDFs in forScore; verify on iPad. Cover filenames remain readable and stable."
+                            else "Plain Set 1, Set 2 headings. Covers are optional until you verify their iPad import.", style = MaterialTheme.typography.bodySmall)
                         OutlinedTextField(destination, { destination = it; error = null }, enabled = !generating, label = { Text("Project export root") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                         TextButton(enabled = !generating, onClick = { chooseChartFolder("Choose Project export root")?.let { destination = it } }) { Text("Browse folders") }
                         TextButton(enabled = !generating && destination.isNotBlank(), onClick = {

@@ -14,6 +14,7 @@ kotlin {
             dependencies {
                 implementation(compose.desktop.currentOs)
                 implementation(compose.material3)
+                implementation("org.apache.pdfbox:pdfbox:3.0.8")
             }
         }
         val desktopTest by getting { dependencies { implementation(kotlin("test-junit")) } }
@@ -24,7 +25,7 @@ compose.desktop {
         mainClass = "bandlogger.MainKt"
         nativeDistributions {
             packageName = "band.logger"
-            packageVersion = "0.8.0"
+            packageVersion = "0.9.0"
             description = "A workspace for musicians and working bands"
             vendor = "band.logger"
             modules("java.sql", "java.xml", "jdk.unsupported")

@@ -71,6 +71,7 @@ fun main(args: Array<String>) {
         }
         check(lifecycleStore.load().projects.single().eventExports.all { it.state == EventExportState.DELETED })
         Files.writeString(dir.resolve("management-restart-passed.txt"), "A separate executable process reopened tracked packages and retained the link through a title edit.")
+        CoverSmoke.restart(dir)
         Files.writeString(dir.resolve("event-restart-passed.txt"), "New process reopened multiple sets and repeated tunes, edited order, and preserved identities, masters and project isolation.")
         exitProcess(0)
     }
@@ -114,7 +115,7 @@ fun main(args: Array<String>) {
         val eventPath = dir.resolve("event-smoke.json")
         val eventStore = FileWorkspaceStore(eventPath)
         val oldWorkspace = Workspace().saveProject(baselineProject).saveProject(Project("event-other", "Other band")).select(baselineProject.id)
-        val legacyText = WorkspaceCodec.encode(oldWorkspace).replace("\"schemaVersion\": 8", "\"schemaVersion\": 3")
+        val legacyText = WorkspaceCodec.encode(oldWorkspace).replace("\"schemaVersion\": 9", "\"schemaVersion\": 3")
         Files.writeString(eventPath, legacyText)
         var eventWorkspace = eventStore.load()
         EventType.entries.forEach { type ->
@@ -271,6 +272,7 @@ fun main(args: Array<String>) {
         EventExports.publish(managed, EventExportPlanner.preview(managed, managedEvent.id), managedRoot, true, true, EventConflict.NEW, ::saveManaged)
         Files.writeString(dir.resolve("event-management-passed.txt"), "Durable tracking, explicit revision, title/date edit, verified deletion and new restart fixture passed.")
         Files.writeString(dir.resolve("file-organization-passed.txt"), "Readable supplement folders/ZIPs, separate persisted Events root and both saved-type routes passed.")
+        CoverSmoke.run(cumulativeProject,dir)
         Files.writeString(dir.resolve("smoke-passed.txt"), "Storage, fonts, XML, ZIP, scan, master generation/recovery, pending, events and reference-only member exports passed.")
         exitProcess(0)
     }
@@ -381,6 +383,7 @@ fun main(args: Array<String>) {
                                 ButtonDefaults.outlinedButtonColors()
                             }
                         ) {
+                            if (Branding.hasLogo(p)) { QuaternityMark(Modifier.size(20.dp)); Spacer(Modifier.width(8.dp)) }
                             Text((if (selected) "• " else "") + p.name)
                         }
                     }
@@ -394,7 +397,7 @@ fun main(args: Array<String>) {
                         TextButton(enabled = !busy, onClick = { leave { page = item } }) { Text(if (page == item) "• $item" else item) }
                     }
                     Spacer(Modifier.height(24.dp))
-                    Text("0.8.0 · PREVIEW", style = MaterialTheme.typography.labelSmall)
+                    Text("0.9.0 · PREVIEW", style = MaterialTheme.typography.labelSmall)
                     Text("Saved locally. No account needed.", style = MaterialTheme.typography.bodySmall)
                 }
                 Column(Modifier.weight(1f).fillMaxHeight().padding(if (page == "Event editor") 20.dp else 36.dp).then(if (page == "Event editor") Modifier else Modifier.verticalScroll(rememberScrollState())), verticalArrangement = Arrangement.spacedBy(if (page == "Event editor") 8.dp else 20.dp)) {
@@ -403,7 +406,7 @@ fun main(args: Array<String>) {
                         Text("Create a project for your band or ensemble. Each project has its own members, chart preferences, and visual identity.")
                         Text("Choose “Start with Quaternity” to review the suggested four-member setup.")
                     } else {
-                        Text(project.name, style = if (page == "Event editor") MaterialTheme.typography.titleLarge else MaterialTheme.typography.displaySmall)
+                        ProjectIdentity(project, compact = page == "Event editor")
                         Text("$page  /  Project workspace", color = hex(theme.secondary))
                         when (page) {
                             "Home" -> key(project.id) { HomeScreen(project, { projectEditor = project }, { page = "Pending Distribution" }, { openEvent(newEvent(project, it, ::newId), false) }, { page = "Upcoming Events" }) }
@@ -436,8 +439,9 @@ fun main(args: Array<String>) {
                                     }
                                 }
                                 Button(onClick = { themeEditor = true }) { Text("Edit colors") }
-                                Text("Brand placeholder · ${project.name}")
-                                Text("Logo reference: ${project.logoReference ?: "Not set"}. SVG rendering and approved artwork integration are pending.")
+                                if (Branding.hasLogo(project)) QuaternityMark(Modifier.size(120.dp))
+                                Text(if (Branding.hasLogo(project)) "Official Quaternity branding" else "Project name branding")
+                                Text("Additional logo reference: ${project.logoReference ?: "Not set"}. Official project branding uses the bundled artwork.")
                             }
                             "Technical proof" -> {
                                 Text("Try a synthetic forScore import", style = MaterialTheme.typography.headlineSmall)
@@ -517,12 +521,16 @@ fun main(args: Array<String>) {
     var prefix by remember { mutableStateOf(draft.prefix) }
     var eventsRoot by remember { mutableStateOf(FileLocations.eventsInitialRoot(draft) ?: "") }
     var logo by remember { mutableStateOf(draft.logoReference ?: "") }
-    FormDialog("Project details", dismiss, { save(draft.copy(name = name.trim(), prefix = prefix.trim(), logoReference = logo.trim().ifEmpty { null }, exportDestination = eventsRoot.trim().ifEmpty { null })) }) {
+    var officialBrand by remember { mutableStateOf(draft.brandId == Branding.QUATERNITY) }
+    FormDialog("Project details", dismiss, { save(draft.copy(name = name.trim(), prefix = prefix.trim(), logoReference = logo.trim().ifEmpty { null }, brandId = if (officialBrand) Branding.QUATERNITY else null, exportDestination = eventsRoot.trim().ifEmpty { null })) }) {
         Field("Project name", name) { name = it }
         Field("Filename prefix", prefix) { prefix = it }
         Field("Project export root (Library, Gigs, Rehearsals)", eventsRoot) { eventsRoot = it }
         TextButton(onClick = { chooseChartFolder("Choose Events export root")?.let { eventsRoot = it } }) { Text("Browse export root") }
         Text("Future exports use Library/Master, Library/Supplements, Gigs or Rehearsals. Historical paths remain unchanged.")
+        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            Checkbox(officialBrand,{ officialBrand = it }); Text("Use official Quaternity branding for this project")
+        }
         Field("Optional logo reference (stored for later)", logo) { logo = it }
         Text("New projects use the Quaternity palette as an editable starting point. Change colors under Theme.")
         if (draft.members.isNotEmpty()) Text("Includes ${draft.members.size} editable suggested members.")

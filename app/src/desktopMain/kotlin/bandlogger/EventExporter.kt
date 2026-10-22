@@ -26,7 +26,10 @@ object EventExporter {
         }
         return events
     }
-    fun validateXml(xml: String) {
+    fun validateXml(xml: String, covers: List<ProofScore> = emptyList()) {
+        val allowed = covers.associateBy { it.filename }
+        require(allowed.size == covers.size)
+        val seen = mutableSetOf<String>()
         val factory = DocumentBuilderFactory.newInstance()
         factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
         factory.setFeature("http://xml.org/sax/features/external-general-entities", false)
@@ -38,17 +41,23 @@ object EventExporter {
             val node = children.item(i)
             if (node is org.w3c.dom.Element) {
                 require(node.tagName == "score" || node.tagName == "placeholder")
-                require(!node.hasAttribute("data")) { "Event exports must remain reference-only." }
+                if (node.hasAttribute("data")) {
+                    val expected = requireNotNull(allowed[node.getAttribute("path")]) { "Only generated set covers may include PDF data; music charts remain reference-only." }
+                    require(node.tagName == "score" && node.getAttribute("title") == expected.title && seen.add(expected.filename))
+                    require(java.util.Base64.getDecoder().decode(node.getAttribute("data")).contentEquals(expected.pdf)) { "Embedded cover PDF changed." }
+                }
                 require(node.hasAttribute("title"))
                 if (node.tagName == "score") require(ForScore.validReferenceFilename(node.getAttribute("path")))
             }
         }
+        require(seen == allowed.keys) { "Incomplete embedded covers." }
     }
     private fun readme(plan: EventExportPlan, member: EventMemberExport): String = buildString {
         append("Event: ${plan.event.title}\nDate: ${plan.event.date ?: "Undated (acknowledged)"}\nMember: ${member.member.name}\nSetlist: ${member.baseName}\n")
         append("Preferred part: ${member.preferredPart ?: "Not set"} (descriptive; recorded fallback parts may be used).\n")
         append("${member.entries.size} song entries: ${member.matchedCount} matched recorded references; ${member.missingCount} missing.\n")
-        append("Reference-only: NO PDFs included. Filenames must already exist in this member's forScore library. Recorded Library Master/supplement exports do not prove installation.\n")
+        if (plan.includeCovers) append("Generated set-cover PDFs are embedded; NO music-chart PDFs are included. Re-importing may create additional cover copies because forScore adjusts conflicting filenames; no duplicate prevention or device-library overwrite is claimed. Requires forScore 14.3+.\n")
+        append((if (plan.includeCovers) "Music chart references only. Filenames" else "Reference-only: NO PDFs included. Filenames") + " must already exist in this member's forScore library. Recorded Library Master/supplement exports do not prove installation.\n")
         append("Transfer ZIP through Google Drive, save locally in iPad Files, extract, then share the .4ss to forScore. Open Setlists and choose the named setlist. Do not import READ-ME.txt as a score.\n")
         append("Set headings and actual matching/repeated-entry behavior require owner iPad verification. Missing installed filenames may appear as placeholders.\n")
         append("Baseline: ${member.baselineId ?: "No recorded Library Master: placeholder-only output (acknowledged)"}\n")
@@ -63,7 +72,7 @@ object EventExporter {
             "The written member ZIP could not be verified. Try again or choose a local export folder."
         }
     }
-    internal fun verifyPackage(bytes: ByteArray, xmlName: String, expectedXml: String, expectedReadme: String) {
+    internal fun verifyPackage(bytes: ByteArray, xmlName: String, expectedXml: String, expectedReadme: String, covers: List<ProofScore> = emptyList()) {
         val expected = mapOf(xmlName to expectedXml, "READ-ME.txt" to expectedReadme)
         val seen = mutableSetOf<String>()
         ZipInputStream(ByteArrayInputStream(bytes)).use { zip ->
@@ -72,7 +81,7 @@ object EventExporter {
                 require(!entry.isDirectory && entry.name in expected && seen.add(entry.name)) { "Unexpected member ZIP contents." }
                 val text = zip.readBytes().toString(Charsets.UTF_8)
                 require(text == expected.getValue(entry.name)) { "Member ZIP contents changed." }
-                if (entry.name == xmlName) validateXml(text)
+                if (entry.name == xmlName) validateXml(text,covers)
                 zip.closeEntry() // consumes and checks the entry CRC
             }
         }
@@ -86,7 +95,10 @@ object EventExporter {
         plan.requireAcknowledgements(acknowledgeMissing, acknowledgeUndated)
         require(Regex("[A-Za-z0-9-]{1,64}").matches(id))
         // Validate all XML before creating any output. Never read chart paths or master ZIPs.
-        plan.members.forEach { validateXml(EventExportPlanner.xml(it)) }
+        val generated = if (plan.includeCovers) CoverGenerator.generate(project,plan) else emptyList()
+        val coverMap = generated.associate { it.number to it.score }
+        val coverScores = generated.map { it.score }
+        plan.members.forEach { validateXml(EventExportPlanner.xml(it,coverMap),coverScores) }
         val events = eventsRoot(destination, plan.event.type)
         try { Files.createDirectory(events) } catch (_: FileAlreadyExistsException) { /* checked again below */ }
         val confirmedEvents = eventsRoot(destination, plan.event.type)
@@ -104,7 +116,7 @@ object EventExporter {
             Files.writeString(stage.resolve("INCOMPLETE.txt"), "Incomplete event export. Do not distribute.", StandardOpenOption.CREATE_NEW)
             plan.members.forEach { member ->
                 val zipPath = stage.resolve("${member.baseName}.zip")
-                val xml = EventExportPlanner.xml(member)
+                val xml = EventExportPlanner.xml(member,coverMap)
                 val instructions = readme(plan, member)
                 val buffer = ByteArrayOutputStream()
                 ZipOutputStream(buffer).use { zip ->
@@ -117,14 +129,14 @@ object EventExporter {
                 }
                 // Finish the central directory before writing to a virtual/cloud drive.
                 val archive = buffer.toByteArray()
-                verifyPackage(archive, "${member.baseName}.4ss", xml, instructions)
+                verifyPackage(archive, "${member.baseName}.4ss", xml, instructions,coverScores)
                 Files.write(zipPath, archive, StandardOpenOption.CREATE_NEW)
                 // Drive can briefly report a stale file length to random-access ZipFile.
                 // Sequentially verify every byte instead of consulting that metadata.
                 Files.newInputStream(zipPath).use { verifyCopy(it, archive) }
             }
             val record = EventExportRecord(id, project.id, plan.event, events.parent.toString(), target.toString(), stage.toString(), now.toString(),
-                plan.members.map { member -> EventPackage(member.member.id, member.member.name, "${member.baseName}.zip", EventExports.hash(stage.resolve("${member.baseName}.zip"))) })
+                plan.members.map { member -> EventPackage(member.member.id, member.member.name, "${member.baseName}.zip", EventExports.hash(stage.resolve("${member.baseName}.zip"))) }, covers = generated.map { it.record })
             Files.writeString(stage.resolve("event-export.json"), EventRecordCodec.encode(record), StandardOpenOption.CREATE_NEW)
             beforePublish(record) // durable workspace intent; failed save prevents publication
             Files.delete(stage.resolve("INCOMPLETE.txt"))

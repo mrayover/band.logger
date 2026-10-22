@@ -154,3 +154,13 @@ This supersedes earlier notes that diagnostic iPad import was unresolved. No app
 - Preserve sequential cloud ZIP validation. Real Drive integration uses only newly created synthetic output under 06 - Testing, never Eden or production chart/library packages. Device/cloud synchronization verification remains separate from local Drive filesystem success.
 
 Drive cleanup detail (0.8.0): Drive for desktop may inject a hidden UTF-16 desktop.ini after publication. Only its bounded, exact known GoogleDriveFS icon/ViewState profile is recognized; arbitrary desktop.ini or other files still block deletion. Persist the exact Base64 bytes in providerMetadata before removing that decoration, retaining them in the completed tombstone. Changed profiles remain for review. Synthetic local regressions and actual Drive retry passed with no event folders/ZIPs remaining.
+
+## October 22, 2026 — Branding and cover decisions / 0.9.0
+
+- Treat the supplied SVG as authoritative. Bundle and hash its exact bytes, render offline without recoloring/reconstructing/distorting the artwork, and place it on ivory so its black geometry remains legible. Keep Lato and existing project color/highlight/navigation behavior.
+- Persist brand identity by project, never infer it repeatedly from the current name. Initialize the Quaternity starter; migrate exact legacy Quaternity/Q once; allow explicit per-project opt-in/opt-out. Other projects get no automatic logo. Preserve logoReference metadata without external reads.
+- Store the optional cover choice per project, off by default until device acceptance. Each cover replaces one nonempty set heading; all music stays reference-only and the one ZIP/one complete .4ss transport remains unchanged.
+- Use PDFBox 3.0.8 with embedded Lato and a lossless render of the exact source SVG. CoverGenerator accepts project/event/set metadata and supports text identity for other brands. No scheduling/time fields are added or invented.
+- Whitelist generated cover PDF bytes during XML validation. Never permit arbitrary embedded music data. Keep sequential cloud ZIP verification and complete staged publication/recording/deletion behavior.
+- Use readable stable cover filenames; do not append hashes/UUIDs. The official forScore format adjusts conflicting embedded filenames, so warn that repeated import may duplicate covers and do not claim deduplication or iPad library cleanup. This remains an owner device gate.
+- Schema 9 and immutable pre-branding-covers backup preserve every earlier record/path/backup. Add optional cover receipts without rewriting historical packages. Package unused 0.9.0; no Git operations or next-stage features.
