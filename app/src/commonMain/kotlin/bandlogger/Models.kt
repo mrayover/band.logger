@@ -15,11 +15,11 @@ import kotlinx.serialization.json.Json
 @Serializable data class Project(
     val id: String, val name: String, val prefix: String = "", val theme: Theme = Theme(),
     val logoReference: String? = null, val members: List<Member> = emptyList(), val catalog: Catalog = Catalog(),
-    val exportDestination: String? = null, val masters: List<LibraryMaster> = emptyList(), val events: List<BandEvent> = emptyList(), val supplements: List<LibrarySupplement> = emptyList()
+    val exportDestination: String? = null, val masters: List<LibraryMaster> = emptyList(), val events: List<BandEvent> = emptyList(), val supplements: List<LibrarySupplement> = emptyList(), val eventsExportRoot: String? = null, val eventExports: List<EventExportRecord> = emptyList()
 )
-@Serializable data class Workspace(val schemaVersion: Int = 6, val projects: List<Project> = emptyList(), val selectedId: String? = null) {
+@Serializable data class Workspace(val schemaVersion: Int = 8, val projects: List<Project> = emptyList(), val selectedId: String? = null) {
     fun validate() {
-        require(schemaVersion == 6) { "This data was created by an unsupported application version." }
+        require(schemaVersion == 8) { "This data was created by an unsupported application version." }
         require(projects.map { it.id }.distinct().size == projects.size) { "Duplicate project identity." }
         require(selectedId == null || projects.any { it.id == selectedId }) { "Selected project is missing." }
         projects.forEach { p ->
@@ -32,6 +32,11 @@ import kotlinx.serialization.json.Json
                 require(supplement.publication.projectId == p.id && supplement.number == index + 1 && supplement.previousId == previous) { "Invalid supplement history." }
                 supplement.baselineMasterIds.forEach { (member, master) -> require(p.masters.any { it.id == master && it.members.any { m -> m.memberId == member && m.charts.isNotEmpty() } }) }
                 previous = supplement.id
+            }
+            require(p.eventExports.map { it.id }.distinct().size == p.eventExports.size)
+            p.eventExports.forEach { record ->
+                record.validate(); require(record.projectId == p.id)
+                require(record.state != EventExportState.ACTIVE || p.events.any { it.id == record.event.id })
             }
             p.catalog.validate()
             val eventIds = p.events.map { it.id }
@@ -62,7 +67,7 @@ object WorkspaceCodec {
     fun encode(value: Workspace): String { value.validate(); return json.encodeToString(value) }
     fun decode(value: String): Workspace {
         val stored = json.decodeFromString<Workspace>(value)
-        val migrated = if (stored.schemaVersion in 1..5) stored.copy(schemaVersion = 6) else stored
+        val migrated = if (stored.schemaVersion in 1..7) stored.copy(schemaVersion = 8) else stored
         return migrated.also { it.validate() }
     }
 }

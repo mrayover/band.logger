@@ -18,12 +18,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun EventsScreen(project: Project, create: (EventType) -> Unit, open: (BandEvent) -> Unit) {
+fun EventsScreen(project: Project, create: (EventType) -> Unit, open: (BandEvent) -> Unit, busy: Boolean, setBusy: (Boolean) -> Unit, saveProject: (Project) -> Unit) {
+    var deleting by remember { mutableStateOf<BandEvent?>(null) }
     Text("Upcoming Events", style = MaterialTheme.typography.headlineMedium)
     Text("All saved events for ${project.name}, including past and undated events.")
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Button(onClick = { create(EventType.REHEARSAL) }) { Text("Create Rehearsal") }
-        OutlinedButton(onClick = { create(EventType.GIG) }) { Text("Create Gig") }
+        Button(enabled = !busy, onClick = { create(EventType.REHEARSAL) }) { Text("Create Rehearsal") }
+        OutlinedButton(enabled = !busy, onClick = { create(EventType.GIG) }) { Text("Create Gig") }
     }
     if (project.events.isEmpty()) Text("No saved events yet. Create a rehearsal or gig to get started.")
     project.events.sortedWith(compareBy<BandEvent> { it.date == null }.thenBy { it.date ?: "" }.thenBy { it.title.lowercase() }.thenBy { it.id }).forEach { event ->
@@ -34,16 +35,19 @@ fun EventsScreen(project: Project, create: (EventType) -> Unit, open: (BandEvent
                         Text(event.title, style = MaterialTheme.typography.titleLarge)
                         Text("${event.type.label()} · ${event.date ?: "Date not set"} · ${event.sets.size} sets · ${event.entries.size} tunes")
                     }
-                    TextButton(onClick = { open(event) }) { Text("Open event") }
+                    TextButton(enabled = !busy, onClick = { open(event) }) { Text("Edit") }
+                    TextButton(enabled = !busy, onClick = { deleting = event }) { Text("Delete") }
                 }
             }
         }
     }
+    EventManagement(project, setBusy, saveProject)
+    deleting?.let { event -> EventDeleteDialog(project, event, setBusy, saveProject) { deleting = null } }
 }
 fun EventType.label() = if (this == EventType.REHEARSAL) "Rehearsal" else "Gig"
 
 @Composable
-fun EventEditorScreen(project: Project, draft: EventDraft, error: String?, change: (BandEvent) -> Unit, save: () -> Unit, back: () -> Unit, setBusy: (Boolean) -> Unit, modifier: Modifier = Modifier) {
+fun EventEditorScreen(project: Project, draft: EventDraft, error: String?, change: (BandEvent) -> Unit, save: () -> Unit, back: () -> Unit, setBusy: (Boolean) -> Unit, saveProject: (Project) -> Unit, modifier: Modifier = Modifier) {
     val event = draft.value
     var exportOpen by remember(event.id) { mutableStateOf(false) }
     var search by remember(event.id) { mutableStateOf("") }
@@ -154,7 +158,7 @@ fun EventEditorScreen(project: Project, draft: EventDraft, error: String?, chang
             }
         }
     }
-    if (exportOpen) EventExportDialog(project, event.id, setBusy) { exportOpen = false }
+    if (exportOpen) EventExportDialog(project, event.id, setBusy, saveProject) { exportOpen = false }
     removeSetId?.let { id ->
         val target = event.sets.find { it.id == id }
         if (target != null) AlertDialog(onDismissRequest = { removeSetId = null },

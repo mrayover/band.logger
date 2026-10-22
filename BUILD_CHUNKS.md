@@ -728,3 +728,15 @@ Owner approved the 0.5.1 export/iPad result and authorized supplemental distribu
 Completed the narrowly scoped integration of Library Master plus successful anchored Library Supplements into reference-only event member exports. Added a reusable read-only resolver, exact provenance in the existing preview, chain/inconsistency protection and no state/schema changes. Numbered publication order governs supplemental deltas; newer master epochs exclude older anchored supplements independently by member. Master/supplement publishing and event editor remain unchanged.
 
 All 148 tests pass (136 previous retained/adapted plus 12 new). The new Windows ZIP passes packaged/extracted smoke, including master -> supplement -> saved event -> exact reference XML and second-process reopening. Read-only production manifest inspection and isolated built-release audit resolve Night Dreamer for its actual four recipients (Jordan Bb, others C); no new iPad test claimed. Prior packages/history remain intact. Owner should check existing Test preview, Undated acknowledgement and forScore import using 0.6.1. No optional roadmap work, commit/push or release operation.
+
+## October 21, 2026 — File import/export organization / 0.7.0
+
+Completed staging-directory chooser preference, readable future supplement project/member names with stable-ID collision ownership, separate saved Events root with saved-type Gigs/Rehearsals routing, and schema-7 migration/immutable backup. Old master/supplement/event output stays at original recorded paths; source PDFs, allocations and forScore content are unchanged.
+
+161 tests pass (148 retained/adapted + 13 new), including genuine legacy-format supplement recovery and preservation; packaged/extracted executable/restart smoke passes with both event routes and readable supplement checks. All 207 extracted files and 13 previous ZIPs verified unchanged/matching. Deliver 0.7.0 with bundled runtime, no workflow/dependency/Git operations. Next: owner verifies actual staging/default Events roots, old Supplement 001/002 receipts and next normal export per MANUAL_TESTING; no additional feature scope.
+
+## October 22, 2026 — Authorized bounded increment / 0.8.0
+
+The owner's attached Export Organization and Event Management request authorizes single-root purpose folders, persistent event-package links, explicit repeat choices, event Edit/Delete and verified retryable Drive cleanup. It supersedes earlier event-deletion/export-history deferrals for this increment only. Preserve the existing uncommitted 0.7.0 work; snapshot retained in .tools/event-management-baseline-20261022. No commits or pushes.
+
+Implemented schema 8, safe backup migration, original-path distribution compatibility, read-only layout review, verified legacy discovery/review, persistent publication/recovery/cleanup lifecycle and readily accessible event actions. Automated regression and synthetic failure/restart/Drive testing precede self-contained Windows ZIP delivery. Owner acceptance uses MANUAL_TESTING; do not begin branding, covers, analytics, Archive, notes or another stage without approval.

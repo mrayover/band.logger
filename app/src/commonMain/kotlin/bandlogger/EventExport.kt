@@ -62,7 +62,7 @@ object EventExportPlanner {
             }
             EventMemberExport(member, part, baseline.master?.id, name, sets)
         }
-        return EventExportPlan(project.id, event, label, members, event.sets.mapIndexedNotNull { i, set -> if (set.entries.isEmpty()) i + 1 else null })
+        return EventExportPlan(project.id, event, "${event.date ?: "Undated"} ${safeLabel(event.title)}", members, event.sets.mapIndexedNotNull { i, set -> if (set.entries.isEmpty()) i + 1 else null })
     }
     fun xml(member: EventMemberExport): String = buildString {
         append(ForScore.header(member.baseName))

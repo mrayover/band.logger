@@ -9,10 +9,11 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.*
 
 @Composable
-fun EventExportDialog(project: Project, eventId: String, setBusy: (Boolean) -> Unit, dismiss: () -> Unit) {
+fun EventExportDialog(project: Project, eventId: String, setBusy: (Boolean) -> Unit, saveProject: (Project) -> Unit, dismiss: () -> Unit) {
     val planned = remember(project, eventId) { runCatching { EventExportPlanner.preview(project, eventId) } }
     val plan = planned.getOrNull()
-    var destination by remember { mutableStateOf(project.exportDestination ?: "") }
+    var destination by remember { mutableStateOf(FileLocations.eventsInitialRoot(project) ?: "") }
+    var conflict by remember { mutableStateOf(EventConflict.NEW) }
     var missingAck by remember { mutableStateOf(false) }
     var undatedAck by remember { mutableStateOf(false) }
     var generating by remember { mutableStateOf(false) }
@@ -28,9 +29,27 @@ fun EventExportDialog(project: Project, eventId: String, setBusy: (Boolean) -> U
                     Text(plan.event.title, style = MaterialTheme.typography.titleLarge)
                     Text("Reference-only setlists. No PDFs are included or read. Each musician must already have the recorded filenames installed in forScore. Recorded master and supplement exports do not prove installation.")
                     if (result == null) {
-                        OutlinedTextField(destination, { destination = it; error = null }, enabled = !generating, label = { Text("Existing export destination") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                        TextButton(enabled = !generating, onClick = { chooseChartFolder("Choose event export destination")?.let { destination = it } }) { Text("Browse folders") }
-                        Text("Output: $destination/Events/${plan.folderName}/ (new suffix if already present)", style = MaterialTheme.typography.bodySmall)
+                        OutlinedTextField(destination, { destination = it; error = null }, enabled = !generating, label = { Text("Project export root") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                        TextButton(enabled = !generating, onClick = { chooseChartFolder("Choose Project export root")?.let { destination = it } }) { Text("Browse folders") }
+                        TextButton(enabled = !generating && destination.isNotBlank(), onClick = {
+                            runCatching {
+                                EventExporter.eventsRoot(destination.trim(), plan.event.type)
+                                saveProject(project.copy(exportDestination = destination.trim()))
+                            }.onFailure { error = "Could not remember Events root: ${it.message}" }
+                        }) { Text("Remember export root for this project") }
+                        Text("Reused for Library, Gigs and Rehearsals. Historical export paths stay unchanged.", style = MaterialTheme.typography.bodySmall)
+                        Text("Output: $destination/${FileLocations.eventTypeFolder(plan.event.type)}/${plan.folderName}/ (repeated exports require a choice below)", style = MaterialTheme.typography.bodySmall)
+                        Text("Repeated export policy", style = MaterialTheme.typography.titleMedium)
+                        EventConflict.entries.forEach { option ->
+                            Row {
+                                RadioButton(selected = conflict == option, onClick = { conflict = option }, enabled = !generating)
+                                Text(when (option) {
+                                    EventConflict.NEW -> "New export only — stop if an output already exists"
+                                    EventConflict.REVISION -> "Create revision — preserve previous exports"
+                                    EventConflict.REPLACE -> "Replace tracked exports — publish new revision first, then clean verified old packages"
+                                })
+                            }
+                        }
                         Text("${plan.members.first().sets.size} non-empty sets · ${plan.event.entries.size} song entries per member")
                         plan.warnings.forEach { Text(it, color = MaterialTheme.colorScheme.error) }
                         plan.members.forEach { member ->
@@ -56,6 +75,13 @@ fun EventExportDialog(project: Project, eventId: String, setBusy: (Boolean) -> U
                             Text("I acknowledge Undated filenames. To use a date, go back, enter it and save the event first.")
                         }
                     } else result?.let { completed ->
+                        TextButton(enabled = !generating && destination.isNotBlank(), onClick = {
+                            runCatching {
+                                EventExporter.eventsRoot(destination.trim(), plan.event.type)
+                                saveProject(project.copy(exportDestination = destination.trim()))
+                            }.onFailure { error = "Could not remember Events root: ${it.message}" }
+                        }) { Text("Remember export root for this project") }
+                        Text("Reused for Library, Gigs and Rehearsals. Historical export paths stay unchanged.", style = MaterialTheme.typography.bodySmall)
                         Text("Output: ${completed.folder}")
                         completed.zipNames.forEach { Text(it) }
                         completed.warnings.forEach { Text(it, color = MaterialTheme.colorScheme.error) }
@@ -72,7 +98,7 @@ fun EventExportDialog(project: Project, eventId: String, setBusy: (Boolean) -> U
                 (!plan.needsMissingAcknowledgement || missingAck) && (!plan.needsUndatedAcknowledgement || undatedAck), onClick = {
                 generating = true; error = null; setBusy(true)
                 scope.launch {
-                    try { result = withContext(Dispatchers.IO) { EventExporter.generate(project, plan, destination.trim(), missingAck, undatedAck) } }
+                    try { result = withContext(Dispatchers.IO) { EventExports.publish(project, plan, destination.trim(), missingAck, undatedAck, conflict, saveProject) } }
                     catch (e: Exception) { error = "Export failed: ${e.message}" }
                     finally { generating = false; setBusy(false) }
                 }

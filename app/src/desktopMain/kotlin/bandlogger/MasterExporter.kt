@@ -58,6 +58,7 @@ object MasterExporter {
     }
     internal fun generateSelected(project: Project, preview: MasterPreview, id: String, now: Instant,
                                   targetOverride: Path? = null, label: String = "Library Master",
+                                  packageNames: Map<String, String>? = null,
                                   companionManifest: ((LibraryMaster) -> String)? = null): LibraryMaster {
         val full = MasterPlanner.preview(project)
         require(preview.projectId == project.id && preview.members.size == full.members.size)
@@ -78,8 +79,27 @@ object MasterExporter {
             require(names.distinct().size == names.size) { "${member.member.name} has colliding PDF filenames. Resolve them before export." }
         }
         val date = DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmmss").withZone(ZoneOffset.UTC).format(now)
-        val name = "Library Master - ${safeLabel(project.name)} - $date - ${id.take(8)}"
-        val target = targetOverride ?: destination.resolve(name)
+        val masterRoot = if (targetOverride == null) ExportFolders.child(ExportFolders.library(project), "Master") else destination
+        if (targetOverride == null) {
+            require(project.masters.none { it.id == id }) { "This master identity is already recorded." }
+            val candidates = listOf(masterRoot) + Files.newDirectoryStream(masterRoot).use { children -> children.filter { Files.isDirectory(it, LinkOption.NOFOLLOW_LINKS) && !Files.isSymbolicLink(it) }.toList() }
+            candidates.forEach { folder ->
+                val manifest = folder.resolve("manifest.json")
+                if (Files.isRegularFile(manifest, LinkOption.NOFOLLOW_LINKS) && !Files.isSymbolicLink(manifest)) {
+                    val existing = MasterCodec.decode(Files.readString(manifest))
+                    require(existing.id != id) { "This master identity already exists. Recover it instead." }
+                }
+            }
+        }
+        var masterTarget = masterRoot
+        if (targetOverride == null && Files.newDirectoryStream(masterRoot).use { it.iterator().hasNext() }) {
+            var revision = 2
+            while (Files.exists(masterRoot.resolve("Revision $revision"))) revision++
+            masterTarget = masterRoot.resolve("Revision $revision")
+        }
+        val target = targetOverride ?: masterTarget
+        // First master publishes directly in Library/Master; reserve it only at publication.
+        if (targetOverride == null && target == masterRoot) Files.delete(masterRoot)
         require(!Files.exists(target, LinkOption.NOFOLLOW_LINKS)) { "This master folder already exists. Nothing was overwritten." }
         val stage = Files.createDirectory(target.parent.resolve(".bandlogger-pending-$id"))
         var published = false
@@ -92,8 +112,8 @@ object MasterExporter {
                 if (choices.isEmpty()) MasterMember(member.member.id, member.member.name, member.preferences,
                     warnings = warnings + "No accepted charts selected; no package generated.")
                 else {
-                    val title = "${project.prefix.ifBlank { project.name }} $label - ${member.member.name} - $date"
-                    val base = "${(index + 1).toString().padStart(2, '0')} - ${safeLabel(project.name)} $label - ${safeLabel(member.member.name)} - $date"
+                    val title = packageNames?.get(member.member.id) ?: "${project.prefix.ifBlank { project.name }} $label - ${member.member.name} - $date"
+                    val base = packageNames?.get(member.member.id) ?: "${(index + 1).toString().padStart(2, '0')} - ${safeLabel(project.name)} $label - ${safeLabel(member.member.name)} - $date"
                     val zipName = "$base.zip"
                     ZipOutputStream(Files.newOutputStream(stage.resolve(zipName), StandardOpenOption.CREATE_NEW)).use { zip ->
                         zip.putNextEntry(ZipEntry("$base.4ss"))

@@ -109,7 +109,9 @@ class SupplementTest {
         val f=fixture(); val p=newTune(f); val record=SupplementExporter.generate(p,preview(p),journalDirectory=f.root)
         val other=f.project.copy(id="other",masters=f.project.masters.map { it.copy(projectId="other") })
         assertFailsWith<IllegalArgumentException> { other.recordSupplement(record) }
-        assertNotEquals(SupplementExporter.folder(p,1),SupplementExporter.folder(other,1))
+        assertFailsWith<IllegalArgumentException> { SupplementExporter.folder(other,1) }
+        val separate=Files.createDirectory(f.root.resolve("other-exports"))
+        assertNotEquals(SupplementExporter.folder(p,1),SupplementExporter.folder(other.copy(exportDestination=separate.toString()),1))
         val state=Workspace().saveProject(p.recordSupplement(record)).saveProject(other)
         val loaded=WorkspaceCodec.decode(WorkspaceCodec.encode(state))
         assertTrue(loaded.projects.last().supplements.isEmpty()); assertEquals(1,loaded.projects.first().supplements.size)
@@ -117,7 +119,7 @@ class SupplementTest {
     @Test fun schemaFiveMigrationKeepsEventsCatalogMastersAndImmutableBackup() {
         val f=fixture(); val path=f.root.resolve("workspace.json")
         val current=WorkspaceCodec.encode(Workspace().saveProject(f.project))
-        val old=current.replace("\"schemaVersion\": 6","\"schemaVersion\": 5").replace("\"supplements\": []","\"oldField\": []")
+        val old=current.replace("\"schemaVersion\": 8","\"schemaVersion\": 5").replace("\"supplements\": []","\"oldField\": []")
         Files.writeString(path,old); val store=FileWorkspaceStore(path); val loaded=store.load()
         assertEquals(f.project,loaded.projects.single()); assertEquals(old,Files.readString(path))
         store.save(loaded); store.save(loaded)

@@ -36,6 +36,14 @@ class FileWorkspaceStore(private val path: Path) : WorkspaceStore {
                     val original = path.resolveSibling("workspace.pre-supplements.backup.json")
                     if (!Files.exists(original)) Files.copy(path, original)
                 }
+                if (Regex("\"schemaVersion\"\\s*:\\s*[1-6]\\b").containsMatchIn(oldText)) {
+                    val original = path.resolveSibling("workspace.pre-event-destinations.backup.json")
+                    if (!Files.exists(original)) Files.copy(path, original)
+                }
+                if (Regex("\"schemaVersion\"\\s*:\\s*[1-7]\\b").containsMatchIn(oldText)) {
+                    val original = path.resolveSibling("workspace.pre-event-exports.backup.json")
+                    if (!Files.exists(original)) Files.copy(path, original)
+                }
                 Files.copy(path, path.resolveSibling("workspace.backup.json"), REPLACE_EXISTING)
             }
             try { Files.move(temp, path, ATOMIC_MOVE, REPLACE_EXISTING) }

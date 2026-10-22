@@ -18,8 +18,14 @@ fun chooseChartFolder(title: String = "Choose your chart library folder"): Strin
     val chooser = JFileChooser().apply { dialogTitle = title; fileSelectionMode = JFileChooser.DIRECTORIES_ONLY }
     return if (chooser.showOpenDialog(java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager().activeWindow) == JFileChooser.APPROVE_OPTION) chooser.selectedFile.absolutePath else null
 }
+fun pdfChooser(preferred: Path = FileLocations.pdfStaging) = JFileChooser().apply {
+    FileLocations.pdfInitialDirectory(preferred)?.let { currentDirectory = File(it) }
+    dialogTitle = "Choose a PDF to copy into the chart library"
+    fileFilter = FileNameExtensionFilter("PDF charts", "pdf")
+    isAcceptAllFileFilterUsed = false
+}
 fun choosePdf(): Path? {
-    val chooser = JFileChooser().apply { dialogTitle = "Choose a PDF to copy into the chart library"; fileFilter = FileNameExtensionFilter("PDF charts", "pdf"); isAcceptAllFileFilterUsed = false }
+    val chooser = pdfChooser()
     return if (chooser.showOpenDialog(java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager().activeWindow) == JFileChooser.APPROVE_OPTION) chooser.selectedFile.toPath() else null
 }
 @Composable fun LibraryScreen(project: Project, busy: Boolean, setBusy: (Boolean) -> Unit, save: (Project) -> Unit) {

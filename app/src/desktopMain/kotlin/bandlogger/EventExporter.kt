@@ -2,8 +2,6 @@ package bandlogger
 
 import java.nio.file.*
 import java.time.Instant
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import java.util.UUID
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -16,14 +14,15 @@ import org.xml.sax.InputSource
 import java.io.StringReader
 
 // The event-export path has no PDF/file-source reader and never updates workspace metadata.
-data class EventExportResult(val folder: Path, val zipNames: List<String>, val warnings: List<String>)
+data class EventExportResult(val folder: Path, val zipNames: List<String>, val warnings: List<String>, val record: EventExportRecord)
 object EventExporter {
-    fun eventsRoot(destination: String): Path {
+    fun eventsRoot(destination: String, type: EventType = EventType.GIG): Path {
+        require(destination.isNotBlank()) { "Choose an existing Events export root." }
         val root = Path.of(LocalCharts.folder(Path.of(destination)))
         require(Files.isWritable(root)) { "Choose a writable export destination." }
-        val events = root.resolve("Events")
+        val events = root.resolve(FileLocations.eventTypeFolder(type))
         if (Files.exists(events, LinkOption.NOFOLLOW_LINKS)) {
-            require(Files.isDirectory(events, LinkOption.NOFOLLOW_LINKS) && !Files.isSymbolicLink(events) && events.toRealPath().startsWith(root)) { "Events must be a normal folder inside the export destination." }
+            require(Files.isDirectory(events, LinkOption.NOFOLLOW_LINKS) && !Files.isSymbolicLink(events) && events.toRealPath().startsWith(root)) { "The event type folder must be a normal folder inside the Events root." }
         }
         return events
     }
@@ -81,20 +80,24 @@ object EventExporter {
     }
     fun generate(project: Project, plan: EventExportPlan, destination: String,
                  acknowledgeMissing: Boolean = false, acknowledgeUndated: Boolean = false,
-                 id: String = UUID.randomUUID().toString(), now: Instant = Instant.now()): EventExportResult {
+                 id: String = UUID.randomUUID().toString(), now: Instant = Instant.now(),
+                 revision: Boolean = false, beforePublish: (EventExportRecord) -> Unit = {}): EventExportResult {
         require(plan == EventExportPlanner.preview(project, plan.event.id)) { "Saved event or member baselines changed. Review a new preview." }
         plan.requireAcknowledgements(acknowledgeMissing, acknowledgeUndated)
         require(Regex("[A-Za-z0-9-]{1,64}").matches(id))
         // Validate all XML before creating any output. Never read chart paths or master ZIPs.
         plan.members.forEach { validateXml(EventExportPlanner.xml(it)) }
-        val events = eventsRoot(destination)
+        val events = eventsRoot(destination, plan.event.type)
         try { Files.createDirectory(events) } catch (_: FileAlreadyExistsException) { /* checked again below */ }
-        val confirmedEvents = eventsRoot(destination)
+        val confirmedEvents = eventsRoot(destination, plan.event.type)
         require(Files.isDirectory(confirmedEvents))
-        val stamp = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss").withZone(ZoneOffset.UTC).format(now)
         var target = events.resolve(plan.folderName)
-        if (Files.exists(target, LinkOption.NOFOLLOW_LINKS)) target = events.resolve("${plan.folderName} - $stamp - $id")
-        require(!Files.exists(target, LinkOption.NOFOLLOW_LINKS)) { "Export folder already exists. Nothing was overwritten." }
+        if (Files.exists(target, LinkOption.NOFOLLOW_LINKS)) {
+            require(revision) { "Export folder already exists. Choose Create revision or Replace tracked exports explicitly." }
+            var number = 2
+            while (Files.exists(events.resolve("${plan.folderName} - Revision $number"), LinkOption.NOFOLLOW_LINKS)) number++
+            target = events.resolve("${plan.folderName} - Revision $number")
+        }
         val stage = Files.createDirectory(events.resolve(".bandlogger-event-$id"))
         var published = false
         try {
@@ -120,11 +123,15 @@ object EventExporter {
                 // Sequentially verify every byte instead of consulting that metadata.
                 Files.newInputStream(zipPath).use { verifyCopy(it, archive) }
             }
+            val record = EventExportRecord(id, project.id, plan.event, events.parent.toString(), target.toString(), stage.toString(), now.toString(),
+                plan.members.map { member -> EventPackage(member.member.id, member.member.name, "${member.baseName}.zip", EventExports.hash(stage.resolve("${member.baseName}.zip"))) })
+            Files.writeString(stage.resolve("event-export.json"), EventRecordCodec.encode(record), StandardOpenOption.CREATE_NEW)
+            beforePublish(record) // durable workspace intent; failed save prevents publication
             Files.delete(stage.resolve("INCOMPLETE.txt"))
             Files.move(stage, target) // no replacement: a racing existing folder fails safely
             published = true
             return EventExportResult(target, plan.members.map { "${it.baseName}.zip" }, plan.warnings +
-                plan.members.filter { it.missingCount > 0 }.map { "${it.member.name}: ${it.missingCount} missing references retained as placeholders." })
+                plan.members.filter { it.missingCount > 0 }.map { "${it.member.name}: ${it.missingCount} missing references retained as placeholders." }, record)
         } finally {
             if (!published) runCatching {
                 Files.newDirectoryStream(stage).use { files -> files.forEach { Files.deleteIfExists(it) } }

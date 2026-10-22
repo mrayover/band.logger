@@ -135,3 +135,22 @@ This supersedes earlier notes that diagnostic iPad import was unresolved. No app
 - Preserve one whole-event reference-only .4ss/member, XML format, exact filenames, all sets/repeats, naming/destinations/cloud ZIP validation and no-overwrite behavior. Provenance appears in existing preview and instructions; exported remains distinct from installed.
 - Owner-reported production master/Eden event/Night Dreamer supplement iPad imports and persistent history are successful. Verify actual Supplement 001 allocations read-only in isolated copied records; do not regenerate production packages or edit live events. Require owner check of new integration on iPad.
 - Deliver unused 0.6.1 with all prior builds/workflow intact, full tests/smoke and schema 6 unchanged. No optional functionality or source-control operations.
+
+## October 21, 2026 — File organization / 0.7.0
+
+- Treat requested staging/default Events directories as chooser/settings preferences, never authoritative chart-library replacements. Existing PDF copy/review behavior is unchanged; unavailable defaults fall back only when unconfigured.
+- Persist optional Events root per project, schema 7 with immutable pre-event-destinations backup of schemas 1–6. Explicit project setting or Remember action saves; per-export override is transient otherwise. Unavailable explicit roots fail clearly; route by saved type under Gigs/Rehearsals without string replacement of library paths.
+- Future supplements use readable sanitized project/member names and consecutive number; reserve readable folder ownership with stable ID marker. Only genuine project-name collisions use short stable suffixes, and member-name collisions use numeric suffixes. Preserve timestamp/hash/ID in manifests.
+- Keep old output names/paths/receipts immutable and recovery independent of current naming. Block old-convention completed/unrecorded targets and preserve existing journals/numbering/no-overwrite protections across renames and destination changes.
+- Preserve embedded-PDF library distributions and reference-only whole-event exports, all selections/sets/repeats, current catalog identities and workflow. Deliver unused 0.7.0, retain all earlier packages. Owner verifies actual Drive roots/imports; test only synthetic local data. No unrelated work or Git operations.
+
+## October 22, 2026 — 0.8.0 decisions
+
+- Use exportDestination as the single future root. Retain eventsExportRoot solely as a compatible fallback and discovery location; never silently rewrite historical paths. Successful event generation remembers its selected root. Other exports reuse it.
+- Keep completed names readable: ISO event date/title; numeric Revision N conflicts; Library/Master and Library/Supplements without the redundant project folder. Library ownership is an internal marker; shared roots across projects fail safely rather than appending hashes.
+- Replace means publish and track the new revision first, then remove old verified tracked packages. It does not overwrite bytes in place. Persist cleanup state before destructive work; preserve progress/errors through restart. Delete only manifest-proven direct files; foreign/changed files block cleanup.
+- Maintain deleted-export tombstones for diagnosis/retry evidence. Keep event snapshot independent of the live event so removal does not orphan cleanup metadata. Existing event editing/save guards remain the boundary.
+- Legacy filenames and READ-ME text cannot establish stable event identity. Show them for review; do not auto-adopt or delete them. Layout migration is a read-only review and future-only policy, not a bulk mover. Historical distribution recovery uses exact original paths.
+- Preserve sequential cloud ZIP validation. Real Drive integration uses only newly created synthetic output under 06 - Testing, never Eden or production chart/library packages. Device/cloud synchronization verification remains separate from local Drive filesystem success.
+
+Drive cleanup detail (0.8.0): Drive for desktop may inject a hidden UTF-16 desktop.ini after publication. Only its bounded, exact known GoogleDriveFS icon/ViewState profile is recognized; arbitrary desktop.ini or other files still block deletion. Persist the exact Base64 bytes in providerMetadata before removing that decoration, retaining them in the completed tombstone. Changed profiles remain for review. Synthetic local regressions and actual Drive retry passed with no event folders/ZIPs remaining.

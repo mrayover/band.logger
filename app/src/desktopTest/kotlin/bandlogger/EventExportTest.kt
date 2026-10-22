@@ -118,7 +118,7 @@ class EventExportTest {
         assertFailsWith<IllegalArgumentException> { plan(project().copy(events = listOf(event().copy(projectId = "other")))) }
     }
     @Test fun dateIsSavedDateAndUndatedNeedsSeparateAcknowledgement() {
-        assertTrue(plan().folderName.startsWith("20261021 "))
+        assertTrue(plan().folderName.startsWith("2026-10-21 "))
         val value = plan(project().copy(events = listOf(event().copy(date = null))))
         assertTrue(value.members.all { it.baseName.startsWith("Undated ") })
         assertFailsWith<IllegalArgumentException> { value.requireAcknowledgements(true, false) }
@@ -128,7 +128,7 @@ class EventExportTest {
     @Test fun missingAcknowledgementIsEnforcedBeforeAnyFileCreation() {
         val dir = root()
         assertFailsWith<IllegalArgumentException> { EventExporter.generate(project(), plan(), dir.toString()) }
-        assertFalse(Files.exists(dir.resolve("Events")))
+        assertFalse(Files.exists(dir.resolve("Gigs")))
         val complete = project().copy(members = listOf(members.first()))
         EventExportPlanner.preview(complete, "e").requireAcknowledgements(false, false)
     }
@@ -159,36 +159,38 @@ class EventExportTest {
             assertTrue(readme.contains("NO PDFs")); assertTrue(readme.contains("Google Drive"))
         } }
         assertEquals(before, WorkspaceCodec.encode(Workspace().saveProject(p)))
-        assertTrue(result.folder.parent.fileName.toString() == "Events")
+        assertTrue(result.folder.parent.fileName.toString() == "Gigs")
     }
     @Test fun repeatedExportUsesDistinctFolderAndNeverOverwrites() {
         val dir = root(); val one = generate(destination = dir, id = "first")
         val bytes = Files.readAllBytes(one.folder.resolve(one.zipNames.first()))
-        val two = generate(destination = dir, id = "second")
+        assertFailsWith<IllegalArgumentException> { generate(destination = dir, id = "second") }
+        val p = project()
+        val two = EventExporter.generate(p, plan(p), dir.toString(), true, true, id = "second", revision = true)
         assertNotEquals(one.folder, two.folder)
         assertContentEquals(bytes, Files.readAllBytes(one.folder.resolve(one.zipNames.first())))
         assertFailsWith<IllegalArgumentException> { generate(destination = dir, id = "second") }
     }
     @Test fun existingEventsFileFailsWithoutChangingIt() {
-        val dir = root(); Files.writeString(dir.resolve("Events"), "keep me")
+        val dir = root(); Files.writeString(dir.resolve("Gigs"), "keep me")
         assertFailsWith<IllegalArgumentException> { generate(destination = dir) }
-        assertEquals("keep me", Files.readString(dir.resolve("Events")))
+        assertEquals("keep me", Files.readString(dir.resolve("Gigs")))
     }
     @Test fun stalePreviewCannotGenerateAfterSavedEventOrBaselineChanges() {
         val p = project(); val preview = plan(p); val dir = root()
         assertFailsWith<IllegalArgumentException> { EventExporter.generate(p.copy(events = listOf(event().copy(title = "Changed"))), preview, dir.toString(), true, true) }
         val changed = p.copy(masters = listOf(master(guitar = listOf(chart(alpha, "C")))))
         assertFailsWith<IllegalArgumentException> { EventExporter.generate(changed, preview, dir.toString(), true, true) }
-        assertFalse(Files.exists(dir.resolve("Events")))
+        assertFalse(Files.exists(dir.resolve("Gigs")))
     }
     @Test fun invalidXmlFailsBeforeCreatingOrPublishingOutput() {
         val p = project().copy(catalog = Catalog(tunes = listOf(alpha.copy(title = "bad\u0001"), beta)))
         val dir = root()
         assertFailsWith<IllegalArgumentException> { generate(p, dir) }
-        assertFalse(Files.exists(dir.resolve("Events")))
+        assertFalse(Files.exists(dir.resolve("Gigs")))
     }
     @Test fun existingStagingFolderIsNotTouchedOnFailure() {
-        val dir = root(); val events = Files.createDirectory(dir.resolve("Events")); val stage = Files.createDirectory(events.resolve(".bandlogger-event-run"))
+        val dir = root(); val events = Files.createDirectory(dir.resolve("Gigs")); val stage = Files.createDirectory(events.resolve(".bandlogger-event-run"))
         Files.writeString(stage.resolve("owner-file"), "preserve")
         assertFailsWith<FileAlreadyExistsException> { generate(destination = dir) }
         assertEquals("preserve", Files.readString(stage.resolve("owner-file")))

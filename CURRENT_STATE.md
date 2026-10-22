@@ -1,3 +1,39 @@
+# Current state — Export organization and event management, October 22, 2026 / 0.8.0
+
+Completed the authorized increment on top of the uncommitted 0.7.0 work; baseline source snapshot and prior ZIP/live JSON hashes preserved under .tools/event-management-baseline-20261022. No commits or pushes.
+
+Future exports share the remembered project exportDestination root: Library/Master (later master Revision N), Library/Supplements/Supplement NNN, Gigs/YYYY-MM-DD Title and Rehearsals/YYYY-MM-DD Title. Member ZIPs sit directly in those folders. Completed folder names have no technical hashes/UUIDs or redundant project namespace. Old separate Events root stays available for legacy discovery/fallback. Library roots are project-owned; shared roots fail safely.
+
+Upcoming Events has Edit/Delete, retained existing editor/save guards, persistent export history, recovery, cleanup retry, legacy discovery and read-only layout migration review. Event records survive restart/title/date/setlist edits by stable identity. Repeat exports explicitly choose New only, Create revision or Replace tracked exports; replacement publishes new output before verified old-file cleanup. Delete persists event removal and exact cleanup tombstones before touching files. Manifest/path/hash/inventory checks block foreign/changed content; no recursive deletion; unavailable/partial failures remain retryable. Cleanup records preserve the original event snapshot after event removal.
+
+Schema 8 reads 1–7 safely and preserves immutable workspace.pre-event-exports.backup.json plus all earlier backups/atomic saves. Existing master/supplement/chart/history paths and recovery remain unchanged. No bulk migration; the in-app review lists original paths and recommends future-only layout. Older event folders without stable identity manifests are shown for review, never auto-adopted/deleted by name.
+
+PASS: 176 tests, zero failures/errors/skips; built-executable local lifecycle smoke; isolated real Google Drive for desktop export/revision/edit/deletion and separate-process restart checks. Sequential ZIP validation retained. GUI inspected exact deletion confirmation and cancelled; actual destructive verification was synthetic engine/executable work. Final ZIP/extracted verification recorded below/in WORK_LOG.
+
+Delivery: dist/band.logger-0.8.0-windows-x64.zip; extract all, keep app/runtime, launch band.logger.exe. Unsigned self-contained Windows x64 preview; no developer Java required. Owner acceptance checklist is the October 22 section of MANUAL_TESTING.md. Limitations: no automated physical legacy relocation or association of identity-free exports; no new iPad/cloud-sync confirmation. Preserve incomplete stages for review. No excluded features or next stage begun.
+
+---
+# Current state — File organization cleanup, October 21, 2026 / 0.7.0
+
+Verified clean main 156b971 (Integrated Supplements to Main Library), baseline 0.6.1. Completed only requested file organization: Import PDF defaults to owner's available sorted staging directory; future supplements use readable project/member names; events have a separate saved root and automatic saved-type Gigs/Rehearsals routing. No additional music-management functionality.
+
+PDF staging preference: C:/Users/mrove/OneDrive/Desktop/Quaternity/band.logger/sorted. Fall back to usual chooser when missing/unreadable; manual navigation remains. Authoritative chart source, safe copy/review/naming/identity behavior unchanged, no staging moves/deletes.
+
+Future supplement example: <distribution root>/Supplements/Quaternity/Supplement 003/Quaternity - Supplement 003 - Marcus.zip, with corresponding .4ss/internal title. Sanitize project/member names; only genuine same/sanitized project folder collisions get short stable ID suffix, duplicate member basenames numeric suffix. Hidden .bandlogger-project-id ownership marker protects stable ID isolation across sessions. Historical Supplement 001/002 paths/ZIPs remain untouched and recover via exact recorded metadata. Legacy unrecorded numbered targets/journals block duplicate generation; no numbering advance on failure. Embedded PDFs and allocations unchanged, timestamp/hash/IDs retained in manifests.
+
+Events export root: optional per-project eventsExportRoot, editable in Home/Edit project or explicitly saved by Remember Events root in export preview. Unconfigured default when available: G:/My Drive/Quartet/band.logger/03 - Events. Saved gig/rehearsal -> root/Gigs or root/Rehearsals, then YYYYMMDD saved title. Temporary override generates without silently saving. Missing configured roots error instead of falling back to Library Master destinations. Member ZIP names, exact cumulative references and one complete reference-only .4ss/member preserve sets/repeats/no PDFs. Repeats preserve old folders with readable Export UTC date/time/short-ID suffix. Existing cloud-compatible ZIP validation remains.
+
+Schema 7 adds only optional Events root. Safely reads schemas 1–6 and first old-schema save retains immutable workspace.pre-event-destinations.backup.json plus prior backups and atomic saves. No historical schema data/IDs/records modified by migration; older apps reject 7.
+
+PASS: 161 tests (148 retained/adapted + 13 new), zero failures/errors/skips. Final scripts/build-local.ps1 compile/tests/distributable PASS (Gradle 10 seconds); standard packaged and extracted smoke/restart PASS, including persisted Events root, both saved-type routes, readable supplement names and all previous XML/PDF/reference checks. New synthetic tests include actual old-format package/receipt recovery and unchanged old bytes. All 207 extracted files match ZIP SHA-256 streams; all 13 prior ZIPs unchanged. Extracted UI with synthetic workspace: separate Events root saved without altering library destination; chooser opens sorted and cancelled with no import. Owner workspace/backups unchanged. Additional UI restart/preview results appended to WORK_LOG.
+
+ZIP: C:/Users/mrove/Projects/band.logger/band.logger/dist/band.logger-0.7.0-windows-x64.zip (61,879,446 bytes).
+EXE: C:/Users/mrove/Projects/band.logger/band.logger/dist/band.logger-0.7.0-windows-x64/band.logger/band.logger.exe.
+SHA-256: 50BE34B4CD0711FCD32F58BF79322F27951F3F9FA4CB0B870E1CBD4738AB6D8B (dist/SHA256-0.7.0.txt). Extract all, retain app/runtime; unsigned self-contained Windows x64 preview.
+
+Next/limits: owner verifies actual roots, historical Supplement 001/002 receipt opening and next future supplement in normal use per MANUAL_TESTING. No production chart/event/history/package changes, Drive publishing or new iPad import performed. Preserve hidden ownership markers and historical folders; unowned nonempty readable folders get a collision suffix instead of adoption. Defaults are requested owner-local preferences, not a general preference editor for PDF staging. No unrelated work, dependencies, workflow change or commit/push/merge/release. All seven cumulative docs updated; older entries below remain historical.
+
+---
 # Current state — Cumulative event references, October 21, 2026 / 0.6.1
 
 Baseline verified clean main 0372f06 (Added A Supplement and Tested), application 0.6.0. Owner reports successful production Library Master import, reference-only Eden gig setlist import, Supplement 001/Night Dreamer import on iPad and persisted supplement history. Those are owner-reported successes; no new iPad test performed by Work.
@@ -201,3 +237,7 @@ Actual iPad import of a production package is awaiting owner verification. Follo
 Limits: 64 MiB per PDF, 512 MiB selected PDF data per member. Folder/file timestamps use UTC. No supplements, full history browser, per-song assignments, Android app or direct cloud uploader. Interrupted exports may leave an incomplete staging folder; do not distribute it. Completed folders can be recovered after app-record failure.
 
 All required progress documents are updated. Changes are uncommitted and unpushed from baseline 798aa54. Remote Actions for 3B has not run. At the final usage checkpoint, 9% remained; feature work stopped and delivery was finalized. Next: owner Windows/iPad review, then the remaining 3C verification when authorized. Do not start Chunk 4 automatically.
+
+Drive cleanup detail (0.8.0): Drive for desktop may inject a hidden UTF-16 desktop.ini after publication. Only its bounded, exact known GoogleDriveFS icon/ViewState profile is recognized; arbitrary desktop.ini or other files still block deletion. Persist the exact Base64 bytes in providerMetadata before removing that decoration, retaining them in the completed tombstone. Changed profiles remain for review. Synthetic local regressions and actual Drive retry passed with no event folders/ZIPs remaining.
+
+0.8.0 final delivery verified: scripts/build-local.ps1 and packaged/extracted smoke + second-process restart PASS. ZIP 61,966,768 bytes; SHA-256 32AA85F26F31CCC7AE0A4BB8C3D2B642353BA6B9092458DA2CFE938A085A74E4 (dist/SHA256-0.8.0.txt). All 207 extracted files match archive streams. All 23 watched prior ZIP/live workspace JSON files unchanged; final 176 tests, zero failures/errors/skips; whitespace check PASS. Final extracted UI verified Edit, collapsed history and full explicit conflict choices without modifying a synthetic event. Self-contained EXE: C:/Users/mrove/Projects/band.logger/band.logger/dist/band.logger-0.8.0-windows-x64/band.logger/band.logger.exe. Source remains uncommitted for GitHub Desktop review.

@@ -86,7 +86,7 @@ class MasterExporterTest {
         val f = fixture()
         val broken = f.project.copy(members = f.project.members.mapIndexed { i, m -> if (i == 1) m.copy(name = "bad\u0001name") else m })
         assertFails { MasterExporter.generate(broken, MasterPlanner.preview(broken)) }
-        assertTrue(children(f.destination).isEmpty())
+        Files.walk(f.destination).use { paths -> assertFalse(paths.anyMatch { it.fileName.toString().endsWith(".zip") || it.fileName.toString() == "manifest.json" }) }
         assertTrue(broken.masters.isEmpty())
     }
     @Test fun completedFilesSurviveMetadataFailureAndRecoveryIsIdempotent() {
@@ -135,11 +135,11 @@ class MasterExporterTest {
     @Test fun schemaTwoMigrationPreservesDestinationAndImmutableBackup() {
         val f = fixture()
         val path = f.root.resolve("workspace.json")
-        val old = WorkspaceCodec.encode(Workspace().saveProject(f.project)).replace("\"schemaVersion\": 6", "\"schemaVersion\": 2")
+        val old = WorkspaceCodec.encode(Workspace().saveProject(f.project)).replace("\"schemaVersion\": 8", "\"schemaVersion\": 2")
         Files.writeString(path, old)
         val store = FileWorkspaceStore(path)
         val loaded = store.load()
-        assertEquals(6, loaded.schemaVersion)
+        assertEquals(8, loaded.schemaVersion)
         assertEquals(f.project, loaded.projects.single())
         store.save(loaded)
         store.save(loaded.saveProject(f.project.copy(name = "Renamed")))

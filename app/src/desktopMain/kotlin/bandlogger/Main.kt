@@ -51,11 +51,26 @@ fun main(args: Array<String>) {
         check(after.projects.first().events.first() == edited)
         check(after.projects.first().events.first().title == "Reopened and edited")
         check(after.projects.first().masters == project.masters)
+        check(after.projects.first().eventsExportRoot == project.eventsExportRoot && project.eventsExportRoot != null)
         val cumulative = FileWorkspaceStore(dir.resolve("cumulative-event-smoke.json")).load().projects.single()
         check(cumulative.supplements.size == 1)
         check(EventExportPlanner.preview(cumulative, cumulative.events.single().id).members.all {
             it.matchedCount == 1 && it.entries.single().distribution?.supplementNumber == 1 && it.entries.single().filename == "Q New Tune -r00- C.pdf"
         })
+        val lifecycleStore = FileWorkspaceStore(dir.resolve("management-smoke.json"))
+        var lifecycle = lifecycleStore.load().projects.single()
+        if (lifecycle.events.isNotEmpty()) {
+            check(lifecycle.eventExports.count { it.state == EventExportState.ACTIVE } == 1)
+            val lifecycleEvent = lifecycle.events.single()
+            lifecycle = lifecycle.saveEvent(lifecycleEvent.copy(title = "Reopened lifecycle event"))
+            lifecycleStore.save(Workspace().saveProject(lifecycle))
+            check(lifecycle.eventExports.single { it.state == EventExportState.ACTIVE }.event.id == lifecycleEvent.id)
+            EventExports.deleteEvent(lifecycle, lifecycleEvent.id) { lifecycleStore.save(Workspace().saveProject(it)) }
+        } else {
+            EventExports.cleanup(lifecycle, { lifecycleStore.save(Workspace().saveProject(it)) })
+        }
+        check(lifecycleStore.load().projects.single().eventExports.all { it.state == EventExportState.DELETED })
+        Files.writeString(dir.resolve("management-restart-passed.txt"), "A separate executable process reopened tracked packages and retained the link through a title edit.")
         Files.writeString(dir.resolve("event-restart-passed.txt"), "New process reopened multiple sets and repeated tunes, edited order, and preserved identities, masters and project isolation.")
         exitProcess(0)
     }
@@ -77,7 +92,7 @@ fun main(args: Array<String>) {
         check(catalog.active().size == 1 && catalog.status(catalog.active().single()) == "Ready")
         store.save(initial.copy(projects = initial.projects.map { it.copy(catalog = catalog) }))
         check(store.load().projects.single().catalog == catalog)
-        val previewProject = store.load().projects.single().copy(exportDestination = dir.toString())
+        val previewProject = store.load().projects.single().copy(exportDestination = dir.toString(), eventsExportRoot = Files.createDirectories(dir.resolve("event-exports")).toString())
         store.save(initial.copy(projects = listOf(previewProject)))
         val master = MasterPlanner.preview(store.load().projects.single())
         check(master.members.size == 4 && master.members.all { it.selectedCount == 1 })
@@ -99,7 +114,7 @@ fun main(args: Array<String>) {
         val eventPath = dir.resolve("event-smoke.json")
         val eventStore = FileWorkspaceStore(eventPath)
         val oldWorkspace = Workspace().saveProject(baselineProject).saveProject(Project("event-other", "Other band")).select(baselineProject.id)
-        val legacyText = WorkspaceCodec.encode(oldWorkspace).replace("\"schemaVersion\": 6", "\"schemaVersion\": 3")
+        val legacyText = WorkspaceCodec.encode(oldWorkspace).replace("\"schemaVersion\": 8", "\"schemaVersion\": 3")
         Files.writeString(eventPath, legacyText)
         var eventWorkspace = eventStore.load()
         EventType.entries.forEach { type ->
@@ -117,8 +132,14 @@ fun main(args: Array<String>) {
         val eventProject = eventWorkspace.projects.first()
         val eventPlan = EventExportPlanner.preview(eventProject, eventProject.events.first().id)
         val eventSnapshot = WorkspaceCodec.encode(eventWorkspace)
-        val eventOutput = EventExporter.generate(eventProject, eventPlan, System.getProperty("bandlogger.eventSmokeDestination") ?: exportDir.toString())
+        val eventOutput = EventExporter.generate(eventProject, eventPlan, System.getProperty("bandlogger.eventSmokeDestination") ?: requireNotNull(eventProject.eventsExportRoot))
         check(eventOutput.zipNames.size == eventProject.members.size)
+        check(eventOutput.folder.parent.fileName.toString() == FileLocations.eventTypeFolder(eventPlan.event.type))
+        eventProject.events.filter { it.id != eventPlan.event.id }.forEach { savedEvent ->
+            val routedPlan = EventExportPlanner.preview(eventProject, savedEvent.id)
+            val routed = EventExporter.generate(eventProject, routedPlan, requireNotNull(eventProject.eventsExportRoot))
+            check(routed.folder.parent.fileName.toString() == FileLocations.eventTypeFolder(savedEvent.type))
+        }
         eventOutput.zipNames.forEach { name ->
             val member = eventPlan.members.single { "${it.baseName}.zip" == name }
             java.util.zip.ZipInputStream(Files.newInputStream(eventOutput.folder.resolve(name))).use { zip ->
@@ -162,6 +183,10 @@ fun main(args: Array<String>) {
         store.save(Workspace().saveProject(recordedSupplement))
         SupplementExporter.clearRecordedIntent(recordedSupplement)
         check(store.load().projects.single().supplements.single() == supplement)
+        check(java.nio.file.Path.of(supplement.publication.folder).parent.fileName.toString() == "Supplements")
+        supplement.publication.members.filter { it.zipName != null }.forEach { member ->
+            check(member.zipName == "${EventExportPlanner.safeLabel(recordedSupplement.name, 50)} - Supplement 001 - ${EventExportPlanner.safeLabel(member.memberName, 32)}.zip")
+        }
         check(SupplementPlanner.preview(store.load().projects.single()).selectedCount == 0)
         check(SupplementExporter.recover(recordedSupplement, supplement.publication.folder) == supplement)
         supplement.publication.members.filter { it.zipName != null }.forEach { member ->
@@ -195,7 +220,7 @@ fun main(args: Array<String>) {
         val cumulativeProject = cumulativeStore.load().projects.single()
         val cumulativePlan = EventExportPlanner.preview(cumulativeProject, cumulativeEvent.id)
         check(cumulativePlan.members.all { it.matchedCount == 1 && it.missingCount == 0 && it.entries.single().distribution?.supplementNumber == 1 })
-        val cumulativeOutput = EventExporter.generate(cumulativeProject, cumulativePlan, exportDir.toString())
+        val cumulativeOutput = EventExporter.generate(cumulativeProject, cumulativePlan, requireNotNull(cumulativeProject.eventsExportRoot))
         cumulativeOutput.zipNames.forEach { name ->
             java.util.zip.ZipInputStream(Files.newInputStream(cumulativeOutput.folder.resolve(name))).use { zip ->
                 var sawXml = false
@@ -223,6 +248,29 @@ fun main(args: Array<String>) {
         }
         check(Files.readAllBytes(dir.resolve("cumulative-event-smoke.json")).contentEquals(cumulativeSnapshot))
         Files.writeString(dir.resolve("cumulative-event-passed.txt"), "Master -> recorded supplement -> saved/reopened event -> exact reference-only XML, no PDF payload and unchanged workspace passed.")
+        // Dedicated durable lifecycle fixture: all charts are synthetic, all metadata local.
+        val managementStore = FileWorkspaceStore(dir.resolve("management-smoke.json"))
+        val managedRoot = System.getProperty("bandlogger.managementSmokeDestination") ?: Files.createDirectories(dir.resolve("managed-exports")).toString()
+        var managed = cumulativeProject.copy(exportDestination = managedRoot, eventExports = emptyList())
+        fun saveManaged(value: Project) { managementStore.save(Workspace().saveProject(value)); managed = value }
+        saveManaged(managed)
+        val managedEvent = managed.events.single()
+        val managedPlan = EventExportPlanner.preview(managed, managedEvent.id)
+        val managedOne = EventExports.publish(managed, managedPlan, managedRoot, true, true, EventConflict.NEW, ::saveManaged)
+        val managedTwo = EventExports.publish(managed, managedPlan, managedRoot, true, true, EventConflict.REVISION, ::saveManaged)
+        check(managedTwo.folder.fileName.toString().endsWith("Revision 2"))
+        check(managementStore.load().projects.single().eventExports.size == 2)
+        val afterEdit = managed.saveEvent(managedEvent.copy(title = "Edited lifecycle event", date = "2026-11-01"))
+        saveManaged(afterEdit)
+        check(managed.eventExports.all { it.event.id == managedEvent.id })
+        EventExports.deleteEvent(managed, managedEvent.id, ::saveManaged)
+        check(managed.events.isEmpty() && managed.eventExports.all { it.state == EventExportState.DELETED })
+        check(!Files.exists(managedOne.folder) && !Files.exists(managedTwo.folder))
+        // Keep a separate tracked event for a genuine second-process restart check.
+        saveManaged(managed.saveEvent(managedEvent))
+        EventExports.publish(managed, EventExportPlanner.preview(managed, managedEvent.id), managedRoot, true, true, EventConflict.NEW, ::saveManaged)
+        Files.writeString(dir.resolve("event-management-passed.txt"), "Durable tracking, explicit revision, title/date edit, verified deletion and new restart fixture passed.")
+        Files.writeString(dir.resolve("file-organization-passed.txt"), "Readable supplement folders/ZIPs, separate persisted Events root and both saved-type routes passed.")
         Files.writeString(dir.resolve("smoke-passed.txt"), "Storage, fonts, XML, ZIP, scan, master generation/recovery, pending, events and reference-only member exports passed.")
         exitProcess(0)
     }
@@ -346,7 +394,7 @@ fun main(args: Array<String>) {
                         TextButton(enabled = !busy, onClick = { leave { page = item } }) { Text(if (page == item) "• $item" else item) }
                     }
                     Spacer(Modifier.height(24.dp))
-                    Text("0.6.1 · PREVIEW", style = MaterialTheme.typography.labelSmall)
+                    Text("0.8.0 · PREVIEW", style = MaterialTheme.typography.labelSmall)
                     Text("Saved locally. No account needed.", style = MaterialTheme.typography.bodySmall)
                 }
                 Column(Modifier.weight(1f).fillMaxHeight().padding(if (page == "Event editor") 20.dp else 36.dp).then(if (page == "Event editor") Modifier else Modifier.verticalScroll(rememberScrollState())), verticalArrangement = Arrangement.spacedBy(if (page == "Event editor") 8.dp else 20.dp)) {
@@ -359,10 +407,10 @@ fun main(args: Array<String>) {
                         Text("$page  /  Project workspace", color = hex(theme.secondary))
                         when (page) {
                             "Home" -> key(project.id) { HomeScreen(project, { projectEditor = project }, { page = "Pending Distribution" }, { openEvent(newEvent(project, it, ::newId), false) }, { page = "Upcoming Events" }) }
-                            "Upcoming Events" -> key(project.id) { EventsScreen(project, { openEvent(newEvent(project, it, ::newId), false) }, { openEvent(it, true) }) }
+                            "Upcoming Events" -> key(project.id) { EventsScreen(project, { openEvent(newEvent(project, it, ::newId), false) }, { openEvent(it, true) }, busy, { busy = it }, { persist(workspace.saveProject(it)) }) }
                             "Event editor" -> eventDraft?.let { draft ->
                                 key(project.id, draft.value.id) {
-                                    EventEditorScreen(project, draft, eventError, { eventDraft = draft.copy(value = it); eventError = null }, { saveEventDraft() }, { leave { page = "Upcoming Events" } }, { busy = it }, Modifier.weight(1f))
+                                    EventEditorScreen(project, draft, eventError, { eventDraft = draft.copy(value = it); eventError = null }, { saveEventDraft() }, { leave { page = "Upcoming Events" } }, { busy = it }, { updated -> persist(workspace.saveProject(updated)) }, Modifier.weight(1f))
                                 }
                             }
                             "Pending Distribution" -> key(project.id) { PendingDistributionScreen(project, { page = "Library master" }, { page = "Library" }, busy, { busy = it }) { updated -> persist(workspace.saveProject(updated)) } }
@@ -467,10 +515,14 @@ fun main(args: Array<String>) {
 @Composable fun ProjectDialog(draft: Project, dismiss: () -> Unit, save: (Project) -> Unit) {
     var name by remember { mutableStateOf(draft.name) }
     var prefix by remember { mutableStateOf(draft.prefix) }
+    var eventsRoot by remember { mutableStateOf(FileLocations.eventsInitialRoot(draft) ?: "") }
     var logo by remember { mutableStateOf(draft.logoReference ?: "") }
-    FormDialog("Project details", dismiss, { save(draft.copy(name = name.trim(), prefix = prefix.trim(), logoReference = logo.trim().ifEmpty { null })) }) {
+    FormDialog("Project details", dismiss, { save(draft.copy(name = name.trim(), prefix = prefix.trim(), logoReference = logo.trim().ifEmpty { null }, exportDestination = eventsRoot.trim().ifEmpty { null })) }) {
         Field("Project name", name) { name = it }
         Field("Filename prefix", prefix) { prefix = it }
+        Field("Project export root (Library, Gigs, Rehearsals)", eventsRoot) { eventsRoot = it }
+        TextButton(onClick = { chooseChartFolder("Choose Events export root")?.let { eventsRoot = it } }) { Text("Browse export root") }
+        Text("Future exports use Library/Master, Library/Supplements, Gigs or Rehearsals. Historical paths remain unchanged.")
         Field("Optional logo reference (stored for later)", logo) { logo = it }
         Text("New projects use the Quaternity palette as an editable starting point. Change colors under Theme.")
         if (draft.members.isNotEmpty()) Text("Includes ${draft.members.size} editable suggested members.")

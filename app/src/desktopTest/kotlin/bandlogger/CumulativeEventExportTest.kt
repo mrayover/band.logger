@@ -99,7 +99,7 @@ class CumulativeEventExportTest {
             val invalid=p.copy(supplements=listOf(record))
             val failure=assertFailsWith<IllegalArgumentException> { EventExporter.generate(invalid,plan(p),dir.toString(),true,true) }
             assertTrue(failure.message!!.contains("inconsistent"))
-            assertFalse(Files.exists(dir.resolve("Events")))
+            assertFalse(Files.exists(dir.resolve("Gigs")))
         }
         assertFailsWith<IllegalArgumentException> { plan(p.copy(supplements=listOf(s,s))) }
     }
@@ -146,6 +146,6 @@ class CumulativeEventExportTest {
         val updated=add(p,mapOf("c" to listOf(item(b,"C"))))
         val dir=Files.createTempDirectory("stale-cumulative-preview")
         assertFailsWith<IllegalArgumentException> { EventExporter.generate(updated,old,dir.toString(),true,true) }
-        assertFalse(Files.exists(dir.resolve("Events")))
+        assertFalse(Files.exists(dir.resolve("Gigs")))
     }
 }
