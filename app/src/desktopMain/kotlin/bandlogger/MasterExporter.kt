@@ -180,7 +180,9 @@ object MasterExporter {
         require(Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS) && Files.size(path) <= 16L * 1024 * 1024) { "No valid manifest in this folder." }
         val master = MasterCodec.decode(Files.readString(path))
         require(master.projectId == project.id) { "This master belongs to another project." }
-        require(Path.of(master.folder).toAbsolutePath().normalize() == root) { "Recover from the original export folder." }
+        // Windows TEMP may use an 8.3 alias (RUNNER~1) while folder() returns its long path.
+        // The recorded original must still exist and resolve to this exact directory.
+        require(Path.of(master.folder).toRealPath() == root) { "Recover from the original export folder." }
         master.members.forEach { member ->
             member.zipName?.let { name ->
                 require(name.none { it in "<>:\"/\\|?*" || it.code < 32 } && name.endsWith(".zip", true) && name != "..") { "Unsafe package name." }

@@ -145,4 +145,20 @@ class MasterExporterTest {
         store.save(loaded.saveProject(f.project.copy(name = "Renamed")))
         assertEquals(old, Files.readString(f.root.resolve("workspace.pre-masters.backup.json")))
     }
+
+    @Test fun canonicalRecoveryStillRejectsCopiedOrMissingOriginalFolders() {
+        val f = fixture(); val master = generate(f)
+        val original = Path.of(master.folder)
+        val copied = Files.createDirectory(f.root.resolve("copied-master"))
+        Files.newDirectoryStream(original).use { files -> files.forEach { Files.copy(it,copied.resolve(it.fileName)) } }
+        val manifestBefore = Files.readAllBytes(copied.resolve("manifest.json"))
+        val failure = assertFailsWith<IllegalArgumentException> { MasterExporter.recover(f.project,copied.toString()) }
+        assertEquals("Recover from the original export folder.",failure.message)
+        val renamed = original.resolveSibling("temporarily-unavailable-master")
+        Files.move(original,renamed)
+        assertFailsWith<java.nio.file.NoSuchFileException> { MasterExporter.recover(f.project,copied.toString()) }
+        Files.move(renamed,original)
+        assertEquals(master,MasterExporter.recover(f.project,original.toString()))
+        assertContentEquals(manifestBefore,Files.readAllBytes(copied.resolve("manifest.json")))
+    }
 }

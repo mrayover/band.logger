@@ -1,3 +1,21 @@
+# Current state — Windows CI path-identity correction, October 22, 2026
+
+Reviewed clean main a2c27049472a0124476ffd04c8e62223a51f2609 and failed Windows application run 39806491249 (build job 119920983778), including its downloaded test-results artifact. The earlier 176-pass local report was valid only for that local filesystem environment; it did not establish hosted Windows success. All six CI failures were reproduced locally before correction by using a real Windows 8.3 temporary-directory alias.
+
+Root cause: the hosted runner TEMP uses C:/Users/RUNNER~1 while Path.toRealPath resolves the same directory to C:/Users/runneradmin. toAbsolutePath().normalize() does not expand 8.3 aliases. Four test assertions incorrectly compared raw and canonical path spellings. Two implementation boundaries incorrectly did the same: event discovery rejected a valid export manifest, and legacy master/supplement recovery rejected its original folder. None of the six failures was an outdated export-layout expectation; no layout, IDs, schema or manifests were changed to fix them.
+
+Corrections: canonicalize the existing discovery root and compare existing directory identities for tracked/discovered records; canonicalize the recorded original path during receipt recovery while retaining original-folder existence, identity, project/catalog/hash and containment checks. Four expected-path assertions now use the canonical configured root plus the exact expected child layout; filename/PDF/ZIP/recovery/preservation assertions remain. Fixtures deliberately keep their raw temporary paths so CI continues to exercise alias handling. Added copied-manifest and copied/missing-original recovery rejection tests, plus stronger import/discovery checks.
+
+PASS: 178 tests, zero failures/errors/skips in each of three runs: forced uncached normal local run, forced uncached 8.3-path run, and fresh tracked-source-copy packaging run under short TEMP/TMP. The exact unchanged scripts/package-windows.ps1 used by Actions completed all tests, runtime/image generation, packaged --smoke-test and --event-restart-check, ZIP extraction with no developer Java/system-only PATH, and both extracted executable checks. All 207 archive files match extracted bytes; all 26 pre-session watched release ZIPs/live workspace JSON files are unchanged. No production charts or exports were used for destructive tests.
+
+Corrected verification ZIP retained separately to preserve the original 0.8.0 delivery:
+C:/Users/mrove/Projects/band.logger/band.logger/.tools/ci-reconciliation-39806491249/fresh source checkout/dist/band.logger-0.8.0-windows-x64.zip
+61,967,016 bytes; SHA-256 6F4DB55C093D9D56CE280DFC94A7A81605963035118FEC031CC4D7235245FEDF.
+Evidence: .tools/ci-reconciliation-39806491249/correction-verification.json and fresh-packaging.log. Version stays 0.8.0; this is a correction to that increment, not an additional feature stage.
+
+Changes remain uncommitted for the owner's GitHub Desktop workflow. No commit, push, workflow dispatch/rerun or production-data migration was performed. The requested final acceptance gate is a successful hosted Windows application run on the owner's correction commit after push; that remote result is still pending. The old failed run cannot validate uncommitted changes. See the latest WORK_LOG entry for each failure and reproduction commands.
+
+---
 # Current state — Export organization and event management, October 22, 2026 / 0.8.0
 
 Completed the authorized increment on top of the uncommitted 0.7.0 work; baseline source snapshot and prior ZIP/live JSON hashes preserved under .tools/event-management-baseline-20261022. No commits or pushes.

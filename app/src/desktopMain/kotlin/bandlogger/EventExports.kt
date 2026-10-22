@@ -161,17 +161,19 @@ object EventExports {
         val found = mutableListOf<EventExportRecord>(); val review = mutableListOf<String>()
         val roots = listOfNotNull(project.exportDestination, project.eventsExportRoot).distinct()
         roots.forEach { configured ->
-            val root = Path.of(configured).toAbsolutePath().normalize()
-            if (!Files.isDirectory(root)) { review += "Destination unavailable: $root"; return@forEach }
+            val configuredRoot = Path.of(configured).toAbsolutePath().normalize()
+            if (!Files.isDirectory(configuredRoot)) { review += "Destination unavailable: $configuredRoot"; return@forEach }
+            // Compare the same filesystem spelling used by publishers, including Windows 8.3 aliases.
+            val root = configuredRoot.toRealPath()
             listOf(root, root.resolve("Events"), root.resolve("Gigs"), root.resolve("Rehearsals")).filter { Files.isDirectory(it, LinkOption.NOFOLLOW_LINKS) && !Files.isSymbolicLink(it) }.forEach { parent ->
                 Files.newDirectoryStream(parent).use { children -> children.take(1000).filter { Files.isDirectory(it, LinkOption.NOFOLLOW_LINKS) && !Files.isSymbolicLink(it) }.forEach { path ->
-                    if (project.eventExports.none { Path.of(it.folder).toAbsolutePath().normalize() == path }) {
+                    if (project.eventExports.none { runCatching { Path.of(it.folder).toRealPath() == path.toRealPath() }.getOrDefault(false) }) {
                         val manifest = path.resolve("event-export.json")
                         if (Files.exists(manifest, LinkOption.NOFOLLOW_LINKS)) {
                             runCatching {
                                 val record = readRecord(manifest)
                                 require(record.projectId == project.id && project.events.any { it.id == record.event.id })
-                                require(Path.of(record.folder).toAbsolutePath().normalize() == path)
+                                require(Path.of(record.folder).toRealPath() == path.toRealPath())
                                 verified(record)
                                 found += record.copy(state = EventExportState.ACTIVE)
                             }.onFailure { review += "$path — identity/package verification failed: ${it.message}" }

@@ -106,6 +106,14 @@ class EventManagementTest {
         val legacy = Files.createDirectory(output.folder.parent.resolve("20261021 Old gig")); Files.writeString(legacy.resolve("old.zip"), "keep")
         val discovery = EventExports.discover(noHistory)
         assertEquals(1, discovery.verified.size); assertTrue(discovery.review.any { it.contains("Old gig") })
+        assertEquals(output.record.id,discovery.verified.single().id)
+        assertEquals("event",discovery.verified.single().event.id)
+        assertEquals(output.folder.toRealPath(),Path.of(discovery.verified.single().folder).toRealPath())
+        assertEquals(output.record.identity(),EventRecordCodec.decode(Files.readString(output.folder.resolve("event-export.json"))).identity())
+        val recordedBytes = Files.readAllBytes(f.root.resolve("workspace.json"))
+        val tracked = EventExports.discover(f.project)
+        assertTrue(tracked.verified.isEmpty(), "Existing tracked output must not be discovered again through an alias")
+        assertContentEquals(recordedBytes,Files.readAllBytes(f.root.resolve("workspace.json")))
         assertEquals("keep", Files.readString(legacy.resolve("old.zip")))
         assertTrue(EventExports.discover(noHistory.copy(id = "another", events = emptyList())).verified.isEmpty())
     }
@@ -145,5 +153,18 @@ class EventManagementTest {
         assertEquals(EventExportState.CLEANUP, f.project.eventExports.single().state)
         assertEquals("User customizations must stay", Files.readString(ini))
         assertTrue(Files.exists(output.folder.resolve(output.zipNames.single())))
+    }
+
+    @Test fun discoveryRejectsCopiedManifestAtAnUnrelatedFolder() {
+        val f = fixture(); val output = f.publish()
+        val copied = Files.createDirectory(output.folder.parent.resolve("2026-10-22 Copied manifest"))
+        Files.newDirectoryStream(output.folder).use { files -> files.forEach { Files.copy(it,copied.resolve(it.fileName)) } }
+        val manifestBefore = Files.readAllBytes(copied.resolve("event-export.json"))
+        val packageBefore = Files.readAllBytes(copied.resolve(output.zipNames.single()))
+        val result = EventExports.discover(f.project.copy(eventExports = emptyList()))
+        assertEquals(listOf(output.record.id),result.verified.map { it.id })
+        assertTrue(result.review.any { it.contains("Copied manifest") && it.contains("verification failed") })
+        assertContentEquals(manifestBefore,Files.readAllBytes(copied.resolve("event-export.json")))
+        assertContentEquals(packageBefore,Files.readAllBytes(copied.resolve(output.zipNames.single())))
     }
 }

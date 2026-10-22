@@ -55,13 +55,16 @@ class FileOrganizationTest {
         val root=Files.createTempDirectory("import-location"); val stage=Files.createDirectory(root.resolve("stage")); val source=stage.resolve("incoming.pdf")
         val library=Files.createDirectory(root.resolve("library")); Files.write(source,syntheticPdf())
         val accepted=LocalCharts.importPdf(source,library.toString(),"Q Tune -r00- C.pdf")
-        assertEquals(library,accepted.parent); assertContentEquals(syntheticPdf(),Files.readAllBytes(source))
+        assertEquals(library.toRealPath(),accepted.parent)
+        assertEquals("Q Tune -r00- C.pdf",accepted.fileName.toString())
+        assertContentEquals(syntheticPdf(),Files.readAllBytes(accepted))
+        assertContentEquals(syntheticPdf(),Files.readAllBytes(source))
         assertFailsWith<IllegalArgumentException> { LocalCharts.importPdf(source,library.toString(),"Q Tune -r00- C.pdf") }
     }
     @Test fun readableSupplementNamesEmbedIdenticalPdfBytesAndOnlyAffectedMembers() {
         val f=fixture(); val p=f.project.copy(members=f.project.members.map { if(it.id=="j") it.copy(preferences=listOf("Bb")) else it })
         val record=publish(f,p)
-        assertEquals(Path.of(p.exportDestination!!).resolve("Library/Supplements/Supplement 001"),Path.of(record.publication.folder))
+        assertEquals(Path.of(p.exportDestination!!).toRealPath().resolve("Library/Supplements/Supplement 001"),Path.of(record.publication.folder))
         val allocation=record.publication.members.single { it.zipName!=null }
         assertEquals("Quaternity - Supplement 001 - Marcus.zip",allocation.zipName)
         assertEquals(1,record.publication.members.count { it.zipName!=null })
@@ -95,7 +98,7 @@ class FileOrganizationTest {
     @Test fun unsafeReservedNamesAreSanitizedAndUnownedFoldersArePreserved() {
         val root=Files.createTempDirectory("folder-name")
         val p=Project("p","CON",exportDestination=root.toString())
-        assertEquals(root.resolve("Library/Supplements/Supplement 001"),SupplementExporter.folder(p,1))
+        assertEquals(root.toRealPath().resolve("Library/Supplements/Supplement 001"),SupplementExporter.folder(p,1))
         val occupied=Files.createDirectories(root.resolve("Supplements/Busy")); Files.writeString(occupied.resolve("owner.txt"),"preserve")
         val other=SupplementExporter.folder(p.copy(name="Busy"),1)
         assertNotEquals(occupied,other.parent); assertEquals("preserve",Files.readString(occupied.resolve("owner.txt")))
@@ -139,7 +142,7 @@ class FileOrganizationTest {
             val p=withEvent(f.project,type).copy(eventsExportRoot=root.toString())
             val plan=EventExportPlanner.preview(p,p.events.single().id)
             val output=EventExporter.generate(p,plan,p.eventsExportRoot!!)
-            assertEquals(root.resolve(FileLocations.eventTypeFolder(type)),output.folder.parent)
+            assertEquals(root.toRealPath().resolve(FileLocations.eventTypeFolder(type)),output.folder.parent)
             assertEquals("2026-10-22 Band night",output.folder.fileName.toString())
             output.zipNames.forEach { name -> ZipFile(output.folder.resolve(name).toFile()).use { zip ->
                 assertEquals(2,zip.size()); val entry=zip.entries().asSequence().single { it.name.endsWith(".4ss") }
