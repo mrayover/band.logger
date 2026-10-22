@@ -34,7 +34,7 @@ fun HomeScreen(project: Project, editProject: () -> Unit, openDistribution: () -
             if (narrow) {
                 HomeCard("Create Rehearsal", "Plan what to work on", primary, 0, Modifier.fillMaxWidth()) { createEvent(EventType.REHEARSAL) }
                 HomeCard("Create Gig", "Build a performance", primary, 1, Modifier.fillMaxWidth()) { createEvent(EventType.GIG) }
-                HomeCard("Upcoming Events", null, secondary, 2, Modifier.fillMaxWidth()) { openEvents() }
+                HomeCard("Events", null, secondary, 2, Modifier.fillMaxWidth()) { openEvents() }
                 HomeCard("Pending Distribution", null, secondary, 3, Modifier.fillMaxWidth(), openDistribution)
             } else {
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -42,7 +42,7 @@ fun HomeScreen(project: Project, editProject: () -> Unit, openDistribution: () -
                     HomeCard("Create Gig", "Build a performance", primary, 1, Modifier.weight(1f)) { createEvent(EventType.GIG) }
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    HomeCard("Upcoming Events", null, secondary, 2, Modifier.weight(1f)) { openEvents() }
+                    HomeCard("Events", null, secondary, 2, Modifier.weight(1f)) { openEvents() }
                     HomeCard("Pending Distribution", null, secondary, 3, Modifier.weight(1f), openDistribution)
                 }
             }

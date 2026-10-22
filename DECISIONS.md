@@ -164,3 +164,14 @@ Drive cleanup detail (0.8.0): Drive for desktop may inject a hidden UTF-16 deskt
 - Whitelist generated cover PDF bytes during XML validation. Never permit arbitrary embedded music data. Keep sequential cloud ZIP verification and complete staged publication/recording/deletion behavior.
 - Use readable stable cover filenames; do not append hashes/UUIDs. The official forScore format adjusts conflicting embedded filenames, so warn that repeated import may duplicate covers and do not claim deduplication or iPad library cleanup. This remains an owner device gate.
 - Schema 9 and immutable pre-branding-covers backup preserve every earlier record/path/backup. Add optional cover receipts without rewriting historical packages. Package unused 0.9.0; no Git operations or next-stage features.
+
+
+## October 22, 2026 — Event history and delivery decisions / 0.10.1
+
+- Extend the existing event, not a separate notes store/archive. Explicit save protects notes/status just like setlists; notes never cross export boundaries.
+- Status is explicit: Planned by default even on old dates; Completed only after confirmation; Canceled retains data. Use Upcoming/History in Events, gig/rehearsal filters and recorded-date chronology; no date-based completion inference.
+- Capture immutable performed facts only through completion/correction. Ordered sets and stable entry/tune IDs preserve repetitions independently of event counts; snapshot labels/title/type/date/test classification resist later plan/catalog edits. Corrections append revisions. Reclassification of an existing record's test flag likewise needs explicit correction; only completed non-test snapshots are countable. No analytics/reporting interfaces.
+- Schema 10 reads 1–9 with defaults and immutable pre-event-history backup; preserve all earlier backups, IDs, export records and schema-9 branding opt-outs.
+- Sanitize internal metadata in EventExportPlanner and omit the fields from sidecar serialization. Reject external manifests containing private internal values. Keep reference-only music and optional cover behavior unchanged.
+- Local builds permanently publish only new versioned extracted folders with a direct executable and bundled runtime. Verify archive inventory/hashes and smoke/restart before advancing a stable shortcut atomically. Never overwrite old/running program images or place user data in them. Preserve last working current target on failure; retained staging supports diagnosis/retry. CI retains ZIP-only packaging.
+- Deliver 0.10.1 without committing/pushing, production modifications or future analytics/Archive/audio/venue features.

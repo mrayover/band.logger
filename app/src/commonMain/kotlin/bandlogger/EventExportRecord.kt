@@ -1,7 +1,7 @@
 package bandlogger
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.*
 
 @Serializable enum class EventExportState { PENDING, ACTIVE, CLEANUP, DELETED }
 @Serializable data class EventPackage(val memberId: String, val memberName: String, val filename: String, val sha256: String)
@@ -28,12 +28,19 @@ import kotlinx.serialization.json.Json
         }
         require(removedFiles.all { file -> packages.any { it.filename == file } })
     }
-    fun identity() = copy(state = EventExportState.PENDING, removedFiles = emptyList(), error = null, providerMetadata = emptyMap())
+    fun identity() = copy(event = event.forExport(), state = EventExportState.PENDING, removedFiles = emptyList(), error = null, providerMetadata = emptyMap())
 }
 object EventRecordCodec {
     private val json = Json { prettyPrint = true; encodeDefaults = true }
-    fun encode(record: EventExportRecord) = json.encodeToString(record.also { it.validate() }.identity())
-    fun decode(text: String) = json.decodeFromString<EventExportRecord>(text).also { it.validate() }
+    fun encode(record: EventExportRecord): String {
+        val element = json.encodeToJsonElement(record.also { it.validate() }.identity()).jsonObject
+        val event = element.getValue("event").jsonObject.filterKeys { it !in setOf("notes", "status", "isTest", "performanceHistory") }
+        return json.encodeToString(JsonObject(element + ("event" to JsonObject(event))))
+    }
+    fun decode(text: String) = json.decodeFromString<EventExportRecord>(text).also {
+        require(it.event == it.event.forExport()) { "Export manifest contains internal event data." }
+        it.validate()
+    }
 }
 fun Project.recordEventExport(record: EventExportRecord) = copy(eventExports =
     if (eventExports.any { it.id == record.id }) eventExports.map { if (it.id == record.id) record else it } else eventExports + record)

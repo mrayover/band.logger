@@ -1,7 +1,15 @@
 param([switch]$SkipBuild)
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot
-if (Test-Path (Join-Path $root 'dist\band.logger-0.9.0-windows-x64.zip')) { throw 'Version 0.9.0 ZIP already exists. Preserve it and choose a new version before packaging.' }
+. "$PSScriptRoot/build-version.ps1"
+$version = Get-BandLoggerVersion $root
+# jpackage recreates the image: never rebuild it while that exact image is running.
+$imagePath = [IO.Path]::GetFullPath((Join-Path $root 'app/build/compose/binaries/main/app/band.logger')) + [IO.Path]::DirectorySeparatorChar
+Get-Process -Name 'band.logger' -ErrorAction SilentlyContinue | ForEach-Object {
+    $runningPath = $_.Path
+    if ($runningPath -and $runningPath.StartsWith($imagePath, [StringComparison]::OrdinalIgnoreCase)) { throw 'Close the app-image executable before packaging. Versioned extracted builds may stay open.' }
+}
+if (Test-Path (Join-Path $root "dist\band.logger-$version-windows-x64.zip")) { throw "Version $version ZIP already exists. Preserve it and choose a new version before packaging." }
 Push-Location $root
 try {
     if (-not $SkipBuild) {
@@ -16,7 +24,8 @@ try {
     $previousOptions = $env:JAVA_TOOL_OPTIONS
     $env:JAVA_TOOL_OPTIONS = '-Dbandlogger.dataDir="' + $smokeDir + '"'
     try {
-        $process = Start-Process -FilePath $exe -ArgumentList '--smoke-test' -PassThru -Wait -WindowStyle Hidden
+        $process = Start-Process -FilePath $exe -ArgumentList '--smoke-test' -PassThru -WindowStyle Hidden
+        if (-not $process.WaitForExit(60000)) { $process.Kill(); throw 'Packaged smoke timed out.' }
         if ($process.ExitCode -ne 0 -or -not (Test-Path "$smokeDir\smoke-passed.txt")) { throw 'Packaged executable smoke test failed.' }
         $restart = Start-Process -FilePath $exe -ArgumentList '--event-restart-check' -PassThru -WindowStyle Hidden
         if (-not $restart.WaitForExit(60000)) { $restart.Kill(); throw 'Event restart smoke timed out.' }
@@ -27,10 +36,10 @@ try {
     Copy-Item 'THIRD_PARTY_NOTICES.md' $image
     Copy-Item 'app\src\desktopMain\resources\fonts\OFL.txt' (Join-Path $image 'Lato-OFL.txt')
     New-Item -ItemType Directory -Force 'dist' | Out-Null
-    Compress-Archive -Path $image -DestinationPath 'dist\band.logger-0.9.0-windows-x64.zip' -Force
+    Compress-Archive -Path $image -DestinationPath "dist\band.logger-$version-windows-x64.zip" -Force
     # Test the actual archive in a fresh path containing spaces, with no developer Java on PATH.
     $extracted = Join-Path $root ('app\build\ZIP review ' + [guid]::NewGuid().ToString('N'))
-    Expand-Archive 'dist\band.logger-0.9.0-windows-x64.zip' $extracted
+    Expand-Archive "dist\band.logger-$version-windows-x64.zip" $extracted
     $previousJava = $env:JAVA_HOME
     $previousPath = $env:PATH
     $previousOptions = $env:JAVA_TOOL_OPTIONS
@@ -49,6 +58,6 @@ try {
         $env:PATH = $previousPath
         $env:JAVA_TOOL_OPTIONS = $previousOptions
     }
-    Get-FileHash 'dist\band.logger-0.9.0-windows-x64.zip' -Algorithm SHA256 |
-        Format-List | Out-File 'dist\SHA256-0.9.0.txt'
+    Get-FileHash "dist\band.logger-$version-windows-x64.zip" -Algorithm SHA256 |
+        Format-List | Out-File "dist\SHA256-$version.txt"
 } finally { Pop-Location }

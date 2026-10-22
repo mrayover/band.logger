@@ -17,9 +17,9 @@ import kotlinx.serialization.json.Json
     val logoReference: String? = null, val members: List<Member> = emptyList(), val catalog: Catalog = Catalog(),
     val exportDestination: String? = null, val masters: List<LibraryMaster> = emptyList(), val events: List<BandEvent> = emptyList(), val supplements: List<LibrarySupplement> = emptyList(), val eventsExportRoot: String? = null, val eventExports: List<EventExportRecord> = emptyList(), val brandId: String? = null, val includeBrandedSetCovers: Boolean = false
 )
-@Serializable data class Workspace(val schemaVersion: Int = 9, val projects: List<Project> = emptyList(), val selectedId: String? = null) {
+@Serializable data class Workspace(val schemaVersion: Int = 10, val projects: List<Project> = emptyList(), val selectedId: String? = null) {
     fun validate() {
-        require(schemaVersion == 9) { "This data was created by an unsupported application version." }
+        require(schemaVersion == 10) { "This data was created by an unsupported application version." }
         require(projects.map { it.id }.distinct().size == projects.size) { "Duplicate project identity." }
         require(selectedId == null || projects.any { it.id == selectedId }) { "Selected project is missing." }
         projects.forEach { p ->
@@ -67,9 +67,9 @@ object WorkspaceCodec {
     fun encode(value: Workspace): String { value.validate(); return json.encodeToString(value) }
     fun decode(value: String): Workspace {
         val stored = json.decodeFromString<Workspace>(value)
-        val migrated = if (stored.schemaVersion in 1..8) stored.copy(schemaVersion = 9,
+        val migrated = if (stored.schemaVersion in 1..9) stored.copy(schemaVersion = 10,
             projects = stored.projects.map { p ->
-                if (p.brandId == null && p.name == "Quaternity" && p.prefix == "Q") p.copy(brandId = "quaternity") else p
+                if (stored.schemaVersion <= 8 && p.brandId == null && p.name == "Quaternity" && p.prefix == "Q") p.copy(brandId = "quaternity") else p
             }) else stored
         return migrated.also { it.validate() }
     }

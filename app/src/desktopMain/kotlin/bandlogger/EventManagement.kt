@@ -85,7 +85,7 @@ fun EventDeleteDialog(project: Project, event: BandEvent, setBusy: (Boolean) -> 
             working = true; setBusy(true)
             scope.launch {
                 try { withContext(Dispatchers.IO) { EventExports.deleteEvent(project, event.id, save) }; dismiss() }
-                catch (e: Exception) { error = "Deletion could not finish: ${e.message}. Retained cleanup records are available in Upcoming Events." }
+                catch (e: Exception) { error = "Deletion could not finish: ${e.message}. Retained cleanup records are available in Events." }
                 finally { working = false; setBusy(false) }
             }
         }) { Text("Delete event and exports") }

@@ -72,6 +72,7 @@ fun main(args: Array<String>) {
         check(lifecycleStore.load().projects.single().eventExports.all { it.state == EventExportState.DELETED })
         Files.writeString(dir.resolve("management-restart-passed.txt"), "A separate executable process reopened tracked packages and retained the link through a title edit.")
         CoverSmoke.restart(dir)
+        EventHistorySmoke.restart(dir)
         Files.writeString(dir.resolve("event-restart-passed.txt"), "New process reopened multiple sets and repeated tunes, edited order, and preserved identities, masters and project isolation.")
         exitProcess(0)
     }
@@ -115,7 +116,7 @@ fun main(args: Array<String>) {
         val eventPath = dir.resolve("event-smoke.json")
         val eventStore = FileWorkspaceStore(eventPath)
         val oldWorkspace = Workspace().saveProject(baselineProject).saveProject(Project("event-other", "Other band")).select(baselineProject.id)
-        val legacyText = WorkspaceCodec.encode(oldWorkspace).replace("\"schemaVersion\": 9", "\"schemaVersion\": 3")
+        val legacyText = WorkspaceCodec.encode(oldWorkspace).replace("\"schemaVersion\": 10", "\"schemaVersion\": 3")
         Files.writeString(eventPath, legacyText)
         var eventWorkspace = eventStore.load()
         EventType.entries.forEach { type ->
@@ -273,6 +274,7 @@ fun main(args: Array<String>) {
         Files.writeString(dir.resolve("event-management-passed.txt"), "Durable tracking, explicit revision, title/date edit, verified deletion and new restart fixture passed.")
         Files.writeString(dir.resolve("file-organization-passed.txt"), "Readable supplement folders/ZIPs, separate persisted Events root and both saved-type routes passed.")
         CoverSmoke.run(cumulativeProject,dir)
+        EventHistorySmoke.run(cumulativeProject,dir)
         Files.writeString(dir.resolve("smoke-passed.txt"), "Storage, fonts, XML, ZIP, scan, master generation/recovery, pending, events and reference-only member exports passed.")
         exitProcess(0)
     }
@@ -393,11 +395,11 @@ fun main(args: Array<String>) {
                         TextButton(enabled = !busy, onClick = { leave { projectEditor = quaternity(newId(), ::newId) } }) { Text("Start with Quaternity") }
                     }
                     Spacer(Modifier.height(20.dp))
-                    if (project != null) listOf("Home", "Upcoming Events", "Library", "Library master", "Pending Distribution", "Members", "Theme", "Technical proof").forEach { item ->
+                    if (project != null) listOf("Home", "Events", "Library", "Library master", "Pending Distribution", "Members", "Theme", "Technical proof").forEach { item ->
                         TextButton(enabled = !busy, onClick = { leave { page = item } }) { Text(if (page == item) "• $item" else item) }
                     }
                     Spacer(Modifier.height(24.dp))
-                    Text("0.9.0 · PREVIEW", style = MaterialTheme.typography.labelSmall)
+                    Text("0.10.1 · PREVIEW", style = MaterialTheme.typography.labelSmall)
                     Text("Saved locally. No account needed.", style = MaterialTheme.typography.bodySmall)
                 }
                 Column(Modifier.weight(1f).fillMaxHeight().padding(if (page == "Event editor") 20.dp else 36.dp).then(if (page == "Event editor") Modifier else Modifier.verticalScroll(rememberScrollState())), verticalArrangement = Arrangement.spacedBy(if (page == "Event editor") 8.dp else 20.dp)) {
@@ -409,11 +411,11 @@ fun main(args: Array<String>) {
                         ProjectIdentity(project, compact = page == "Event editor")
                         Text("$page  /  Project workspace", color = hex(theme.secondary))
                         when (page) {
-                            "Home" -> key(project.id) { HomeScreen(project, { projectEditor = project }, { page = "Pending Distribution" }, { openEvent(newEvent(project, it, ::newId), false) }, { page = "Upcoming Events" }) }
-                            "Upcoming Events" -> key(project.id) { EventsScreen(project, { openEvent(newEvent(project, it, ::newId), false) }, { openEvent(it, true) }, busy, { busy = it }, { persist(workspace.saveProject(it)) }) }
+                            "Home" -> key(project.id) { HomeScreen(project, { projectEditor = project }, { page = "Pending Distribution" }, { openEvent(newEvent(project, it, ::newId), false) }, { page = "Events" }) }
+                            "Events" -> key(project.id) { EventsScreen(project, { openEvent(newEvent(project, it, ::newId), false) }, { openEvent(it, true) }, busy, { busy = it }, { persist(workspace.saveProject(it)) }) }
                             "Event editor" -> eventDraft?.let { draft ->
                                 key(project.id, draft.value.id) {
-                                    EventEditorScreen(project, draft, eventError, { eventDraft = draft.copy(value = it); eventError = null }, { saveEventDraft() }, { leave { page = "Upcoming Events" } }, { busy = it }, { updated -> persist(workspace.saveProject(updated)) }, Modifier.weight(1f))
+                                    EventEditorScreen(project, draft, eventError, { eventDraft = draft.copy(value = it); eventError = null }, { saveEventDraft() }, { leave { page = "Events" } }, { busy = it }, { updated -> persist(workspace.saveProject(updated)) }, Modifier.weight(1f))
                                 }
                             }
                             "Pending Distribution" -> key(project.id) { PendingDistributionScreen(project, { page = "Library master" }, { page = "Library" }, busy, { busy = it }) { updated -> persist(workspace.saveProject(updated)) } }

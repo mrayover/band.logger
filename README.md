@@ -2,7 +2,7 @@
 
 **A project-based workspace for musicians and working bands.**
 
-**Project status:** Official Quaternity branding and optional embedded set covers delivered (0.9.0). See the latest October 22 update below; earlier delivery sections are historical.
+**Project status:** Event notes, explicit status/history and automatic ready-to-launch local delivery (0.10.1). See the latest October 22 section; earlier deliveries are historical.
 **Established:** October 20, 2026  
 **Primary platform:** Windows desktop  
 **Planned companion platform:** Android  
@@ -567,3 +567,26 @@ Stable readable cover names use band.logger Cover - Project - Gig/Rehearsal - Da
 Schema 9 adds project brand/cover preference and optional cover receipt metadata. Schemas 1–8 load without writing; first old-schema save preserves immutable workspace.pre-branding-covers.backup.json plus all earlier backups/atomic saves. Old event manifests lacking covers still decode and verify with an empty cover list. New export records retain set IDs/numbers, cover filenames/PDF hashes and source-logo hash. All original event/distribution identities, historical locations, master/supplement chains, publication intent/recovery, numeric revisions/replacement and retryable cleanup remain. Existing production folders are never moved or regenerated.
 
 Windows 0.9.0 uses the established self-contained packaging workflow. PDFBox 3.0.8/FontBox/pdfbox-io/Commons Logging are the only new runtime dependency family; their Apache notices remain in bundled JARs, and the existing Lato license remains included. No external renderer, logo application or network connection is needed at runtime. Full synthetic tests and package/extracted checks are recorded in WORK_LOG; owner acceptance uses the latest MANUAL_TESTING section.
+
+
+## October 22, 2026 — Sharp vector desktop logos / 0.9.2
+
+Quaternity marks now draw directly from cached vector commands at the window's actual display density, replacing bitmap scaling. Original artwork, transparent edges, proportions and all existing header/sidebar/branding-preview sizes are preserved. Packaged Windows app inspected at process-local 100%, 125%, 150% and 200% display-scale overrides; 196 automated tests and full packaging/extracted checks pass. The small sidebar mark still has finite pixels for its fine detail.
+
+PDF covers retain the existing lossless transparent logo at approximately 436 dpi, with independent ivory/navy/gold page backgrounds and unchanged layout, text and forScore behavior. PDF vector conversion is not exposed by the bundled Skia API; no new converter dependencies were added. Deliverable: dist/band.logger-0.9.2-windows-x64.zip. Existing releases and production data preserved; no commits or pushes.
+
+
+## October 22, 2026 — Event notes, trustworthy history and automatic local delivery / 0.10.1
+
+Events now has Upcoming (all Planned events, including past/undated) and History (Completed/Canceled) views, with gig/rehearsal filters. History sorts by recorded date newest first, undated last. Cards show status, set/tune-occurrence counts and whether notes exist. Notes & status is separate from Setlist in the same event editor; multiline notes and status changes share explicit Save event and existing dirty/navigation/close guards. Notes stay internal to band.logger, including exclusion from export manifests, XML/ZIP instructions and generated PDFs.
+
+All new and migrated events default to Planned; dates never imply completion. Canceled preserves the event. Confirming Completed captures a performed-setlist revision with the saved event identity, title/type/date/test classification, ordered sets, stable tune and occurrence IDs, and tune-label snapshots. Later planning edits do not rewrite those facts. Review recorded setlist shows every revision. To correct actual facts, edit the current setlist/details and explicitly choose Correct record from current setlist, confirm, then Save event. Corrections append a revision; earlier records remain. Only a Completed event whose latest confirmed snapshot is not marked Test qualifies for future performance counting. Repeated occurrences and distinct events remain separate. No analytics dashboard or advanced Archive was added.
+
+Workspace schema 10 reads schemas 1–9 without writing on load. First old-schema save preserves immutable workspace.pre-event-history.backup.json, all earlier immutable backups and the previous-save backup. Original events/sets/entries/catalog/export identities and original distribution paths remain. Schema-9 branding opt-outs stay explicit; older branding migration runs only for schemas <=8. Existing covers, vector logos, multiple sets/repeats, member distribution/reference rules, export tracking/revision/replacement and verified cleanup remain.
+
+Permanent local delivery: run scripts/build-local.ps1. It runs delivery-safety tests and the normal Windows tests/package pipeline, then scripts/publish-local.ps1 verifies every archive file by SHA-256, checks the runtime/application inventory, smoke-tests the extracted copy with no developer Java and isolated synthetic data, and publishes a fresh version folder. For this release the direct executable is dist/band.logger-0.10.1-windows-x64/band.logger.exe (no extra band.logger nesting). dist/Launch current build.lnk advances atomically only after success. Previous extracted versions/ZIPs and running older apps are preserved; existing target versions are never overwritten. Incomplete/unsafe archives leave the prior current shortcut/build intact. Failed staging stays available for diagnosis. Program files are separate from %LOCALAPPDATA%/band.logger. GitHub Actions still calls package-windows.ps1 and publishes the normal ZIP; local extraction/shortcuts are not run in CI. Package version is read from app/build.gradle.kts.
+
+Verification and exact final checksum are recorded in WORK_LOG and CURRENT_STATE. Use the latest MANUAL_TESTING checklist. No Git commit/push, production-data edits or unrelated features.
+
+
+Local extraction recovery: if packaging succeeded but final delivery designation failed, rerun `scripts/publish-local.ps1 -Archive dist/band.logger-VERSION-windows-x64.zip`. If the new version folder already exists from a late-stage failure, add `-VerifyExisting`: it verifies exact inventory/hashes and reruns isolated bundled-runtime diagnostics before updating the current shortcut; it never overwrites existing program files. An existing version remains rejected by default. Failed verification retains the previous working shortcut/build.

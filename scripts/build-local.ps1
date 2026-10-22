@@ -12,5 +12,9 @@ if (-not $jdk) {
 $priorJava = $env:JAVA_HOME
 try {
     $env:JAVA_HOME = $jdk.FullName
+    & "$PSScriptRoot/test-local-delivery.ps1"
     & "$PSScriptRoot\package-windows.ps1"
+    . "$PSScriptRoot/build-version.ps1"
+    $version = Get-BandLoggerVersion $root
+    & "$PSScriptRoot/publish-local.ps1" -Archive (Join-Path $root "dist/band.logger-$version-windows-x64.zip")
 } finally { $env:JAVA_HOME = $priorJava }

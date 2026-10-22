@@ -1,24 +1,31 @@
 package bandlogger
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toComposeImageBitmap
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import org.jetbrains.skia.Image
+
+
+/** Compose supplies the fitted draw size in physical pixels, including Windows DPI. */
+private class QuaternityPainter : Painter() {
+    override val intrinsicSize = Size(Branding.LOGO_WIDTH.toFloat(), Branding.LOGO_HEIGHT.toFloat())
+    override fun DrawScope.onDraw() {
+        Branding.drawLogo(drawContext.canvas.nativeCanvas, size.width, size.height)
+    }
+}
 
 @Composable
 fun QuaternityMark(modifier: Modifier = Modifier) {
-    val skiaImage = remember { Image.makeFromEncoded(Branding.logoPng) }
-    val bitmap = remember { skiaImage.toComposeImageBitmap() }
-    DisposableEffect(skiaImage) { onDispose { skiaImage.close() } }
-    Image(bitmap, "Official Quaternity logo", modifier.background(Color(0xFFF4F2EA)).padding(4.dp), contentScale = ContentScale.Fit)
+    val painter = remember { QuaternityPainter() }
+    Image(painter, "Official Quaternity logo", modifier, contentScale = ContentScale.Fit)
 }
 @Composable
 fun ProjectIdentity(project: Project, compact: Boolean = false) {

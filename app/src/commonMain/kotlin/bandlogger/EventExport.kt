@@ -27,7 +27,7 @@ object EventExportPlanner {
         return label
     }
     fun preview(project: Project, eventId: String): EventExportPlan {
-        val event = requireNotNull(project.events.find { it.id == eventId }) { "Save this event in the current project before exporting." }
+        val event = requireNotNull(project.events.find { it.id == eventId }) { "Save this event in the current project before exporting." }.forExport()
         event.validate()
         require(event.projectId == project.id) { "Event belongs to another project." }
         require(event.entries.isNotEmpty()) { "This event contains no songs." }

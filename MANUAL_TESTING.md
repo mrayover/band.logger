@@ -1,3 +1,25 @@
+# 0.10.1 acceptance — Event notes, status and history
+
+Ready-to-launch program: C:/Users/mrove/Projects/band.logger/band.logger/dist/band.logger-0.10.1-windows-x64/band.logger.exe. Local builds extract automatically; no manual ZIP extraction is needed. Future successful local builds update dist/Launch current build.lnk to their verified version. Older release folders remain intact. Close any older app using the production workspace before opening a newer version; existing process locking remains in force. Program files are separate from %LOCALAPPDATA%/band.logger and require no Java/Gradle installation to launch.
+
+Use a synthetic project/event for acceptance. Do not delete or regenerate production exports for testing.
+
+1. Open the executable. In Events > Upcoming, confirm existing events remain Planned regardless of date. Switch History and gig/rehearsal filters; confirm no old event was silently completed.
+2. Create a Gig, set a title/date and add a tune twice, optionally across two numbered sets. Open Notes & status. For a synthetic event, check Test event before completing it.
+3. Select Completed. Review the confirmation that the current setlist reflects what actually happened; confirm. Add two lines of post-show notes, then Save event (or Back to events > Save and continue). Confirm the dirty guard also protects an unsaved notes edit.
+4. Close and reopen the app. Open Events > History > Gigs and reopen that same event. Verify Completed, Notes saved, original event identity, setlist order/repetitions and both lines of notes. Review recorded setlist; ensure its tune labels and occurrence order match completion. A test record is excluded from future counts.
+5. Edit notes and save again. Optionally change a planned tune/title/date/type after completion: the recorded performance must remain unchanged. To correct actual history, first make the intended details/setlist edits, select Correct record from current setlist, review/confirm, and Save event. Review recorded setlist to see the new revision and retained previous one. Test classification changes to recorded facts also need that explicit correction.
+6. Mark a synthetic rehearsal Canceled and save. Verify it stays in History and retains notes/setlist, never qualifies as a performance, and can still be reopened/exported/deleted normally. Returning to Planned puts it back in Upcoming without erasing prior recorded revisions.
+7. Export a synthetic event with a distinctive private note, once with covers off and once with covers on. Notes must not appear in XML, READ-ME, cover PDFs or event-export.json. Existing member filenames/reference order/repeats and optional covers remain unchanged; actual forScore import/re-import and duplicate-cover behavior still use the earlier iPad checklist.
+8. If checking cleanup, delete only a synthetic event with known synthetic tracked exports. Confirm exact listed folders; unrelated files/charts/library distributions must remain untouched. Existing pending cleanup remains retryable.
+9. For future local development builds, run scripts/build-local.ps1 with a fresh version. Expect a ZIP plus a verified ready-to-launch version folder and updated Launch current build shortcut. Existing ZIP/version collisions must fail safely. A broken extraction must preserve the prior shortcut/build; scripts/test-local-delivery.ps1 verifies this automatically.
+
+Migration: first save of schema 1–9 creates workspace.pre-event-history.backup.json without changing prior immutable backups. Load alone does not write. Older binaries reject schema 10; retain backups and previous builds. Dates and performance facts are user-confirmed, not inferred from distribution or planned tunes. Unsaved drafts still do not survive forced termination. Analytics/advanced Archive, physical iPad testing and cloud synchronization guarantees are outside this increment.
+
+Earlier acceptance checklists below are historical and remain useful for regression review.
+
+---
+
 # Stage 3B Windows review checklist
 
 Extract the entire band.logger-0.3.1-windows-x64.zip, close older band.logger windows, then run band.logger/band.logger.exe. Keep app/ and runtime/ beside it. No development tools or Java installation are required. The application is unsigned.

@@ -69,7 +69,7 @@ object EventExports {
     @Synchronized
     fun publish(project: Project, plan: EventExportPlan, destination: String, missing: Boolean, undated: Boolean,
                 conflict: EventConflict, save: (Project) -> Unit): EventExportResult {
-        require(project.eventExports.none { it.event.id == plan.event.id && it.state == EventExportState.PENDING }) { "Recover the pending event export from Upcoming Events before exporting again." }
+        require(project.eventExports.none { it.event.id == plan.event.id && it.state == EventExportState.PENDING }) { "Recover the pending event export from Events before exporting again." }
         val previous = project.eventExports.filter { it.event.id == plan.event.id && it.state == EventExportState.ACTIVE }
         require(previous.isEmpty() || conflict != EventConflict.NEW) { "Choose Create revision or Replace tracked exports." }
         if (conflict == EventConflict.REPLACE) previous.forEach { verified(it) }
@@ -83,7 +83,7 @@ object EventExports {
         save(current) // if this fails PENDING record + manifest recover on restart
         if (conflict == EventConflict.REPLACE) current = cleanup(current, save)
         val unfinished = current.eventExports.filter { it.state == EventExportState.CLEANUP }
-        return result.copy(warnings = result.warnings + unfinished.map { "Previous export cleanup remains pending: ${it.folder}. Retry from Upcoming Events. ${it.error ?: ""}" })
+        return result.copy(warnings = result.warnings + unfinished.map { "Previous export cleanup remains pending: ${it.folder}. Retry from Events. ${it.error ?: ""}" })
     }
     fun recoverPending(project: Project, save: (Project) -> Unit): Project {
         var current = project

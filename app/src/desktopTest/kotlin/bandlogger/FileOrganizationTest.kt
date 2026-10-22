@@ -165,10 +165,10 @@ class FileOrganizationTest {
     @Test fun eventsRootSettingPersistsAndSchemaSixBackupRetainsAllHistory() {
         val f=fixture(); val record=publish(f)
         val p=withEvent(f.project.recordSupplement(record),EventType.REHEARSAL)
-        val old=WorkspaceCodec.encode(Workspace().saveProject(p)).replace("\"schemaVersion\": 9","\"schemaVersion\": 6").replace("\"eventsExportRoot\": null","\"oldField\": null")
+        val old=WorkspaceCodec.encode(Workspace().saveProject(p)).replace("\"schemaVersion\": 10","\"schemaVersion\": 6").replace("\"eventsExportRoot\": null","\"oldField\": null")
         val path=f.root.resolve("workspace.json"); Files.writeString(path,old)
         Files.writeString(f.root.resolve("workspace.pre-supplements.backup.json"),"previous backup")
-        val store=FileWorkspaceStore(path); val loaded=store.load(); assertEquals(9,loaded.schemaVersion)
+        val store=FileWorkspaceStore(path); val loaded=store.load(); assertEquals(10,loaded.schemaVersion)
         assertEquals(p.copy(brandId="quaternity"),loaded.projects.single()); assertEquals(old,Files.readString(path))
         val configured=loaded.projects.single().copy(eventsExportRoot=f.root.toString()); store.save(loaded.saveProject(configured)); store.save(store.load())
         assertEquals(configured,store.load().projects.single())

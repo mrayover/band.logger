@@ -20,20 +20,36 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun EventsScreen(project: Project, create: (EventType) -> Unit, open: (BandEvent) -> Unit, busy: Boolean, setBusy: (Boolean) -> Unit, saveProject: (Project) -> Unit) {
     var deleting by remember { mutableStateOf<BandEvent?>(null) }
-    Text("Upcoming Events", style = MaterialTheme.typography.headlineMedium)
-    Text("All saved events for ${project.name}, including past and undated events.")
+    var view by remember { mutableStateOf(EventView.UPCOMING) }
+    var typeFilter by remember { mutableStateOf<EventType?>(null) }
+    Text("Events", style = MaterialTheme.typography.headlineMedium)
+    Text("Plan upcoming events or reopen completed and canceled records for ${project.name}.")
+    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        EventView.entries.forEach { item -> FilterChip(selected = view == item, onClick = { view = item }, label = { Text(if (item == EventView.UPCOMING) "Upcoming" else "History") }) }
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        FilterChip(selected = typeFilter == null, onClick = { typeFilter = null }, label = { Text("All types") })
+        EventType.entries.forEach { type -> FilterChip(selected = typeFilter == type, onClick = { typeFilter = type }, label = { Text(type.label() + "s") }) }
+    }
+    Text(if (view == EventView.UPCOMING) "Planned events, including past or undated plans. Dates never mark an event Completed automatically."
+        else "Completed and canceled records, newest dated first. Completed details come from the recorded performance.")
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Button(enabled = !busy, onClick = { create(EventType.REHEARSAL) }) { Text("Create Rehearsal") }
         OutlinedButton(enabled = !busy, onClick = { create(EventType.GIG) }) { Text("Create Gig") }
     }
     if (project.events.isEmpty()) Text("No saved events yet. Create a rehearsal or gig to get started.")
-    project.events.sortedWith(compareBy<BandEvent> { it.date == null }.thenBy { it.date ?: "" }.thenBy { it.title.lowercase() }.thenBy { it.id }).forEach { event ->
+    val visible = project.eventsFor(view, typeFilter)
+    if (project.events.isNotEmpty() && visible.isEmpty()) Text("No events match this view.")
+    visible.forEach { event ->
         key(event.id) {
             Card(Modifier.fillMaxWidth()) {
                 Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text(event.title, style = MaterialTheme.typography.titleLarge)
-                        Text("${event.type.label()} · ${event.date ?: "Date not set"} · ${event.sets.size} sets · ${event.entries.size} tunes")
+                        Text(event.historyTitle(), style = MaterialTheme.typography.titleLarge)
+                        val record = event.performance.takeIf { event.status == EventStatus.COMPLETED }
+                        Text("${event.historyType().label()} · ${event.historyDate() ?: "Date not set"} · ${event.status.label()}")
+                        Text("${record?.sets?.size ?: event.sets.size} sets · ${record?.entries?.size ?: event.entries.size} tune occurrences · ${if (event.notes.isBlank()) "No notes" else "Notes saved"}")
+                        if (record?.isTest ?: event.isTest) Text("Test event · excluded from performance counts", style = MaterialTheme.typography.bodySmall)
                     }
                     TextButton(enabled = !busy, onClick = { open(event) }) { Text("Edit") }
                     TextButton(enabled = !busy, onClick = { deleting = event }) { Text("Delete") }
@@ -49,6 +65,7 @@ fun EventType.label() = if (this == EventType.REHEARSAL) "Rehearsal" else "Gig"
 @Composable
 fun EventEditorScreen(project: Project, draft: EventDraft, error: String?, change: (BandEvent) -> Unit, save: () -> Unit, back: () -> Unit, setBusy: (Boolean) -> Unit, saveProject: (Project) -> Unit, modifier: Modifier = Modifier) {
     val event = draft.value
+    var details by remember(event.id) { mutableStateOf(false) }
     var exportOpen by remember(event.id) { mutableStateOf(false) }
     var search by remember(event.id) { mutableStateOf("") }
     var selection by remember(event.id) { mutableStateOf(EventSetSelection(event.initialSet.id)) }
@@ -88,6 +105,13 @@ fun EventEditorScreen(project: Project, draft: EventDraft, error: String?, chang
                     change(updated)
                 }) { Text("+ Add Set") }
             }
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                FilterChip(selected = !details, onClick = { details = false }, label = { Text("Setlist") })
+                FilterChip(selected = details, onClick = { details = true }, label = { Text("Notes & status") })
+            }
+            if (details) {
+                EventDetails(project, event, change, Modifier.weight(1f))
+            } else {
             val library: @Composable (Modifier) -> Unit = { panelModifier ->
                 Card(panelModifier) {
                     Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -155,6 +179,7 @@ fun EventEditorScreen(project: Project, draft: EventDraft, error: String?, chang
                     library(Modifier.weight(0.38f).fillMaxHeight())
                     builder(Modifier.weight(0.62f).fillMaxHeight())
                 }
+            }
             }
         }
     }

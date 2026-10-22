@@ -8,13 +8,19 @@ import kotlinx.serialization.Serializable
 @Serializable data class BandEvent(
     val id: String, val projectId: String, val title: String,
     val type: EventType, val date: String? = null, val initialSet: EventSet,
-    val additionalSets: List<EventSet> = emptyList()
+    val additionalSets: List<EventSet> = emptyList(),
+    val notes: String = "", val status: EventStatus = EventStatus.PLANNED,
+    val isTest: Boolean = false, val performanceHistory: List<PerformanceSnapshot> = emptyList()
 ) {
     // Keep the original serialized initialSet so legacy event IDs and entries load intact.
     val sets: List<EventSet> get() = listOf(initialSet) + additionalSets
     val entries: List<EventTuneEntry> get() = sets.flatMap { it.entries }
+    val performance: PerformanceSnapshot? get() = performanceHistory.lastOrNull()
+    val countablePerformance: PerformanceSnapshot? get() = performance?.takeIf { status == EventStatus.COMPLETED && !it.isTest }
     fun validate() {
         require(id.isNotBlank() && projectId.isNotBlank() && sets.all { it.id.isNotBlank() }) { "Event and set identities are required." }
+        require(status != EventStatus.COMPLETED || performance != null) { "Confirm the performed setlist when marking an event Completed." }
+        performanceHistory.forEachIndexed { index, record -> record.validate(); require(record.revision == index + 1) { "Invalid performance revision." } }
         require(title.isNotBlank()) { "Event title is required." }
         require(date == null || validEventDate(date)) { "Use a real date in YYYY-MM-DD format, or leave it blank." }
         require(sets.map { it.id }.distinct().size == sets.size) { "Duplicate set identity." }
@@ -75,6 +81,9 @@ fun Project.saveEvent(event: BandEvent): Project {
     event.validate()
     require(event.projectId == id) { "This event belongs to another project." }
     require(event.entries.all { entry -> catalog.tunes.any { it.id == entry.tuneId } }) { "A selected tune is not in this project's catalog." }
+    events.find { it.id == event.id }?.let { previous ->
+        require(event.performanceHistory.take(previous.performanceHistory.size) == previous.performanceHistory) { "Keep existing performance revisions; use an explicit correction." }
+    }
     return copy(events = if (events.any { it.id == event.id }) events.map { if (it.id == event.id) event else it } else events + event)
 }
 data class EventDraft(val value: BandEvent, val baseline: BandEvent? = null) {

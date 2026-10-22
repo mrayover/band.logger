@@ -87,6 +87,6 @@ class LocalChartsTest {
         store.save(migrated)
         store.save(migrated.saveProject(Project("q", "Quaternity")))
         assertEquals(original, Files.readString(root.resolve("workspace.chunk1.backup.json")))
-        assertEquals(9, store.load().schemaVersion)
+        assertEquals(10, store.load().schemaVersion)
     }
 }
