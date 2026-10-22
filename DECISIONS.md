@@ -1,3 +1,31 @@
+# Numbered Drive layout / 0.11.0 — October 22, 2026
+
+Permanent convention: each opted-in project has one projectRoot. Quaternity uses G:/My Drive/Quartet/band.logger. Incoming PDF selection starts at 00 - Inbox; the existing authoritative source remains 01 - Chart Library. Masters use 02 - Repertoire Distributions/Master (later Revision N); supplements use 02 - Repertoire Distributions/Supplements/Supplement NNN; gigs and rehearsals use 03 - Events/Gigs or Rehearsals/YYYY-MM-DD Title. Test events use 06 - Testing with the same type/date layout. 04 - Catalog & Backups and 05 - Archive are reserved; no new backup-export or automatic archival feature was introduced. No redundant root-level Library/Events/Gigs/Supplements or project-hash namespace is created. Other projects retain independent settings; legacy projects retain historical paths until explicitly configured/migrated. Private workspace stays in %LOCALAPPDATA%/band.logger.
+
+Actual migration completed: the verified master (4 member ZIPs) and Supplements 001/002 (4 ZIPs each) moved to those destinations. All 12 distributed ZIPs are byte-identical; only owned manifests/path records were rewritten. Original IDs, selections, supplement chain, recovery and distribution history remain. Removed only resolved empty legacy containers, after backing up their Drive desktop.ini. All 253 authoritative chart PDFs and 301 unmigrated files (including those charts) were hash-verified unchanged.
+
+Recovery finding: two old 0.3.1 applications had been open; the current workspace had regressed to schema 2 with no distribution/event history and regenerated catalog IDs. The owner closed the old windows. A newer immutable pre-event-exports backup contained the original 253 charts, 120 tunes, master, two supplements, two planned events and accepted review metadata. Verified every current chart path/hash against that backup before restoring its original catalog identities and retained history. Preserved both original workspace versions and an identity mapping. No event completion was inferred from its date. Quaternity's chart source and the unrelated Solo project were preserved.
+
+Durable migration backup/journal: %LOCALAPPDATA%/band.logger/layout-migrations/20261022-numbered-layout; phase DONE. Migration locks workspace, validates project/catalog/package ownership and hashes, stages copies, verifies bytes, atomically saves references, verifies recovery, then removes exact verified originals. It rejects occupied destinations/unknown content and changed workspace/source/target; interruption checkpoints resume safely. Drive directory enumeration can lag: required payloads are checked by explicit paths and streaming hashes, while listings reject foreign content. Provider desktop.ini is backed up and is not required as destination payload. Schema 11 reads 1–10 with an immutable pre-numbered-layout backup; existing backups remain.
+
+Ambiguous legacy folders remain in place because they have no verifiable stable event-ID manifests. Filename similarity is insufficient for migration or association:
+
+- `G:\My Drive\Quartet\band.logger\02 - Repertoire Distributions\Events\20261025 Test` (4 ZIPs).
+
+- `G:\My Drive\Quartet\band.logger\03 - Events\Gigs\Events\20261021 Eden Wine Lounge` (4 ZIPs).
+
+- `G:\My Drive\Quartet\band.logger\03 - Events\Gigs\.bandlogger-zip-check-21fa1457b4bf4984b36cc55f5e760e03` (1 ZIPs).
+
+- `G:\My Drive\Quartet\band.logger\03 - Events\Gigs\.bandlogger-zip-check-396863d031844c38b865a7a4ad9d69d8` (9 ZIPs).
+
+Validation: 217 regression tests pass, including migration interruption/restart, nested master revisions, numbered routes, supplement continuity, collision/foreign-content protection, changed payload/workspace rejection, provider metadata, schema backup and unchanged other-project settings. Native synthetic Drive smoke/restart passed under an isolated 06 - Testing child: master, supplement, gig, rehearsal, test event, branded covers, saved history, recovery and verified cleanup. Actual migrated workspace verified on restart; isolated UI copy showed saved Drive destinations automatically in master/supplement/event previews without a picker. No production package was regenerated. Local Drive verification does not establish cloud synchronization or iPad import success.
+
+CI checksum investigation: downloaded failed Windows run 39821242502 test artifact. Exact LF source is 4113 bytes, SHA-256 7bbb4839c373391a24e9dce81ac7517e634c1428762fd2e884803150208af524. Windows CRLF checkout yields 4121 bytes and the exact reported failing hash 5960fa81ba672996dc685efc1963f858922ccf59534ee2fe3b45245673749a86. Reproduced using an isolated Git index with core.autocrlf=true. .gitattributes now marks only the supplied SVG -text, preserving its exact original bytes; the exact checksum assertion and artwork are unchanged. This was a checkout environment difference, not a rendering defect or outdated assertion. New rule also verified with true/false/input checkout modes. Hosted Actions acceptance remains pending the owner's push; no hosted green result is claimed.
+
+Delivery target: dist/band.logger-0.11.0-windows-x64/band.logger.exe, automatically extracted and verified by scripts/build-local.ps1; prior releases preserved, current shortcut advances only after verification. No commits or pushes. Detailed local evidence: .tools/drive-routing-0.11.0/ (private workspace/journal evidence must not be committed).
+
+---
+
 # Decisions
 
 - 2026-10-20: Keep the existing repository at C:\Users\mrove\Projects\band.logger\band.logger. The two planning files already contained this correct path; explicitly reaffirm it.

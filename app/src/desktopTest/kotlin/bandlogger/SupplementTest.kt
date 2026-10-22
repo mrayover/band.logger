@@ -119,7 +119,7 @@ class SupplementTest {
     @Test fun schemaFiveMigrationKeepsEventsCatalogMastersAndImmutableBackup() {
         val f=fixture(); val path=f.root.resolve("workspace.json")
         val current=WorkspaceCodec.encode(Workspace().saveProject(f.project))
-        val old=current.replace("\"schemaVersion\": 10","\"schemaVersion\": 5").replace("\"supplements\": []","\"oldField\": []")
+        val old=current.replace("\"schemaVersion\": 11","\"schemaVersion\": 5").replace("\"supplements\": []","\"oldField\": []")
         Files.writeString(path,old); val store=FileWorkspaceStore(path); val loaded=store.load()
         assertEquals(f.project,loaded.projects.single()); assertEquals(old,Files.readString(path))
         store.save(loaded); store.save(loaded)

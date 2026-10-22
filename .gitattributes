@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# The supplied artwork is a byte-verified source asset; never normalize its bytes.
+app/src/desktopMain/resources/branding/QuaternityLogo.svg -text

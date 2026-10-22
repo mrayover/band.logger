@@ -52,7 +52,7 @@ class EventHistoryPersistenceTest {
             Files.writeString(olderBackup, "Keep existing backup")
             val store = FileWorkspaceStore(path)
             val loaded = store.load()
-            assertEquals(10, loaded.schemaVersion)
+            assertEquals(11, loaded.schemaVersion)
             assertEquals(oldEvent, loaded.projects.single().events.single())
             assertEquals(EventStatus.PLANNED, loaded.projects.single().events.single().status)
             assertEquals(legacy, Files.readString(path))
@@ -63,7 +63,7 @@ class EventHistoryPersistenceTest {
     }
     @Test fun schemaNineBrandOptOutIsNotReappliedDuringHistoryMigration() {
         val original = WorkspaceCodec.encode(Workspace().saveProject(Project("q", "Quaternity", "Q", brandId = null)))
-        val loaded = WorkspaceCodec.decode(original.replace("\"schemaVersion\": 10", "\"schemaVersion\": 9"))
+        val loaded = WorkspaceCodec.decode(original.replace("\"schemaVersion\": 11", "\"schemaVersion\": 9"))
         assertNull(loaded.projects.single().brandId)
     }
     @Test fun plainAndCoveredPackagesExcludeNotesStatusesAndRecordedPerformanceFacts() {
@@ -73,7 +73,7 @@ class EventHistoryPersistenceTest {
             val plain = p.copy(events = listOf(original), includeBrandedSetCovers = covers)
             val private = original.copy(notes = "PRIVATE-SENTINEL\nDo not distribute", isTest = true).recordPerformance(p, now)
             val rich = plain.copy(events = listOf(private))
-            assertEquals(EventExportPlanner.preview(plain, original.id), EventExportPlanner.preview(rich, original.id))
+            assertEquals(EventExportPlanner.preview(plain, original.id).copy(testOutput = true), EventExportPlanner.preview(rich, original.id))
             val output = EventExporter.generate(rich, EventExportPlanner.preview(rich, original.id), root.toString(), true, true)
             assertEquals(original, output.record.event)
             val manifest = Files.readString(output.folder.resolve("event-export.json"))

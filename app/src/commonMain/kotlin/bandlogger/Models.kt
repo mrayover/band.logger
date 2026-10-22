@@ -15,11 +15,11 @@ import kotlinx.serialization.json.Json
 @Serializable data class Project(
     val id: String, val name: String, val prefix: String = "", val theme: Theme = Theme(),
     val logoReference: String? = null, val members: List<Member> = emptyList(), val catalog: Catalog = Catalog(),
-    val exportDestination: String? = null, val masters: List<LibraryMaster> = emptyList(), val events: List<BandEvent> = emptyList(), val supplements: List<LibrarySupplement> = emptyList(), val eventsExportRoot: String? = null, val eventExports: List<EventExportRecord> = emptyList(), val brandId: String? = null, val includeBrandedSetCovers: Boolean = false
+    val exportDestination: String? = null, val masters: List<LibraryMaster> = emptyList(), val events: List<BandEvent> = emptyList(), val supplements: List<LibrarySupplement> = emptyList(), val eventsExportRoot: String? = null, val eventExports: List<EventExportRecord> = emptyList(), val brandId: String? = null, val includeBrandedSetCovers: Boolean = false, val projectRoot: String? = null
 )
-@Serializable data class Workspace(val schemaVersion: Int = 10, val projects: List<Project> = emptyList(), val selectedId: String? = null) {
+@Serializable data class Workspace(val schemaVersion: Int = 11, val projects: List<Project> = emptyList(), val selectedId: String? = null) {
     fun validate() {
-        require(schemaVersion == 10) { "This data was created by an unsupported application version." }
+        require(schemaVersion == 11) { "This data was created by an unsupported application version." }
         require(projects.map { it.id }.distinct().size == projects.size) { "Duplicate project identity." }
         require(selectedId == null || projects.any { it.id == selectedId }) { "Selected project is missing." }
         projects.forEach { p ->
@@ -67,7 +67,7 @@ object WorkspaceCodec {
     fun encode(value: Workspace): String { value.validate(); return json.encodeToString(value) }
     fun decode(value: String): Workspace {
         val stored = json.decodeFromString<Workspace>(value)
-        val migrated = if (stored.schemaVersion in 1..9) stored.copy(schemaVersion = 10,
+        val migrated = if (stored.schemaVersion in 1..10) stored.copy(schemaVersion = 11,
             projects = stored.projects.map { p ->
                 if (stored.schemaVersion <= 8 && p.brandId == null && p.name == "Quaternity" && p.prefix == "Q") p.copy(brandId = "quaternity") else p
             }) else stored
@@ -86,3 +86,5 @@ fun quaternity(id: String, newId: () -> String): Project = Project(
         Member(newId(), "Ethan", listOf("Drums"), listOf("Drums", "C"))
     )
 )
+/** Setting a numbered project root does not change the separately verified chart source. */
+fun Project.withExportRoot(root: String?) = copy(projectRoot = root, exportDestination = root)

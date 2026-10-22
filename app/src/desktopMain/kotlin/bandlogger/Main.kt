@@ -23,6 +23,29 @@ fun hex(value: String) = Color(0xFF000000 or value.removePrefix("#").toLong(16))
 val lato = FontFamily(Font("fonts/Lato-Regular.ttf"), Font("fonts/Lato-Bold.ttf", FontWeight.Bold))
 
 fun main(args: Array<String>) {
+    if (args.firstOrNull()=="--layout-plan") {
+        require(args.size==6)
+        val workspace=java.nio.file.Path.of(args[1])
+        val desired=WorkspaceCodec.decode(Files.readString(java.nio.file.Path.of(args[2])))
+        val journal=DriveLayoutMigration.prepare(workspace,desired,args[3],java.nio.file.Path.of(args[4]),java.nio.file.Path.of(args[5]))
+        println("Prepared verified migration: $journal");return
+    }
+    if (args.firstOrNull()=="--layout-resume") {
+        require(args.size==2)
+        DriveLayoutMigration.resume(java.nio.file.Path.of(args[1]));println("Migration completed and verified.");return
+    }
+    if (args.firstOrNull()=="--layout-verify") {
+        require(args.size==2)
+        val workspace=FileWorkspaceStore(java.nio.file.Path.of(args[1])).load()
+        workspace.projects.filter { it.projectRoot!=null }.forEach { p ->
+            p.masters.forEach { check(MasterExporter.recover(p,it.folder)==it) }
+            p.supplements.forEach { check(SupplementExporter.recover(p,it.publication.folder)==it) }
+            p.eventExports.filter { it.state==EventExportState.ACTIVE }.forEach { EventExports.verified(it) }
+            p.events.filter { it.entries.isNotEmpty() }.forEach { EventExportPlanner.preview(p,it.id) }
+        }
+        println("Numbered layout, histories and recovery verified.");return
+    }
+
     if (args.firstOrNull() == "--scan-source") {
         val source = LocalCharts.folder(java.nio.file.Path.of(args[1]))
         val files = LocalCharts.scan(source)
@@ -73,6 +96,7 @@ fun main(args: Array<String>) {
         Files.writeString(dir.resolve("management-restart-passed.txt"), "A separate executable process reopened tracked packages and retained the link through a title edit.")
         CoverSmoke.restart(dir)
         EventHistorySmoke.restart(dir)
+        NumberedLayoutSmoke.restart(dir)
         Files.writeString(dir.resolve("event-restart-passed.txt"), "New process reopened multiple sets and repeated tunes, edited order, and preserved identities, masters and project isolation.")
         exitProcess(0)
     }
@@ -116,7 +140,7 @@ fun main(args: Array<String>) {
         val eventPath = dir.resolve("event-smoke.json")
         val eventStore = FileWorkspaceStore(eventPath)
         val oldWorkspace = Workspace().saveProject(baselineProject).saveProject(Project("event-other", "Other band")).select(baselineProject.id)
-        val legacyText = WorkspaceCodec.encode(oldWorkspace).replace("\"schemaVersion\": 10", "\"schemaVersion\": 3")
+        val legacyText = WorkspaceCodec.encode(oldWorkspace).replace("\"schemaVersion\": 11", "\"schemaVersion\": 3")
         Files.writeString(eventPath, legacyText)
         var eventWorkspace = eventStore.load()
         EventType.entries.forEach { type ->
@@ -275,6 +299,7 @@ fun main(args: Array<String>) {
         Files.writeString(dir.resolve("file-organization-passed.txt"), "Readable supplement folders/ZIPs, separate persisted Events root and both saved-type routes passed.")
         CoverSmoke.run(cumulativeProject,dir)
         EventHistorySmoke.run(cumulativeProject,dir)
+        NumberedLayoutSmoke.run(cumulativeProject,dir)
         Files.writeString(dir.resolve("smoke-passed.txt"), "Storage, fonts, XML, ZIP, scan, master generation/recovery, pending, events and reference-only member exports passed.")
         exitProcess(0)
     }
@@ -399,7 +424,7 @@ fun main(args: Array<String>) {
                         TextButton(enabled = !busy, onClick = { leave { page = item } }) { Text(if (page == item) "• $item" else item) }
                     }
                     Spacer(Modifier.height(24.dp))
-                    Text("0.10.1 · PREVIEW", style = MaterialTheme.typography.labelSmall)
+                    Text("0.11.0 · PREVIEW", style = MaterialTheme.typography.labelSmall)
                     Text("Saved locally. No account needed.", style = MaterialTheme.typography.bodySmall)
                 }
                 Column(Modifier.weight(1f).fillMaxHeight().padding(if (page == "Event editor") 20.dp else 36.dp).then(if (page == "Event editor") Modifier else Modifier.verticalScroll(rememberScrollState())), verticalArrangement = Arrangement.spacedBy(if (page == "Event editor") 8.dp else 20.dp)) {
@@ -524,12 +549,12 @@ fun main(args: Array<String>) {
     var eventsRoot by remember { mutableStateOf(FileLocations.eventsInitialRoot(draft) ?: "") }
     var logo by remember { mutableStateOf(draft.logoReference ?: "") }
     var officialBrand by remember { mutableStateOf(draft.brandId == Branding.QUATERNITY) }
-    FormDialog("Project details", dismiss, { save(draft.copy(name = name.trim(), prefix = prefix.trim(), logoReference = logo.trim().ifEmpty { null }, brandId = if (officialBrand) Branding.QUATERNITY else null, exportDestination = eventsRoot.trim().ifEmpty { null })) }) {
+    FormDialog("Project details", dismiss, { save(draft.copy(name = name.trim(), prefix = prefix.trim(), logoReference = logo.trim().ifEmpty { null }, brandId = if (officialBrand) Branding.QUATERNITY else null, exportDestination = eventsRoot.trim().ifEmpty { null }, projectRoot = eventsRoot.trim().ifEmpty { null })) }) {
         Field("Project name", name) { name = it }
         Field("Filename prefix", prefix) { prefix = it }
-        Field("Project export root (Library, Gigs, Rehearsals)", eventsRoot) { eventsRoot = it }
+        Field("Project root (contains numbered folders)", eventsRoot) { eventsRoot = it }
         TextButton(onClick = { chooseChartFolder("Choose Events export root")?.let { eventsRoot = it } }) { Text("Browse export root") }
-        Text("Future exports use Library/Master, Library/Supplements, Gigs or Rehearsals. Historical paths remain unchanged.")
+        Text("Future exports use 02 - Repertoire Distributions/Master or Supplements, and 03 - Events/Gigs or Rehearsals. Test events use 06 - Testing. Chart source is configured separately and is never changed here.")
         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             Checkbox(officialBrand,{ officialBrand = it }); Text("Use official Quaternity branding for this project")
         }

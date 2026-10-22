@@ -32,7 +32,7 @@ import java.nio.file.Path
         if (!started) Card(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Export destination", style = MaterialTheme.typography.titleMedium)
-                Text(project.exportDestination ?: "Choose where future library packages will be saved.")
+                Text(FileLocations.masterDestination(project) ?: "Choose where future library packages will be saved.")
                 OutlinedButton(enabled = !busy, onClick = { destinationDraft = project.exportDestination ?: "" }) {
                     Text(if (project.exportDestination == null) "Choose destination" else "Change destination")
                 }
@@ -40,7 +40,7 @@ import java.nio.file.Path
             }
         }
         if (started) {
-            Text("Destination: " + (project.exportDestination ?: "Not chosen"), style = MaterialTheme.typography.bodySmall)
+            Text("Destination: " + (FileLocations.masterDestination(project) ?: "Not chosen"), style = MaterialTheme.typography.bodySmall)
             TextButton(enabled = !busy, onClick = { destinationDraft = project.exportDestination ?: "" }) { Text("Choose or change destination") }
         }
         if (notice.isNotBlank()) Text(notice, color = MaterialTheme.colorScheme.secondary)
@@ -135,7 +135,7 @@ import java.nio.file.Path
         AlertDialog(onDismissRequest = { confirmMaster = false }, title = { Text("Confirm Library Master") },
             text = {
                 Column(Modifier.heightIn(max = 450.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Text("Destination: ${project.exportDestination}")
+                    Text("Destination: ${FileLocations.masterDestination(project)}")
                     preview.members.forEach {
                         Text("${it.member.name}: ${it.selectedCount} charts, ${it.fallbackCount} fallbacks, ${it.blockedCount + it.missingCount} omitted." +
                             if (it.selectedCount == 0) " No ZIP will be generated." else "")
@@ -206,7 +206,7 @@ import java.nio.file.Path
                         require(Files.isWritable(Path.of(folder))) { "Choose a writable destination folder." }
                         folder
                     }
-                    save(project.copy(exportDestination = destination))
+                    save(project.withExportRoot(FileLocations.numberedRoot(destination).toString()))
                     notice = "Destination saved for ${project.name}. No files generated."
                 } catch (e: CancellationException) { throw e }
                 catch (e: Exception) { notice = "Could not save destination: ${e.message}" }

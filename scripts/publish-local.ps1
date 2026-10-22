@@ -68,7 +68,7 @@ try {
         if (-not $p.WaitForExit(60000)) { $p.Kill(); throw "Local delivery $mode timed out." }
         if ($p.ExitCode -ne 0) { throw "Local delivery $mode failed with exit $($p.ExitCode)." }
     }
-    foreach ($marker in @('smoke-passed.txt','event-restart-passed.txt','event-history-passed.txt','event-history-restart-passed.txt')) {
+    foreach ($marker in @('smoke-passed.txt','event-restart-passed.txt','event-history-passed.txt','event-history-restart-passed.txt','numbered-routing-passed.txt','numbered-routing-restart-passed.txt')) {
         if (-not (Test-Path -LiteralPath (Join-Path $smoke $marker))) { throw "Missing executable verification: $marker" }
     }
 } finally { $env:JAVA_HOME = $previousJava; $env:PATH = $previousPath; $env:JAVA_TOOL_OPTIONS = $previousOptions }

@@ -25,7 +25,7 @@ compose.desktop {
         mainClass = "bandlogger.MainKt"
         nativeDistributions {
             packageName = "band.logger"
-            packageVersion = "0.10.1"
+            packageVersion = "0.11.0"
             description = "A workspace for musicians and working bands"
             vendor = "band.logger"
             modules("java.sql", "java.xml", "jdk.unsupported")

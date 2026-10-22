@@ -68,7 +68,7 @@ object MasterExporter {
         }
         require(Regex("[A-Za-z0-9-]{1,64}").matches(id))
         require(preview.members.any { it.selectedCount > 0 }) { "No accepted charts are selected. Review the library first." }
-        val destination = Path.of(LocalCharts.folder(Path.of(requireNotNull(project.exportDestination) { "Choose an export destination." })))
+        val destination = Path.of(LocalCharts.folder(Path.of(requireNotNull(project.projectRoot ?: project.exportDestination) { "Choose an export destination." })))
         val source = Path.of(LocalCharts.folder(Path.of(requireNotNull(project.catalog.source))))
         val selected = preview.members.flatMap { it.choices.mapNotNull { c -> c.chart } }.distinctBy { it.id }
         selected.forEach { require(it.source == project.catalog.source); verify(source, it) }
@@ -78,6 +78,15 @@ object MasterExporter {
             val names = charts.map { Path.of(it.relativePath).fileName.toString().lowercase() }
             require(names.distinct().size == names.size) { "${member.member.name} has colliding PDF filenames. Resolve them before export." }
         }
+        val effectiveNames = packageNames ?: if(project.projectRoot!=null && targetOverride==null) {
+            val used=mutableSetOf<String>()
+            preview.members.filter { it.selectedCount>0 }.associate { allocation ->
+                val base="${EventExportPlanner.safeLabel(project.name,32)} - Master - ${EventExportPlanner.safeLabel(allocation.member.name,32)}"
+                var name=base;var suffix=2
+                while(!used.add(name.lowercase())) name="$base - ${suffix++}"
+                allocation.member.id to name
+            }
+        } else null
         val date = DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmmss").withZone(ZoneOffset.UTC).format(now)
         val masterRoot = if (targetOverride == null) ExportFolders.child(ExportFolders.library(project), "Master") else destination
         if (targetOverride == null) {
@@ -112,8 +121,8 @@ object MasterExporter {
                 if (choices.isEmpty()) MasterMember(member.member.id, member.member.name, member.preferences,
                     warnings = warnings + "No accepted charts selected; no package generated.")
                 else {
-                    val title = packageNames?.get(member.member.id) ?: "${project.prefix.ifBlank { project.name }} $label - ${member.member.name} - $date"
-                    val base = packageNames?.get(member.member.id) ?: "${(index + 1).toString().padStart(2, '0')} - ${safeLabel(project.name)} $label - ${safeLabel(member.member.name)} - $date"
+                    val title = effectiveNames?.get(member.member.id) ?: "${project.prefix.ifBlank { project.name }} $label - ${member.member.name} - $date"
+                    val base = effectiveNames?.get(member.member.id) ?: "${(index + 1).toString().padStart(2, '0')} - ${safeLabel(project.name)} $label - ${safeLabel(member.member.name)} - $date"
                     val zipName = "$base.zip"
                     ZipOutputStream(Files.newOutputStream(stage.resolve(zipName), StandardOpenOption.CREATE_NEW)).use { zip ->
                         zip.putNextEntry(ZipEntry("$base.4ss"))

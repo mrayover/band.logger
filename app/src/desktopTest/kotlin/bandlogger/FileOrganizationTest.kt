@@ -160,15 +160,16 @@ class FileOrganizationTest {
         assertFailsWith<IllegalArgumentException> { EventExporter.eventsRoot("") }
         assertFalse(Files.exists(missing)); assertFalse(Files.exists(Path.of(p.exportDestination!!).resolve("Gigs")))
         assertNull(FileLocations.eventsInitialRoot(p.copy(exportDestination=null,eventsExportRoot=null),missing))
-        assertEquals(f.root.toRealPath().toString(),FileLocations.eventsInitialRoot(p.copy(exportDestination=null,eventsExportRoot=null),f.root))
+        assertNull(FileLocations.eventsInitialRoot(p.copy(exportDestination=null,eventsExportRoot=null,brandId=null),f.root))
+        assertEquals(f.root.toRealPath().toString(),FileLocations.eventsInitialRoot(p.copy(exportDestination=null,eventsExportRoot=null,brandId=Branding.QUATERNITY),f.root))
     }
     @Test fun eventsRootSettingPersistsAndSchemaSixBackupRetainsAllHistory() {
         val f=fixture(); val record=publish(f)
         val p=withEvent(f.project.recordSupplement(record),EventType.REHEARSAL)
-        val old=WorkspaceCodec.encode(Workspace().saveProject(p)).replace("\"schemaVersion\": 10","\"schemaVersion\": 6").replace("\"eventsExportRoot\": null","\"oldField\": null")
+        val old=WorkspaceCodec.encode(Workspace().saveProject(p)).replace("\"schemaVersion\": 11","\"schemaVersion\": 6").replace("\"eventsExportRoot\": null","\"oldField\": null")
         val path=f.root.resolve("workspace.json"); Files.writeString(path,old)
         Files.writeString(f.root.resolve("workspace.pre-supplements.backup.json"),"previous backup")
-        val store=FileWorkspaceStore(path); val loaded=store.load(); assertEquals(10,loaded.schemaVersion)
+        val store=FileWorkspaceStore(path); val loaded=store.load(); assertEquals(11,loaded.schemaVersion)
         assertEquals(p.copy(brandId="quaternity"),loaded.projects.single()); assertEquals(old,Files.readString(path))
         val configured=loaded.projects.single().copy(eventsExportRoot=f.root.toString()); store.save(loaded.saveProject(configured)); store.save(store.load())
         assertEquals(configured,store.load().projects.single())

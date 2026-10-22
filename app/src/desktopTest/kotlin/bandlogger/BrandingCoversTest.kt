@@ -154,9 +154,9 @@ class BrandingCoversTest {
     }
     @Test fun schemaEightMigrationPreservesAllHistoryAndImmutableOriginalBytes() {
         val root=Files.createTempDirectory("branding-migration");val p=project(false).copy(brandId=null)
-        val old=WorkspaceCodec.encode(Workspace().saveProject(p).saveProject(Project("other","Other"))).replace("\"schemaVersion\": 10","\"schemaVersion\": 8")
+        val old=WorkspaceCodec.encode(Workspace().saveProject(p).saveProject(Project("other","Other"))).replace("\"schemaVersion\": 11","\"schemaVersion\": 8")
         val path=root.resolve("workspace.json");Files.writeString(path,old);val store=FileWorkspaceStore(path)
-        val loaded=store.load();assertEquals(10,loaded.schemaVersion);assertEquals(old,Files.readString(path))
+        val loaded=store.load();assertEquals(11,loaded.schemaVersion);assertEquals(old,Files.readString(path))
         assertEquals(p.copy(brandId=Branding.QUATERNITY),loaded.projects.first());assertNull(loaded.projects.last().brandId)
         store.save(loaded);store.save(store.load());assertEquals(old,Files.readString(root.resolve("workspace.pre-branding-covers.backup.json")))
         assertFalse(loaded.projects.first().includeBrandedSetCovers)

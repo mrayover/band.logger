@@ -16,9 +16,10 @@ import java.io.StringReader
 // The event-export path has no PDF/file-source reader and never updates workspace metadata.
 data class EventExportResult(val folder: Path, val zipNames: List<String>, val warnings: List<String>, val record: EventExportRecord)
 object EventExporter {
-    fun eventsRoot(destination: String, type: EventType = EventType.GIG): Path {
+    fun eventsRoot(destination: String, type: EventType = EventType.GIG, project: Project? = null, testOutput: Boolean = false): Path {
         require(destination.isNotBlank()) { "Choose an existing Events export root." }
-        val root = Path.of(LocalCharts.folder(Path.of(destination)))
+        val configured = if (project?.projectRoot != null) FileLocations.numberedRoot(destination) else Path.of(LocalCharts.folder(Path.of(destination)))
+        val root = if (project?.projectRoot != null) ExportFolders.child(configured, if(testOutput) "06 - Testing" else "03 - Events") else configured
         require(Files.isWritable(root)) { "Choose a writable export destination." }
         val events = root.resolve(FileLocations.eventTypeFolder(type))
         if (Files.exists(events, LinkOption.NOFOLLOW_LINKS)) {
@@ -99,9 +100,9 @@ object EventExporter {
         val coverMap = generated.associate { it.number to it.score }
         val coverScores = generated.map { it.score }
         plan.members.forEach { validateXml(EventExportPlanner.xml(it,coverMap),coverScores) }
-        val events = eventsRoot(destination, plan.event.type)
+        val events = eventsRoot(destination, plan.event.type, project, plan.testOutput)
         try { Files.createDirectory(events) } catch (_: FileAlreadyExistsException) { /* checked again below */ }
-        val confirmedEvents = eventsRoot(destination, plan.event.type)
+        val confirmedEvents = eventsRoot(destination, plan.event.type, project, plan.testOutput)
         require(Files.isDirectory(confirmedEvents))
         var target = events.resolve(plan.folderName)
         if (Files.exists(target, LinkOption.NOFOLLOW_LINKS)) {

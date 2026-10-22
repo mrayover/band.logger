@@ -24,8 +24,8 @@ fun pdfChooser(preferred: Path = FileLocations.pdfStaging) = JFileChooser().appl
     fileFilter = FileNameExtensionFilter("PDF charts", "pdf")
     isAcceptAllFileFilterUsed = false
 }
-fun choosePdf(): Path? {
-    val chooser = pdfChooser()
+fun choosePdf(preferred: Path = FileLocations.pdfStaging): Path? {
+    val chooser = pdfChooser(preferred)
     return if (chooser.showOpenDialog(java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager().activeWindow) == JFileChooser.APPROVE_OPTION) chooser.selectedFile.toPath() else null
 }
 @Composable fun LibraryScreen(project: Project, busy: Boolean, setBusy: (Boolean) -> Unit, save: (Project) -> Unit) {
@@ -64,7 +64,7 @@ fun choosePdf(): Path? {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(enabled = !busy, onClick = { folderDraft = catalog.source ?: "" }) { Text(if (catalog.source == null) "Connect folder" else "Change folder") }
             Button(enabled = !busy && catalog.source != null, onClick = { refresh(catalog.source!!) }) { Text("Refresh") }
-            OutlinedButton(enabled = !busy && catalog.source != null, onClick = { importDraft = choosePdf() }) { Text("Import PDF") }
+            OutlinedButton(enabled = !busy && catalog.source != null, onClick = { importDraft = choosePdf(FileLocations.inbox(project)) }) { Text("Import PDF") }
         }
         if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
         if (notice.isNotBlank()) Text(notice, color = MaterialTheme.colorScheme.secondary)

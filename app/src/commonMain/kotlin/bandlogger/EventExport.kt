@@ -8,7 +8,7 @@ data class EventMemberExport(val member: Member, val preferredPart: String?, val
     val matchedCount get() = entries.count { it.filename != null }
     val missingCount get() = entries.count { it.filename == null }
 }
-data class EventExportPlan(val projectId: String, val event: BandEvent, val folderName: String, val members: List<EventMemberExport>, val skippedSets: List<Int>, val projectName: String = "", val brandId: String? = null, val includeCovers: Boolean = false) {
+data class EventExportPlan(val projectId: String, val event: BandEvent, val folderName: String, val members: List<EventMemberExport>, val skippedSets: List<Int>, val projectName: String = "", val brandId: String? = null, val includeCovers: Boolean = false, val testOutput: Boolean = false) {
     val needsMissingAcknowledgement get() = members.any { it.missingCount > 0 || it.baselineId == null }
     val needsUndatedAcknowledgement get() = event.date == null
     val warnings get() = skippedSets.map { "Empty Set $it will be skipped." } +
@@ -62,7 +62,7 @@ object EventExportPlanner {
             }
             EventMemberExport(member, part, baseline.master?.id, name, sets)
         }
-        return EventExportPlan(project.id, event, "${event.date ?: "Undated"} ${safeLabel(event.title)}", members, event.sets.mapIndexedNotNull { i, set -> if (set.entries.isEmpty()) i + 1 else null }, project.name, project.brandId, project.includeBrandedSetCovers)
+        return EventExportPlan(project.id, event, "${event.date ?: "Undated"} ${safeLabel(event.title)}", members, event.sets.mapIndexedNotNull { i, set -> if (set.entries.isEmpty()) i + 1 else null }, project.name, project.brandId, project.includeBrandedSetCovers, project.events.single { it.id == eventId }.isTest)
     }
     fun xml(member: EventMemberExport, covers: Map<Int, ProofScore> = emptyMap()): String = buildString {
         require(covers.isEmpty() || covers.keys == member.sets.map { it.number }.toSet()) { "Each nonempty set needs exactly one cover." }

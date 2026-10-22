@@ -36,7 +36,7 @@ object EventExports {
     }
     // Drive for desktop injects this exact hidden icon file after publication.
     // Unknown desktop.ini contents remain unrelated content and block cleanup.
-    private fun driveMetadata(path: Path): ByteArray? = runCatching {
+    internal fun driveMetadata(path: Path): ByteArray? = runCatching {
         if (path.fileName.toString() != "desktop.ini") return null
         normal(path, false)
         val attrs = Files.readAttributes(path, java.nio.file.attribute.DosFileAttributes::class.java, LinkOption.NOFOLLOW_LINKS)
@@ -50,7 +50,7 @@ object EventExports {
             lines.drop(3) != listOf("[ViewState]", "Mode=", "Vid=", "FolderType=Generic", "Logo=")) return null
         bytes
     }.getOrNull()
-    private fun verified(record: EventExportRecord, allowMissing: Boolean = false): Path {
+    internal fun verified(record: EventExportRecord, allowMissing: Boolean = false): Path {
         record.validate()
         val path = folder(record); normal(path, true)
         require(path.toRealPath().parent == path.parent.toRealPath()) { "Export folder redirects outside its recorded parent." }
@@ -73,7 +73,7 @@ object EventExports {
         val previous = project.eventExports.filter { it.event.id == plan.event.id && it.state == EventExportState.ACTIVE }
         require(previous.isEmpty() || conflict != EventConflict.NEW) { "Choose Create revision or Replace tracked exports." }
         if (conflict == EventConflict.REPLACE) previous.forEach { verified(it) }
-        var current = project.copy(exportDestination = destination)
+        var current = if (project.projectRoot != null) project.withExportRoot(destination) else project.copy(exportDestination = destination)
         val result = EventExporter.generate(project, plan, destination, missing, undated, revision = conflict != EventConflict.NEW) { pending ->
             current = current.recordEventExport(pending)
             save(current) // durable intent exists before the no-replacement publication move
@@ -159,7 +159,7 @@ object EventExports {
     /** Read-only bounded scan of configured roots; names alone never authorize association. */
     fun discover(project: Project): ExportDiscovery {
         val found = mutableListOf<EventExportRecord>(); val review = mutableListOf<String>()
-        val roots = listOfNotNull(project.exportDestination, project.eventsExportRoot).distinct()
+        val roots = (listOfNotNull(project.exportDestination, project.eventsExportRoot) + project.projectRoot?.let { listOf(Path.of(it).resolve("02 - Repertoire Distributions").toString(), Path.of(it).resolve("03 - Events").toString(), Path.of(it).resolve("03 - Events/Gigs/Events").toString(), Path.of(it).resolve("06 - Testing").toString()) }.orEmpty()).distinct()
         roots.forEach { configured ->
             val configuredRoot = Path.of(configured).toAbsolutePath().normalize()
             if (!Files.isDirectory(configuredRoot)) { review += "Destination unavailable: $configuredRoot"; return@forEach }

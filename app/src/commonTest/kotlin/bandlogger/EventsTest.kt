@@ -76,7 +76,7 @@ class EventsTest {
     }
     @Test fun currentSchemaIsEncodedAndFutureSchemaIsRejected() {
         val encoded = WorkspaceCodec.encode(Workspace().saveProject(project.saveEvent(event())))
-        assertTrue(encoded.contains("\"schemaVersion\": 10"))
-        assertFailsWith<IllegalArgumentException> { WorkspaceCodec.decode(encoded.replace("\"schemaVersion\": 10", "\"schemaVersion\": 99")) }
+        assertTrue(encoded.contains("\"schemaVersion\": 11"))
+        assertFailsWith<IllegalArgumentException> { WorkspaceCodec.decode(encoded.replace("\"schemaVersion\": 11", "\"schemaVersion\": 99")) }
     }
 }

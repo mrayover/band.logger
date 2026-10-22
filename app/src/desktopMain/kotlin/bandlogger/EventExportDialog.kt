@@ -42,12 +42,12 @@ fun EventExportDialog(project: Project, eventId: String, setBusy: (Boolean) -> U
                         TextButton(enabled = !generating, onClick = { chooseChartFolder("Choose Project export root")?.let { destination = it } }) { Text("Browse folders") }
                         TextButton(enabled = !generating && destination.isNotBlank(), onClick = {
                             runCatching {
-                                EventExporter.eventsRoot(destination.trim(), plan.event.type)
-                                saveProject(project.copy(exportDestination = destination.trim()))
+                                EventExporter.eventsRoot(destination.trim(), plan.event.type, project, plan.testOutput)
+                                saveProject(if (project.projectRoot != null) project.withExportRoot(destination.trim()) else project.copy(exportDestination = destination.trim()))
                             }.onFailure { error = "Could not remember Events root: ${it.message}" }
                         }) { Text("Remember export root for this project") }
-                        Text("Reused for Library, Gigs and Rehearsals. Historical export paths stay unchanged.", style = MaterialTheme.typography.bodySmall)
-                        Text("Output: $destination/${FileLocations.eventTypeFolder(plan.event.type)}/${plan.folderName}/ (repeated exports require a choice below)", style = MaterialTheme.typography.bodySmall)
+                        Text("Uses the configured project folder layout. Historical export paths remain recorded independently.", style = MaterialTheme.typography.bodySmall)
+                        Text("Output: ${FileLocations.eventDestination(project, plan, destination)}/ (repeated exports require a choice below)", style = MaterialTheme.typography.bodySmall)
                         Text("Repeated export policy", style = MaterialTheme.typography.titleMedium)
                         EventConflict.entries.forEach { option ->
                             Row {
@@ -86,11 +86,11 @@ fun EventExportDialog(project: Project, eventId: String, setBusy: (Boolean) -> U
                     } else result?.let { completed ->
                         TextButton(enabled = !generating && destination.isNotBlank(), onClick = {
                             runCatching {
-                                EventExporter.eventsRoot(destination.trim(), plan.event.type)
-                                saveProject(project.copy(exportDestination = destination.trim()))
+                                EventExporter.eventsRoot(destination.trim(), plan.event.type, project, plan.testOutput)
+                                saveProject(if (project.projectRoot != null) project.withExportRoot(destination.trim()) else project.copy(exportDestination = destination.trim()))
                             }.onFailure { error = "Could not remember Events root: ${it.message}" }
                         }) { Text("Remember export root for this project") }
-                        Text("Reused for Library, Gigs and Rehearsals. Historical export paths stay unchanged.", style = MaterialTheme.typography.bodySmall)
+                        Text("Uses the configured project folder layout. Historical export paths remain recorded independently.", style = MaterialTheme.typography.bodySmall)
                         Text("Output: ${completed.folder}")
                         completed.zipNames.forEach { Text(it) }
                         completed.warnings.forEach { Text(it, color = MaterialTheme.colorScheme.error) }

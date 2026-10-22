@@ -57,7 +57,7 @@ fun SupplementControls(project: Project, busy: Boolean, setBusy: (Boolean) -> Un
         AlertDialog(onDismissRequest = { if (!busy) preview = null }, title = { Text("Library Supplement ${plan.number.toString().padStart(3, '0')} · Preview") },
             text = { Column(Modifier.width(620.dp).heightIn(max = 500.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("Embedded-PDF packages for affected musicians only. Previous masters, supplements and originals are preserved. Export does not confirm installation.")
-                Text("Destination: ${project.exportDestination ?: "Not configured — choose in Library master"}/Supplements/ (project folder)/Supplement ${plan.number.toString().padStart(3, '0')}")
+                Text("Destination: ${FileLocations.supplementDestination(project, plan.number) ?: "Not configured — choose in Library master"}")
                 plan.packages.members.forEach { m ->
                     Text("${m.member.name} · ${m.selectedCount} selected" + if (m.selectedCount == 0) " — no ZIP" else "", style = MaterialTheme.typography.titleMedium)
                     m.choices.forEach { choice -> choice.chart?.let { chart ->

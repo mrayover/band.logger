@@ -14,7 +14,7 @@ object SupplementExporter {
         return child
     }
     fun folder(project: Project, number: Int): Path {
-        val destination = Path.of(LocalCharts.folder(Path.of(requireNotNull(project.exportDestination) { "Choose an export destination in Library master first." })))
+        val destination = Path.of(LocalCharts.folder(Path.of(requireNotNull(project.projectRoot ?: project.exportDestination) { "Choose an export destination in Library master first." })))
         val root = destination.resolve("Supplements") // legacy location: inspect only, never move or create
         val numbered = "Supplement ${number.toString().padStart(3, '0')}"
         val legacy = root.resolve("Project-${hash(project.id).take(12)}").resolve(numbered)
