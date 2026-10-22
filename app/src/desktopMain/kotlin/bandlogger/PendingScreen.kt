@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.*
 
 @Composable
-fun PendingDistributionScreen(project: Project, openMaster: () -> Unit, openLibrary: () -> Unit) {
+fun PendingDistributionScreen(project: Project, openMaster: () -> Unit, openLibrary: () -> Unit, busy: Boolean, setBusy: (Boolean) -> Unit, save: (Project) -> Unit) {
     var check by remember(project) { mutableStateOf<PendingSourceCheck?>(null) }
     var refresh by remember { mutableStateOf(0) }
     var query by remember { mutableStateOf("") }
@@ -22,8 +22,9 @@ fun PendingDistributionScreen(project: Project, openMaster: () -> Unit, openLibr
         check = withContext(Dispatchers.IO) { PendingSources.check(project) }
     }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        SupplementControls(project, busy, setBusy, save)
         Text("Pending Distribution", style = MaterialTheme.typography.headlineSmall)
-        Text("Compares approved catalog selections with each musician's latest non-empty recorded Library Master. Generated exports are not confirmation of receipt or import.")
+        Text("Compares approved catalog selections with each musician's recorded master plus published supplements, tracking each part independently. Generated exports are not confirmation of receipt or import.")
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             OutlinedButton(onClick = openLibrary) { Text("Library / Needs review") }
             OutlinedButton(onClick = openMaster) { Text("Library master") }
@@ -83,7 +84,7 @@ fun PendingDistributionScreen(project: Project, openMaster: () -> Unit, openLibr
                 }
                 VerticalScrollbar(rememberScrollbarAdapter(listState), Modifier.align(Alignment.CenterEnd).fillMaxHeight())
             }
-            Text("No supplement files are generated and no charts are marked distributed by this screen.", style = MaterialTheme.typography.bodySmall)
+            Text("Use Preview next supplement to review and publish eligible selections. Generated exports do not confirm import.", style = MaterialTheme.typography.bodySmall)
         }
     }
 }

@@ -46,10 +46,14 @@ object PendingPlanner {
         val baselines = baselines(project)
         val entries = preview.members.flatMap { allocation ->
             val baseline = baselines.single { it.member.id == allocation.member.id }.master
-            val prior = baseline?.members?.single { it.memberId == allocation.member.id }?.charts.orEmpty()
+            val initial = baseline?.members?.single { it.memberId == allocation.member.id }?.charts.orEmpty()
+            // Track each delivered instrument part independently within this member's latest master epoch.
+            val additions = project.supplements.filter { it.baselineMasterIds[allocation.member.id] == baseline?.id }
+                .flatMap { it.publication.members.filter { m -> m.memberId == allocation.member.id }.flatMap { m -> m.charts } }
+            val prior = (initial + additions).groupBy { it.tuneId to it.part }.values.map { it.last() }
             val history = masters.flatMap { it.members.filter { m -> m.memberId == allocation.member.id }.flatMap { m -> m.charts } }
             val choices = allocation.choices.map { choice ->
-                val previous = prior.find { it.tuneId == choice.tune.id }
+                val previous = prior.find { it.tuneId == choice.tune.id && it.part == choice.chart?.metadata?.part } ?: prior.lastOrNull { it.tuneId == choice.tune.id }
                 val chart = choice.chart
                 val kind = when {
                     chart == null -> PendingKind.ATTENTION
@@ -57,7 +61,7 @@ object PendingPlanner {
                     previous == null -> PendingKind.NEW_TUNE
                     previous.part == chart.metadata!!.part && previous.revision == chart.metadata.revision &&
                         previous.sha256.equals(chart.sha256, true) -> PendingKind.UNCHANGED
-                    previous.part != chart.metadata!!.part && history.none { it.tuneId == choice.tune.id && it.part == chart.metadata.part } -> PendingKind.NEW_PART
+                    previous.part != chart.metadata!!.part && (history + additions).none { it.tuneId == choice.tune.id && it.part == chart.metadata.part } -> PendingKind.NEW_PART
                     else -> PendingKind.REVISED
                 }
                 val explanation = if (chart == null) {

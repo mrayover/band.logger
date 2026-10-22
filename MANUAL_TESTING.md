@@ -124,3 +124,20 @@ Use band.logger-0.5.1-windows-x64.zip instead of 0.5.0 when exporting to Google 
 - [ ] Continue the owner iPad gate above. The fix changes archive validation, not reference matching or the file format.
 
 Archives are now completed and their contents validated in memory, then written and compared byte-for-byte through sequential reads. This avoids Drive's stale random-access file-length behavior. Reference-only payloads stay small; one member archive is held in memory at a time. Workspace schema/metadata, source PDFs, member baselines and output naming remain unchanged. Interruptions can still leave hidden incomplete staging folders; do not distribute them.
+
+## October 21, 2026 — Library supplements / 0.6.0
+
+Owner reports 0.5.1 event export imported correctly on iPad. That is owner-reported verification of the existing event workflow; it does not verify supplements. Extract the full 0.6.0 Windows ZIP, close older apps and launch the new EXE beside app/ and runtime/.
+
+- [ ] With a recorded initial master, approve a new tune or newer chart in Library and open Pending Distribution. Verify per-member new tune/new part/revision counts; unchanged parts stay excluded.
+- [ ] Preview next supplement. Inspect every included title, member, part, revision, path/hash and excluded/blocked/initial-master warnings. Configure destination via Library master if absent. Acknowledge allocations before Publish.
+- [ ] Publish: affected members only receive embedded-PDF .4ss + READ-ME ZIPs under <root>/Supplements/Project-<identity hash>/Supplement 001 (then 002...). No original PDFs/master/older supplements are changed.
+- [ ] Receipt shows number/time/output/member allocations/chart hashes; open its folder. Restart and reopen Pending → Distribution history → receipt. Pending delivered selections are now unchanged, independent per tune/part/member.
+- [ ] Approve one part's revision; verify unrelated parts/members are not re-exported. Switching back to a part already delivered in the same master epoch must not re-export it unchanged. Members lacking initial masters are excluded and warned.
+- [ ] In disposable test data, remove/change a selected source after preview or leave a conflict unresolved. Publication must fail/recheck or exclude with warnings, never silently downgrade. Empty eligible selection cannot publish.
+- [ ] Repeated Publish cannot duplicate or overwrite. A completed but unrecorded output blocks publishing even after restart or destination changes. Use Recover supplement with its original folder; checksums/identities/number/chain are checked and repeated recovery is idempotent. Do not move folders or delete the pending-publication journal manually.
+- [ ] If interrupted before completion, incomplete stages are not distributable; retry uses the same next number and a fresh stage. A completed folder is recoverable without reading source PDFs. Do not use Recover Library Master for a supplement.
+- [ ] Confirm event exports still use only Library Masters. This task intentionally does not make them consume supplements. Check event editor/master/pending/theme/member regressions.
+- [ ] Transfer a supplement ZIP using Drive → local iPad Files → extract → share .4ss to forScore; verify actual chart imports separately. Export history does not confirm installation/receipt.
+
+Schema 6 preserves old schemas 1–5 in workspace.pre-supplements.backup.json on first write, retaining prior backups. Older apps reject schema 6. Recovery/history are project-specific; copying an app workspace alone is not a backup of PDFs or export folders. Pending calculation uses latest valid nonempty master per member plus matching recorded supplement deltas, independently by instrument part; a later master establishes a new epoch. UI history lists all masters/supplements but is not an installation tracker. Existing size limits remain (64 MiB/PDF, 512 MiB/member). No templates, covers, calendars or event-export supplement consumption.

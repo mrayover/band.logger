@@ -84,7 +84,7 @@ class CatalogTest {
     @Test fun chunkOneDataMigratesWithoutLosingProjects() {
         val old = """{"schemaVersion":1,"projects":[{"id":"q","name":"Quaternity","members":[{"id":"m","name":"Marcus","roles":["Guitar"],"preferences":["Guitar","C"]}]}],"selectedId":"q"}"""
         val migrated = WorkspaceCodec.decode(old)
-        assertEquals(5, migrated.schemaVersion)
+        assertEquals(6, migrated.schemaVersion)
         assertEquals("Marcus", migrated.projects.single().members.single().name)
         assertTrue(migrated.projects.single().catalog.charts.isEmpty())
     }

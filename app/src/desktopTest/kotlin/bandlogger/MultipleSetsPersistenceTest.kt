@@ -36,7 +36,7 @@ class MultipleSetsPersistenceTest {
         val store = FileWorkspaceStore(path)
         val loaded = store.load()
         val value = loaded.projects.single().events.single()
-        assertEquals(5, loaded.schemaVersion)
+        assertEquals(6, loaded.schemaVersion)
         assertEquals(1, value.sets.size)
         assertEquals("event-original", value.id)
         assertEquals("set-original", value.initialSet.id)

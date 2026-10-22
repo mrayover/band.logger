@@ -31,13 +31,13 @@ class EventPersistenceTest {
         for (version in 1..3) {
             val path = Files.createTempDirectory("events-migrate-$version").resolve("workspace.json")
             val current = WorkspaceCodec.encode(Workspace().saveProject(project))
-            val legacy = current.replace("\"schemaVersion\": 5", "\"schemaVersion\": $version").replace("\"events\": []", "\"legacyFutureField\": []")
+            val legacy = current.replace("\"schemaVersion\": 6", "\"schemaVersion\": $version").replace("\"events\": []", "\"legacyFutureField\": []")
             Files.writeString(path, legacy)
             val existingBackup = path.resolveSibling("workspace.chunk1.backup.json")
             Files.writeString(existingBackup, "previous immutable backup")
             val store = FileWorkspaceStore(path)
             val loaded = store.load()
-            assertEquals(5, loaded.schemaVersion)
+            assertEquals(6, loaded.schemaVersion)
             assertEquals(project, loaded.projects.single())
             assertEquals(legacy, Files.readString(path)) // load alone never rewrites
             EventDraft(event()).saveTo(loaded, store)

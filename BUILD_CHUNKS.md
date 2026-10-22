@@ -716,3 +716,9 @@ Owner reports 0.4.1 tested/approved and updated Git; actual baseline main 84f920
 ## October 21, 2026 — 0.5.1 Drive export fix
 
 Owner-reported 0.5.0 generation failure reproduced on G:; local smoke success did not establish virtual-drive compatibility. Corrected immediate random-access ZIP validation using completed in-memory archives plus sequential content/byte verification. No roadmap scope or schema change. 123 tests, standard packaged/extracted smoke, additional executable G: exports and local 18-occurrence/four-member UI verification pass. Extra Drive UI action rejected by automatic approval review; completed safe local UI alternative. Deliver 0.5.1, preserve 0.5.0/earlier builds and history. Next: owner retry of the saved event on G:, then the existing iPad gate. No commit/push.
+
+## October 21, 2026 — Supplemental publishing / 0.6.0
+
+Owner approved the 0.5.1 export/iPad result and authorized supplemental distribution publishing. Implemented numbered affected-member embedded-PDF ZIPs, exact allocation confirmation, cumulative part-specific baselines, persistent manifests/receipts/history, durable duplicate protection and recovery. Schema 6 safely migrates 1–5 with immutable pre-supplements backup. This completes the requested supplement increment; it does not imply installation receipts, full original-roadmap acceptance, or event-export supplement consumption.
+
+136 tests (123 retained/adapted + 13 new), Windows packaged/extracted smoke and synthetic UI publish/restart/receipt checks pass. Earlier packages preserved byte-for-byte. No source PDFs modified, dependencies installed, remote workflow changes or commits/pushes. Next: owner review of new supplements and iPad imports; then separately scope cumulative distribution references for event exports. Historical plans remain.

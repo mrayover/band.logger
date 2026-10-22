@@ -135,11 +135,11 @@ class MasterExporterTest {
     @Test fun schemaTwoMigrationPreservesDestinationAndImmutableBackup() {
         val f = fixture()
         val path = f.root.resolve("workspace.json")
-        val old = WorkspaceCodec.encode(Workspace().saveProject(f.project)).replace("\"schemaVersion\": 5", "\"schemaVersion\": 2")
+        val old = WorkspaceCodec.encode(Workspace().saveProject(f.project)).replace("\"schemaVersion\": 6", "\"schemaVersion\": 2")
         Files.writeString(path, old)
         val store = FileWorkspaceStore(path)
         val loaded = store.load()
-        assertEquals(5, loaded.schemaVersion)
+        assertEquals(6, loaded.schemaVersion)
         assertEquals(f.project, loaded.projects.single())
         store.save(loaded)
         store.save(loaded.saveProject(f.project.copy(name = "Renamed")))

@@ -1,3 +1,25 @@
+# Current state — Supplemental distribution publishing, October 21, 2026 / 0.6.0
+
+Owner reports 0.5.1 event exports imported correctly on iPad and all prior changes committed (clean main 9f284c9). This verifies the earlier event workflow by owner report; supplement iPad import remains to be checked. Historical states follow below.
+
+Pending Distribution now previews/publishes numbered Library Supplements from accepted new tunes/new parts/revisions, independently per musician and instrument part. Latest valid nonempty master + matching recorded supplement deltas form each member's cumulative part-specific baseline; unchanged charts are excluded. Exact preview includes affected selections/hashes and blocked/no-initial-master warnings, with review acknowledgement. Only affected musicians receive embedded-PDF .4ss + instructions ZIPs under <root>/Supplements/Project-<stable hash>/Supplement 001, 002, etc. Numbered manifests/receipts/history persist allocations, chart/package hashes/revisions, timestamps, baseline anchors and chain. Previous masters/supplements/PDFs are preserved; exported is not installed.
+
+Source bytes/paths and preview are revalidated, ZIP CRCs are sequentially checked and manifests staged before no-overwrite publication. Saved numbering advances only after history persistence. Durable pending intent blocks duplicate publication after files complete but saving fails, including restart/destination change; Recover supplement verifies original packages and records idempotently. Interrupted incomplete stages never count as distribution. History opens previous master folders and supplement receipts after restart. Event exports intentionally still use masters only.
+
+Schema 6 safely loads 1–5 with empty supplement history and immutable workspace.pre-supplements.backup.json before first write; existing backups and atomic storage retained. Older binaries reject schema 6. No new dependency or GitHub Actions workflow changes.
+
+PASS: 136 tests (123 prior retained/adapted + 13 new), zero failures/errors/skips; compilation; normal packaged/extracted smoke and prior event/restart checks. New smoke publishes embedded synthetic supplement, parses exact PDF bytes/XML, persists/reopens records, verifies cumulative pending zero and recovery. PASS final extracted local UI: preview allocations/acknowledgement, four affected-member ZIPs, persistent Supplement 001 receipt, pending counts zero, full close/restart and receipt reopened via history. All 207 extracted release files SHA-256 match ZIP streams; every earlier Windows ZIP unchanged. Test data was synthetic/local; no owner chart/event/master data or actual distributions changed.
+
+ZIP: dist/band.logger-0.6.0-windows-x64.zip (61,853,721 bytes).
+EXE: dist/band.logger-0.6.0-windows-x64/band.logger/band.logger.exe.
+SHA-256: 869FD379992AC00BC2F454CEB9A83A766AA32096049B9778E487DAAD06096E2F (dist/SHA256-0.6.0.txt).
+Extract all, close older apps, retain app/ and runtime/ and launch. No Java/Gradle install. Unsigned Windows x64 preview. No commits/pushes/releases/remote workflow runs.
+
+Limits/remaining checks: production Drive publishing, supplement iPad imports, manual conflict/failure/recovery UI and all old-screen regressions were not manually performed; engine cases have automated coverage. Existing 64 MiB/PDF and 512 MiB/member limits apply. Incomplete stages and malformed journals need preservation/inspection, not distribution/deletion. Do not move published folders before recovery. No installation tracking, templates/covers/calendar or event-export supplement consumption.
+
+Next: owner follows MANUAL_TESTING.md for supplement review and iPad import, then separately authorize event exports to resolve against cumulative distribution history. No additional functionality begun.
+
+---
 # Current state — Google Drive ZIP export fix, October 21, 2026 / 0.5.1
 
 Supersedes the unqualified 0.5.0 export-success status below for Google Drive destinations. Owner committed 0.5.0 at clean main 9f4ccbf, then reported zip END header not found. Root cause reproduced: immediate random-access ZIP reopening on G: fails even though a sequential read returns valid complete archive bytes.

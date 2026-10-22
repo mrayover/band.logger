@@ -2,7 +2,7 @@
 
 **A project-based workspace for musicians and working bands.**
 
-**Project status:** Reference-only event exports corrected for Google Drive ZIP validation (0.5.1). See the latest October 21 update below.
+**Project status:** Supplemental distribution publishing delivered (0.6.0); owner confirms successful 0.5.1 event import on iPad. See the latest October 21 update below.
 **Established:** October 20, 2026  
 **Primary platform:** Windows desktop  
 **Planned companion platform:** Android  
@@ -497,3 +497,19 @@ Owner reported 0.5.0 failed with zip END header not found while generating to Go
 0.5.1 completes each reference-only ZIP in memory, validates its entries/XML sequentially, writes the complete bytes, then compares every byte through a sequential input stream without using the destination's reported random-access length. Normal staging/no-overwrite protections remain. No schema, naming, reference-resolution, chart, event or distribution changes.
 
 Use dist/band.logger-0.5.1-windows-x64.zip and dist/band.logger-0.5.1-windows-x64/band.logger/band.logger.exe. Extract all, close the 0.5.0 window, then launch 0.5.1 and retry the saved event with the same destination. All 123 tests pass; normal packaged/extracted smoke and additional packaged/extracted synthetic exports on G: pass. Local extracted UI with four members/two sets/18 occurrences generated valid complete packages. The additional UI click to G: was rejected by automatic approval review as an external transfer; it was not retried or bypassed. A local-only UI test completed instead. No real event export or event edits were performed by the agent; owner should retry their actual event. iPad verification remains pending. Prior builds preserved, no commit/push.
+
+## October 21, 2026 — Supplemental distribution publishing / 0.6.0
+
+Owner confirmed 0.5.1 event exports imported correctly on iPad and committed all prior work (baseline 9f284c9). This is owner-reported event import verification; new supplement imports still need review.
+
+Pending Distribution now previews and publishes numbered Library Supplements from accepted eligible changes, independently per musician/tune/instrument part. Latest valid nonempty master per member establishes a baseline epoch; matching recorded supplement deltas accumulate independently for each part. New tunes, newly required parts and revised bytes/revisions are eligible; unchanged delivered parts are excluded, including switching back to a part already delivered in the same epoch. New masters establish new epochs without deleting history. Event exports intentionally remain master-only in this release.
+
+Open Pending Distribution → Preview next supplement, review exact member/chart/part/revision/path/hash selections and exclusions, acknowledge, then Publish. Only affected musicians receive ZIPs, each with embedded-PDF .4ss and instructions. Source paths/hashes are rechecked before embedding and publication. Conflicts/unapproved/missing charts block their selections; musicians without valid initial masters are warned/excluded. No eligible selections means no publication.
+
+Permanent output: <configured export root>/Supplements/Project-<stable project hash>/Supplement 001, 002, etc. Existing masters/previous supplements/source PDFs are preserved. Receipt/history persist number, timestamps, baseline IDs, member preferences/allocations, chart identities/revisions/hashes, package names/hashes and selection fingerprint. Distribution history opens previous master folders and supplement receipts. Export is not confirmation of import/receipt.
+
+A local durable pending-publication journal blocks duplicate generation after completed files but failed workspace save, including restart/project rename/destination changes. Recover supplement verifies packages, project/catalog identity and number/history chain, then records idempotently without regeneration. Incomplete publication never advances saved numbering; retry can leave an old incomplete stage for inspection. Do not distribute stages or delete/move journal/output files manually. Schema 6 adds supplements and preserves schemas 1–5 bytes in immutable workspace.pre-supplements.backup.json before first write; earlier backups retained. Older binaries reject schema 6.
+
+Delivery: dist/band.logger-0.6.0-windows-x64.zip; EXE: dist/band.logger-0.6.0-windows-x64/band.logger/band.logger.exe. Extract all, keep app/ and runtime/, close older apps and launch without Java/Gradle installation. Unsigned Windows x64 preview. All 136 tests, packaged/extracted smoke, synthetic UI publication/zero-pending/restart/history receipt and 207-file archive verification passed. Previous ZIPs are byte-identical. No dependencies installed or GitHub Actions changes; no commit/push.
+
+Limits: no event-export consumption of supplements, templates/covers/calendar or installation tracking. Existing master limits apply (64 MiB/PDF, 512 MiB/member). Production Drive publishing and supplement iPad import were not manually performed this session; test locally/synthetically first, then owner verify the normal ZIP → Drive → local Files extraction → forScore route. Next: owner supplement review/import, then separately authorize event exports to consume the cumulative distribution history.

@@ -54,6 +54,17 @@ object MasterExporter {
     fun generate(project: Project, preview: MasterPreview, id: String = UUID.randomUUID().toString(),
                  now: Instant = Instant.now()): LibraryMaster {
         require(preview == MasterPlanner.preview(project)) { "The preview changed. Review it again." }
+        return generateSelected(project, preview, id, now)
+    }
+    internal fun generateSelected(project: Project, preview: MasterPreview, id: String, now: Instant,
+                                  targetOverride: Path? = null, label: String = "Library Master",
+                                  companionManifest: ((LibraryMaster) -> String)? = null): LibraryMaster {
+        val full = MasterPlanner.preview(project)
+        require(preview.projectId == project.id && preview.members.size == full.members.size)
+        preview.members.forEach { m ->
+            val actual = full.members.single { it.member.id == m.member.id }
+            require(m.member == actual.member && m.choices.all { choice -> actual.choices.contains(choice) }) { "Selections changed. Review again." }
+        }
         require(Regex("[A-Za-z0-9-]{1,64}").matches(id))
         require(preview.members.any { it.selectedCount > 0 }) { "No accepted charts are selected. Review the library first." }
         val destination = Path.of(LocalCharts.folder(Path.of(requireNotNull(project.exportDestination) { "Choose an export destination." })))
@@ -68,9 +79,9 @@ object MasterExporter {
         }
         val date = DateTimeFormatter.ofPattern("yyyy-MM-dd-HHmmss").withZone(ZoneOffset.UTC).format(now)
         val name = "Library Master - ${safeLabel(project.name)} - $date - ${id.take(8)}"
-        val target = destination.resolve(name)
+        val target = targetOverride ?: destination.resolve(name)
         require(!Files.exists(target, LinkOption.NOFOLLOW_LINKS)) { "This master folder already exists. Nothing was overwritten." }
-        val stage = Files.createDirectory(destination.resolve(".bandlogger-pending-$id"))
+        val stage = Files.createDirectory(target.parent.resolve(".bandlogger-pending-$id"))
         var published = false
         try {
             Files.writeString(stage.resolve("INCOMPLETE.txt"), "Incomplete export. Do not distribute this folder. Retry from band.logger; no master has been recorded.")
@@ -81,8 +92,8 @@ object MasterExporter {
                 if (choices.isEmpty()) MasterMember(member.member.id, member.member.name, member.preferences,
                     warnings = warnings + "No accepted charts selected; no package generated.")
                 else {
-                    val title = "${project.prefix.ifBlank { project.name }} Library Master - ${member.member.name} - $date"
-                    val base = "${(index + 1).toString().padStart(2, '0')} - ${safeLabel(project.name)} Library Master - ${safeLabel(member.member.name)} - $date"
+                    val title = "${project.prefix.ifBlank { project.name }} $label - ${member.member.name} - $date"
+                    val base = "${(index + 1).toString().padStart(2, '0')} - ${safeLabel(project.name)} $label - ${safeLabel(member.member.name)} - $date"
                     val zipName = "$base.zip"
                     ZipOutputStream(Files.newOutputStream(stage.resolve(zipName), StandardOpenOption.CREATE_NEW)).use { zip ->
                         zip.putNextEntry(ZipEntry("$base.4ss"))
@@ -100,6 +111,20 @@ object MasterExporter {
                             "Selections: ${choices.size}. Review notes:\n" + warnings.joinToString("\n").ifEmpty { "None." }).toByteArray(Charsets.UTF_8))
                         zip.closeEntry()
                     }
+                    if (companionManifest != null) {
+                        val expected = setOf("$base.4ss", "READ-ME.txt")
+                        val seen = mutableSetOf<String>()
+                        java.util.zip.ZipInputStream(Files.newInputStream(stage.resolve(zipName))).use { zip ->
+                            val buffer = ByteArray(64 * 1024)
+                            while (true) {
+                                val entry = zip.nextEntry ?: break
+                                require(!entry.isDirectory && entry.name in expected && seen.add(entry.name)) { "Invalid supplement ZIP entries." }
+                                while (zip.read(buffer) >= 0) { /* sequential CRC-checked read, bounded memory */ }
+                                zip.closeEntry()
+                            }
+                        }
+                        require(seen == expected) { "Incomplete supplement ZIP." }
+                    }
                     MasterMember(member.member.id, member.member.name, member.preferences, zipName, fileHash(stage.resolve(zipName)),
                         choices.map { choice -> val c = choice.chart!!
                             MasterItem(choice.tune.id, choice.tune.title, c.id, c.metadata!!.part, c.metadata.revision, c.source,
@@ -111,6 +136,7 @@ object MasterExporter {
             val master = LibraryMaster(id, project.id, project.name, now.toString(), target.toString(), members,
                 preview.notices + preview.issues.map { "${it.chart.relativePath}: ${it.reason}" })
             Files.writeString(stage.resolve("manifest.json"), MasterCodec.encode(master), StandardOpenOption.CREATE_NEW)
+            companionManifest?.let { Files.writeString(stage.resolve("supplement.json"), it(master), StandardOpenOption.CREATE_NEW) }
             Files.delete(stage.resolve("INCOMPLETE.txt"))
             Files.move(stage, target)
             published = true
@@ -126,8 +152,9 @@ object MasterExporter {
         }
     }
 
-    fun recover(project: Project, folder: String): LibraryMaster {
+    fun recover(project: Project, folder: String, allowSupplement: Boolean = false): LibraryMaster {
         val root = Path.of(LocalCharts.folder(Path.of(folder)))
+        require(allowSupplement || !Files.exists(root.resolve("supplement.json"))) { "Use Recover supplement for this folder; it is not a Library Master." }
         require(!Files.exists(root.resolve("INCOMPLETE.txt"))) { "This folder contains an incomplete export." }
         val path = root.resolve("manifest.json")
         require(Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS) && Files.size(path) <= 16L * 1024 * 1024) { "No valid manifest in this folder." }

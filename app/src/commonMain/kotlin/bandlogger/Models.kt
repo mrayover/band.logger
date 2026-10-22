@@ -15,16 +15,24 @@ import kotlinx.serialization.json.Json
 @Serializable data class Project(
     val id: String, val name: String, val prefix: String = "", val theme: Theme = Theme(),
     val logoReference: String? = null, val members: List<Member> = emptyList(), val catalog: Catalog = Catalog(),
-    val exportDestination: String? = null, val masters: List<LibraryMaster> = emptyList(), val events: List<BandEvent> = emptyList()
+    val exportDestination: String? = null, val masters: List<LibraryMaster> = emptyList(), val events: List<BandEvent> = emptyList(), val supplements: List<LibrarySupplement> = emptyList()
 )
-@Serializable data class Workspace(val schemaVersion: Int = 5, val projects: List<Project> = emptyList(), val selectedId: String? = null) {
+@Serializable data class Workspace(val schemaVersion: Int = 6, val projects: List<Project> = emptyList(), val selectedId: String? = null) {
     fun validate() {
-        require(schemaVersion == 5) { "This data was created by an unsupported application version." }
+        require(schemaVersion == 6) { "This data was created by an unsupported application version." }
         require(projects.map { it.id }.distinct().size == projects.size) { "Duplicate project identity." }
         require(selectedId == null || projects.any { it.id == selectedId }) { "Selected project is missing." }
         projects.forEach { p ->
             require(p.id.isNotBlank() && p.name.isNotBlank()) { "Project name is required." }
             p.theme.validate()
+            require(p.supplements.map { it.id }.distinct().size == p.supplements.size)
+            var previous: String? = null
+            p.supplements.forEachIndexed { index, supplement ->
+                supplement.validate()
+                require(supplement.publication.projectId == p.id && supplement.number == index + 1 && supplement.previousId == previous) { "Invalid supplement history." }
+                supplement.baselineMasterIds.forEach { (member, master) -> require(p.masters.any { it.id == master && it.members.any { m -> m.memberId == member && m.charts.isNotEmpty() } }) }
+                previous = supplement.id
+            }
             p.catalog.validate()
             val eventIds = p.events.map { it.id }
             val setIds = p.events.flatMap { it.sets }.map { it.id }
@@ -54,7 +62,7 @@ object WorkspaceCodec {
     fun encode(value: Workspace): String { value.validate(); return json.encodeToString(value) }
     fun decode(value: String): Workspace {
         val stored = json.decodeFromString<Workspace>(value)
-        val migrated = if (stored.schemaVersion in 1..4) stored.copy(schemaVersion = 5) else stored
+        val migrated = if (stored.schemaVersion in 1..5) stored.copy(schemaVersion = 6) else stored
         return migrated.also { it.validate() }
     }
 }

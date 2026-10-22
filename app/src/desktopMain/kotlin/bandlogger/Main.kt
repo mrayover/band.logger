@@ -94,7 +94,7 @@ fun main(args: Array<String>) {
         val eventPath = dir.resolve("event-smoke.json")
         val eventStore = FileWorkspaceStore(eventPath)
         val oldWorkspace = Workspace().saveProject(baselineProject).saveProject(Project("event-other", "Other band")).select(baselineProject.id)
-        val legacyText = WorkspaceCodec.encode(oldWorkspace).replace("\"schemaVersion\": 5", "\"schemaVersion\": 3")
+        val legacyText = WorkspaceCodec.encode(oldWorkspace).replace("\"schemaVersion\": 6", "\"schemaVersion\": 3")
         Files.writeString(eventPath, legacyText)
         var eventWorkspace = eventStore.load()
         EventType.entries.forEach { type ->
@@ -150,6 +150,38 @@ fun main(args: Array<String>) {
         }
         check(WorkspaceCodec.encode(eventStore.load()) == eventSnapshot)
         Files.writeString(dir.resolve("event-export-passed.txt"), "Reference-only member event ZIPs parsed; complete multiple sets, repeats, filenames, no PDF payloads and workspace preservation passed.")
+        val supplementPlan = SupplementPlanner.preview(pendingProject, PendingSources.check(pendingProject).issues)
+        check(supplementPlan.selectedCount == 4)
+        val supplement = SupplementExporter.generate(pendingProject, supplementPlan)
+        val recordedSupplement = pendingProject.recordSupplement(supplement)
+        store.save(Workspace().saveProject(recordedSupplement))
+        SupplementExporter.clearRecordedIntent(recordedSupplement)
+        check(store.load().projects.single().supplements.single() == supplement)
+        check(SupplementPlanner.preview(store.load().projects.single()).selectedCount == 0)
+        check(SupplementExporter.recover(recordedSupplement, supplement.publication.folder) == supplement)
+        supplement.publication.members.filter { it.zipName != null }.forEach { member ->
+            java.util.zip.ZipInputStream(Files.newInputStream(java.nio.file.Path.of(supplement.publication.folder).resolve(member.zipName!!))).use { zip ->
+                var xmlSeen = false
+                while (true) {
+                    val entry = zip.nextEntry ?: break
+                    if (entry.name.endsWith(".4ss")) {
+                        val factory = javax.xml.parsers.DocumentBuilderFactory.newInstance()
+                        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+                        val xml = zip.readBytes()
+                        val doc = factory.newDocumentBuilder().parse(java.io.ByteArrayInputStream(xml))
+                        val scores = doc.getElementsByTagName("score")
+                        check(scores.length == 1)
+                        val score = scores.item(0) as org.w3c.dom.Element
+                        check(score.getAttribute("path") == "Q New Tune -r00- C.pdf")
+                        check(java.util.Base64.getDecoder().decode(score.getAttribute("data")).contentEquals(syntheticPdf()))
+                        xmlSeen = true
+                    }
+                    zip.closeEntry()
+                }
+                check(xmlSeen)
+            }
+        }
+        Files.writeString(dir.resolve("supplement-passed.txt"), "Numbered supplement ZIP/XML/PDF bytes, persistence, cumulative pending and recovery passed.")
         Files.writeString(dir.resolve("smoke-passed.txt"), "Storage, fonts, XML, ZIP, scan, master generation/recovery, pending, events and reference-only member exports passed.")
         exitProcess(0)
     }
@@ -273,7 +305,7 @@ fun main(args: Array<String>) {
                         TextButton(enabled = !busy, onClick = { leave { page = item } }) { Text(if (page == item) "• $item" else item) }
                     }
                     Spacer(Modifier.height(24.dp))
-                    Text("0.5.1 · PREVIEW", style = MaterialTheme.typography.labelSmall)
+                    Text("0.6.0 · PREVIEW", style = MaterialTheme.typography.labelSmall)
                     Text("Saved locally. No account needed.", style = MaterialTheme.typography.bodySmall)
                 }
                 Column(Modifier.weight(1f).fillMaxHeight().padding(if (page == "Event editor") 20.dp else 36.dp).then(if (page == "Event editor") Modifier else Modifier.verticalScroll(rememberScrollState())), verticalArrangement = Arrangement.spacedBy(if (page == "Event editor") 8.dp else 20.dp)) {
@@ -292,7 +324,7 @@ fun main(args: Array<String>) {
                                     EventEditorScreen(project, draft, eventError, { eventDraft = draft.copy(value = it); eventError = null }, { saveEventDraft() }, { leave { page = "Upcoming Events" } }, { busy = it }, Modifier.weight(1f))
                                 }
                             }
-                            "Pending Distribution" -> key(project.id) { PendingDistributionScreen(project, { page = "Library master" }, { page = "Library" }) }
+                            "Pending Distribution" -> key(project.id) { PendingDistributionScreen(project, { page = "Library master" }, { page = "Library" }, busy, { busy = it }) { updated -> persist(workspace.saveProject(updated)) } }
                             "Library" -> key(project.id) { LibraryScreen(project, busy, { busy = it }) { updated -> persist(workspace.saveProject(updated)) } }
                             "Library master" -> key(project.id) { MasterScreen(project, busy, { busy = it }) { updated -> persist(workspace.saveProject(updated)) } }
                             "Members" -> {

@@ -117,3 +117,12 @@ This supersedes earlier notes that diagnostic iPad import was unresolved. No app
 - Complete reference-only ZIPs in memory and validate exact entries/XML; verify the written bytes sequentially rather than immediately trusting cloud-provider random-access file length. Preserve CRC/XML checks and no-overwrite staging.
 - Add regression coverage for inaccurate stream availability and truncated/changed/extra copies. Extend executable integration smoke to an isolated G: output while keeping synthetic PDFs local.
 - Release unused 0.5.1 and retain every prior ZIP. Additional Drive UI write was denied by automatic approval review and not retried; safe local UI alternative completed. No optional features or schema changes. Owner retry and iPad verification remain next steps.
+
+## October 21, 2026 — Supplement decisions / 0.6.0
+
+- Owner reports successful actual iPad event import from 0.5.1; record that without claiming new supplement-device verification. Baseline clean 9f284c9.
+- Cumulative supplemental tracking is per member/tune/part, anchored to the latest valid nonempty initial master. Keep independent delivered part revisions, exclude unchanged bytes/revisions and retain all old receipts. Event exports remain master-only as explicitly excluded.
+- Reuse master accepted-selection/source/hash/size/XML/ZIP/staging/recovery infrastructure. Publish only eligible affected members after exact owner review; warn/exclude unresolved selections/no-master members rather than fabricate a baseline or downgrade.
+- Consecutive numbers are project history, with permanent stable project folders under Supplements. Fixed numbered destinations and a durable local pending journal prevent accidental duplicates even when metadata saving fails or destinations/names change. Recover complete packages instead of regenerating them.
+- Schema 6 protects supplement records from older writers; immutable original schemas 1–5 backup before first save. No number/state advancement for failed/incomplete output, no receipt/import inference, no source PDF modifications.
+- Deliver unused 0.6.0, retain all older archives/checksums and GitHub Actions. Next: owner supplement/iPad review, then separately authorize event reference resolution from cumulative history. No unrelated features or Git operations.
