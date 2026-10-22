@@ -26,7 +26,7 @@ fun EventExportDialog(project: Project, eventId: String, setBusy: (Boolean) -> U
                 if (plan == null) Text(planned.exceptionOrNull()?.message ?: "Could not preview this event.", color = MaterialTheme.colorScheme.error)
                 else {
                     Text(plan.event.title, style = MaterialTheme.typography.titleLarge)
-                    Text("Reference-only setlists. No PDFs are included or read. Each musician must already have the recorded filenames installed in forScore. A generated master is not proof of installation.")
+                    Text("Reference-only setlists. No PDFs are included or read. Each musician must already have the recorded filenames installed in forScore. Recorded master and supplement exports do not prove installation.")
                     if (result == null) {
                         OutlinedTextField(destination, { destination = it; error = null }, enabled = !generating, label = { Text("Existing export destination") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                         TextButton(enabled = !generating, onClick = { chooseChartFolder("Choose event export destination")?.let { destination = it } }) { Text("Browse folders") }
@@ -38,9 +38,11 @@ fun EventExportDialog(project: Project, eventId: String, setBusy: (Boolean) -> U
                                 Text(member.member.name, style = MaterialTheme.typography.titleMedium)
                                 Text("Preferred: ${member.preferredPart ?: "Not set (member-only label)"} · ${member.entries.size} total · ${member.matchedCount} matched · ${member.missingCount} missing")
                                 Text("Baseline: ${member.baselineId ?: "No recorded non-empty Library Master — placeholder-only output"}", style = MaterialTheme.typography.bodySmall)
+                                Text("References use this master plus its recorded supplements.", style = MaterialTheme.typography.bodySmall)
                                 Text("${member.baseName}.zip", style = MaterialTheme.typography.bodySmall)
                                 member.sets.forEach { set -> set.entries.forEachIndexed { index, entry ->
                                     Text("Set ${set.number} · ${index + 1}. ${entry.title} → ${entry.filename ?: "Missing chart placeholder: ${entry.reason}"}", style = MaterialTheme.typography.bodySmall)
+                                    entry.distribution?.takeIf { entry.filename != null }?.let { Text("${it.sourceLabel} · ${it.distributionId} · ${it.chart.part} r${it.chart.revision.toString().padStart(2, '0')}", style = MaterialTheme.typography.bodySmall) }
                                 } }
                             } }
                         }

@@ -1,7 +1,7 @@
 package bandlogger
 
-/** Reference planning reads recorded master metadata only, never source PDFs or current allocations. */
-data class EventReference(val entryId: String, val tuneId: String, val title: String, val filename: String?, val reason: String? = null)
+/** Reference planning reads recorded master and supplement metadata only, never source PDFs or current allocations. */
+data class EventReference(val entryId: String, val tuneId: String, val title: String, val filename: String?, val reason: String? = null, val distribution: DistributedChart? = null)
 data class EventExportSet(val number: Int, val entries: List<EventReference>)
 data class EventMemberExport(val member: Member, val preferredPart: String?, val baselineId: String?, val baseName: String, val sets: List<EventExportSet>) {
     val entries get() = sets.flatMap { it.entries }
@@ -36,7 +36,7 @@ object EventExportPlanner {
         val label = "$date ${safeLabel(event.title)}"
         val titles = project.catalog.tunes.associate { it.id to it.title }
         val used = mutableSetOf<String>()
-        val members = PendingPlanner.baselines(project).map { baseline ->
+        val members = DistributionResolver.resolve(project).map { baseline ->
             val member = baseline.member
             val part = member.preferences.firstNotNullOfOrNull { raw -> chartParts.find { it.equals(raw.trim(), true) } }
             val memberLabel = safeLabel(member.name, 32) + (part?.let { " - $it" } ?: "")
@@ -44,19 +44,20 @@ object EventExportPlanner {
             var name = proposed
             var index = 2
             while (!used.add(name.lowercase())) { name = "$proposed - ${index++}" }
-            val charts = baseline.master?.members?.single { it.memberId == member.id }?.charts.orEmpty().associateBy { it.tuneId }
+            val charts = baseline.byTune
             val sets = event.sets.mapIndexedNotNull { setIndex, set ->
                 if (set.entries.isEmpty()) null else EventExportSet(setIndex + 1, set.entries.map { entry ->
-                    val chart = charts[entry.tuneId]
+                    val distribution = charts[entry.tuneId]
+                    val chart = distribution?.chart
                     val title = titles[entry.tuneId] ?: chart?.title ?: "Unavailable tune"
                     val filename = chart?.filename?.takeIf { ForScore.validReferenceFilename(it) }
                     val reason = when {
                         baseline.master == null -> "No recorded non-empty Library Master for this member."
-                        chart == null -> "Tune is absent from this member's latest baseline."
+                        chart == null -> "Tune is absent from this member's recorded master and applicable supplements."
                         filename == null -> "Recorded filename is unsafe or invalid; it was not guessed or changed."
                         else -> null
                     }
-                    EventReference(entry.id, entry.tuneId, title, filename, reason)
+                    EventReference(entry.id, entry.tuneId, title, filename, reason, distribution)
                 })
             }
             EventMemberExport(member, part, baseline.master?.id, name, sets)

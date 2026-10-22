@@ -2,7 +2,7 @@
 
 **A project-based workspace for musicians and working bands.**
 
-**Project status:** Supplemental distribution publishing delivered (0.6.0); owner confirms successful 0.5.1 event import on iPad. See the latest October 21 update below.
+**Project status:** Cumulative master-plus-supplement event references delivered (0.6.1). Owner reports production master, Eden event and Night Dreamer supplement imports successful; see the latest October 21 update below.
 **Established:** October 20, 2026  
 **Primary platform:** Windows desktop  
 **Planned companion platform:** Android  
@@ -513,3 +513,15 @@ A local durable pending-publication journal blocks duplicate generation after co
 Delivery: dist/band.logger-0.6.0-windows-x64.zip; EXE: dist/band.logger-0.6.0-windows-x64/band.logger/band.logger.exe. Extract all, keep app/ and runtime/, close older apps and launch without Java/Gradle installation. Unsigned Windows x64 preview. All 136 tests, packaged/extracted smoke, synthetic UI publication/zero-pending/restart/history receipt and 207-file archive verification passed. Previous ZIPs are byte-identical. No dependencies installed or GitHub Actions changes; no commit/push.
 
 Limits: no event-export consumption of supplements, templates/covers/calendar or installation tracking. Existing master limits apply (64 MiB/PDF, 512 MiB/member). Production Drive publishing and supplement iPad import were not manually performed this session; test locally/synthetically first, then owner verify the normal ZIP → Drive → local Files extraction → forScore route. Next: owner supplement review/import, then separately authorize event exports to consume the cumulative distribution history.
+
+## October 21, 2026 — Event references include supplements / 0.6.1
+
+Event Export for Members now resolves each musician's exact recorded repertoire from their latest valid nonempty Library Master and successfully recorded supplements anchored to that master. Supplements apply in consecutive recorded publication/chain order, never timestamp order. A later master starts a new member-specific epoch; older anchored supplements cannot override it, while skipped members retain their own earlier baseline. Each tune/part retains its own delivered revision; the last applicable delivery for a tune supplies its event reference. Current catalog revisions and preference changes never imply distribution. Invalid supplemental records stop preview/export with an explicit inconsistency message; genuinely missing or unsafe references retain placeholders.
+
+The existing preview identifies Library Master or Supplement NNN, publication identity, part and revision for each matched occurrence. Event output remains one complete reference-only .4ss per member plus instructions, preserving sets/repetitions/saved identities/order/naming/destination/acknowledgements and Google Drive-compatible sequential ZIP verification. No PDFs are embedded or read, and no distribution history/event metadata is written. Workspace schema remains 6; no migration or publisher changes.
+
+Production Supplement 001 manifest was inspected read-only: Night Dreamer is recorded for Marcus, Xavier and Ethan as Q Night Dreamer -r00- C.pdf, and Jordan as Q Night Dreamer -r00- Bb.pdf. Built-release verification used an isolated copy of the preserved 466-selection master snapshot plus the actual supplemental manifest and a test event; all four resolved 1 matched/0 missing and generated validated reference-only local ZIPs. Original workspace/backups and production manifest remained unchanged. This is not a new iPad test or a modification of the live saved Test event.
+
+Owner reports production master import, reference-only Eden gig setlist import, Supplement 001/Night Dreamer import and persisted distribution history successful. Those reports establish earlier owner/device results; integration-specific Drive/iPad import remains an owner check in MANUAL_TESTING.md.
+
+Delivery: dist/band.logger-0.6.1-windows-x64.zip and dist/band.logger-0.6.1-windows-x64/band.logger/band.logger.exe. Extract all and retain app/runtime. All 148 tests pass (136 previous retained/adapted plus 12 new), packaged/extracted executable smoke and separate-process cumulative-reference reopening pass. Prior versions and workflow retained. No new dependencies, commits, pushes or releases.

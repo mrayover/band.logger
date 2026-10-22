@@ -49,10 +49,11 @@ object EventExporter {
         append("Event: ${plan.event.title}\nDate: ${plan.event.date ?: "Undated (acknowledged)"}\nMember: ${member.member.name}\nSetlist: ${member.baseName}\n")
         append("Preferred part: ${member.preferredPart ?: "Not set"} (descriptive; recorded fallback parts may be used).\n")
         append("${member.entries.size} song entries: ${member.matchedCount} matched recorded references; ${member.missingCount} missing.\n")
-        append("Reference-only: NO PDFs included. Filenames must already exist in this member's forScore library. A generated Library Master does not prove installation.\n")
+        append("Reference-only: NO PDFs included. Filenames must already exist in this member's forScore library. Recorded Library Master/supplement exports do not prove installation.\n")
         append("Transfer ZIP through Google Drive, save locally in iPad Files, extract, then share the .4ss to forScore. Open Setlists and choose the named setlist. Do not import READ-ME.txt as a score.\n")
         append("Set headings and actual matching/repeated-entry behavior require owner iPad verification. Missing installed filenames may appear as placeholders.\n")
         append("Baseline: ${member.baselineId ?: "No recorded Library Master: placeholder-only output (acknowledged)"}\n")
+        member.entries.mapNotNull { it.distribution?.let { d -> "${d.sourceLabel}: ${d.distributionId}" } }.distinct().forEach { append("Recorded source: $it\n") }
         plan.warnings.forEach { append("Warning: $it\n") }
         member.sets.forEach { set -> set.entries.filter { it.filename == null }.forEach { entry ->
             append("Set ${set.number}: Missing chart — ${entry.title} · ${entry.reason}\n")

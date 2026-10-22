@@ -51,6 +51,11 @@ fun main(args: Array<String>) {
         check(after.projects.first().events.first() == edited)
         check(after.projects.first().events.first().title == "Reopened and edited")
         check(after.projects.first().masters == project.masters)
+        val cumulative = FileWorkspaceStore(dir.resolve("cumulative-event-smoke.json")).load().projects.single()
+        check(cumulative.supplements.size == 1)
+        check(EventExportPlanner.preview(cumulative, cumulative.events.single().id).members.all {
+            it.matchedCount == 1 && it.entries.single().distribution?.supplementNumber == 1 && it.entries.single().filename == "Q New Tune -r00- C.pdf"
+        })
         Files.writeString(dir.resolve("event-restart-passed.txt"), "New process reopened multiple sets and repeated tunes, edited order, and preserved identities, masters and project isolation.")
         exitProcess(0)
     }
@@ -182,6 +187,42 @@ fun main(args: Array<String>) {
             }
         }
         Files.writeString(dir.resolve("supplement-passed.txt"), "Numbered supplement ZIP/XML/PDF bytes, persistence, cumulative pending and recovery passed.")
+        val cumulativeStore = FileWorkspaceStore(dir.resolve("cumulative-event-smoke.json"))
+        val cumulativeEvent = newEvent(recordedSupplement, EventType.GIG, ::newId).copy(title = "Supplement reference smoke", date = "2026-10-21")
+            .addTune(recordedSupplement, recordedSupplement.catalog.tunes.single { it.title == "New Tune" }.id, ::newId)
+        cumulativeStore.save(Workspace().saveProject(recordedSupplement.saveEvent(cumulativeEvent)))
+        val cumulativeSnapshot = Files.readAllBytes(dir.resolve("cumulative-event-smoke.json"))
+        val cumulativeProject = cumulativeStore.load().projects.single()
+        val cumulativePlan = EventExportPlanner.preview(cumulativeProject, cumulativeEvent.id)
+        check(cumulativePlan.members.all { it.matchedCount == 1 && it.missingCount == 0 && it.entries.single().distribution?.supplementNumber == 1 })
+        val cumulativeOutput = EventExporter.generate(cumulativeProject, cumulativePlan, exportDir.toString())
+        cumulativeOutput.zipNames.forEach { name ->
+            java.util.zip.ZipInputStream(Files.newInputStream(cumulativeOutput.folder.resolve(name))).use { zip ->
+                var sawXml = false
+                var entries = 0
+                while (true) {
+                    val entry = zip.nextEntry ?: break
+                    entries++
+                    check(!entry.name.endsWith(".pdf", true))
+                    val text = zip.readBytes().decodeToString()
+                    if (entry.name.endsWith(".4ss")) {
+                        EventExporter.validateXml(text)
+                        check(!text.contains("data=") && !text.contains("JVBER"))
+                        val factory = javax.xml.parsers.DocumentBuilderFactory.newInstance()
+                        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+                        val doc = factory.newDocumentBuilder().parse(org.xml.sax.InputSource(java.io.StringReader(text)))
+                        val scores = doc.getElementsByTagName("score")
+                        check(scores.length == 1)
+                        check((scores.item(0) as org.w3c.dom.Element).getAttribute("path") == "Q New Tune -r00- C.pdf")
+                        sawXml = true
+                    } else check(entry.name == "READ-ME.txt")
+                    zip.closeEntry()
+                }
+                check(entries == 2 && sawXml)
+            }
+        }
+        check(Files.readAllBytes(dir.resolve("cumulative-event-smoke.json")).contentEquals(cumulativeSnapshot))
+        Files.writeString(dir.resolve("cumulative-event-passed.txt"), "Master -> recorded supplement -> saved/reopened event -> exact reference-only XML, no PDF payload and unchanged workspace passed.")
         Files.writeString(dir.resolve("smoke-passed.txt"), "Storage, fonts, XML, ZIP, scan, master generation/recovery, pending, events and reference-only member exports passed.")
         exitProcess(0)
     }
@@ -305,7 +346,7 @@ fun main(args: Array<String>) {
                         TextButton(enabled = !busy, onClick = { leave { page = item } }) { Text(if (page == item) "• $item" else item) }
                     }
                     Spacer(Modifier.height(24.dp))
-                    Text("0.6.0 · PREVIEW", style = MaterialTheme.typography.labelSmall)
+                    Text("0.6.1 · PREVIEW", style = MaterialTheme.typography.labelSmall)
                     Text("Saved locally. No account needed.", style = MaterialTheme.typography.bodySmall)
                 }
                 Column(Modifier.weight(1f).fillMaxHeight().padding(if (page == "Event editor") 20.dp else 36.dp).then(if (page == "Event editor") Modifier else Modifier.verticalScroll(rememberScrollState())), verticalArrangement = Arrangement.spacedBy(if (page == "Event editor") 8.dp else 20.dp)) {

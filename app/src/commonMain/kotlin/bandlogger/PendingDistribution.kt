@@ -18,7 +18,7 @@ object PendingPlanner {
         val m = Regex("(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2})(?:\\.(\\d{1,9}))?Z").matchEntire(value) ?: return null
         return m.groupValues[1] + m.groupValues[2].padEnd(9, '0')
     }
-    private fun valid(master: LibraryMaster, projectId: String): Boolean = runCatching {
+    internal fun valid(master: LibraryMaster, projectId: String): Boolean = runCatching {
         master.validate()
         require(master.projectId == projectId && timeKey(master.createdAt) != null)
         master.members.forEach { member ->

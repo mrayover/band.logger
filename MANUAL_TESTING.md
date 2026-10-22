@@ -141,3 +141,19 @@ Owner reports 0.5.1 event export imported correctly on iPad. That is owner-repor
 - [ ] Transfer a supplement ZIP using Drive → local iPad Files → extract → share .4ss to forScore; verify actual chart imports separately. Export history does not confirm installation/receipt.
 
 Schema 6 preserves old schemas 1–5 in workspace.pre-supplements.backup.json on first write, retaining prior backups. Older apps reject schema 6. Recovery/history are project-specific; copying an app workspace alone is not a backup of PDFs or export folders. Pending calculation uses latest valid nonempty master per member plus matching recorded supplement deltas, independently by instrument part; a later master establishes a new epoch. UI history lists all masters/supplements but is not an installation tracker. Existing size limits remain (64 MiB/PDF, 512 MiB/member). No templates, covers, calendars or event-export supplement consumption.
+
+## October 21, 2026 — Cumulative event references / 0.6.1
+
+Owner reports production Library Master import, the reference-only Eden gig setlist import, Supplement 001/Night Dreamer import and persisted supplemental history successful. These are owner-reported results. Work has not performed a new iPad import for 0.6.1.
+
+Extract all of band.logger-0.6.1-windows-x64.zip; close older app windows and run band.logger/band.logger.exe with app/ and runtime/ intact. Workspace schema stays 6; this integration has no migration.
+
+- [ ] Open Quaternity's existing saved Test event containing Night Dreamer; select Export for Members. Marcus, Xavier and Ethan should match Q Night Dreamer -r00- C.pdf, Jordan Q Night Dreamer -r00- Bb.pdf, as recorded in production Supplement 001. Any genuinely unallocated tune remains missing.
+- [ ] Preview each matched row's Library Master/Supplement NNN source, distribution identity, part and revision. Current preferences label filenames but never choose undelivered charts. Independently acknowledge Undated for the Test event, or save a date first; missing-reference acknowledgement is only needed for real missing entries/no-master members.
+- [ ] Export to the usual existing destination. Each member ZIP has exactly one whole-event .4ss plus READ-ME.txt, no PDFs/data payload. Original naming, Events folder/collision suffixes, set headings, repeated occurrences and positions remain unchanged. Previous outputs are preserved.
+- [ ] Transfer through Drive, save locally in iPad Files, extract and share .4ss to forScore. Verify exact Night Dreamer matching for the appropriate installed member chart, plus master tunes, headings, repeat positions and all sets. Export records do not confirm installation.
+- [ ] In synthetic data only, record successive revisions/parts and verify latest applicable publication wins by numbered history (not timestamps). A newer nonempty master starts a new member-specific baseline; older anchored supplements do not override it. A skipped member retains their own earlier master and applicable supplements.
+- [ ] Missing/no-master output retains existing placeholders/acknowledgements. Invalid supplement chain/anchor/manifest metadata must report an inconsistent record and stop export rather than guess. Unsafe recorded filenames remain missing. Do not edit production JSON to test corruption.
+- [ ] Restart; saved events, supplement history, Pending Distribution counts and Library Master behavior remain intact. No original PDFs/master/supplement packages should be changed by event export.
+
+Automated tests and packaged/extracted smoke cover cumulative resolution, per-part/member isolation, no PDF embedding and workspace immutability. Event generation resolves only recorded metadata; it does not verify installed iPad files or reread distribution ZIPs/source PDFs. Real owner event/Drive/iPad verification remains required for this integration.

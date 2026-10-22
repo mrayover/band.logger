@@ -126,3 +126,12 @@ This supersedes earlier notes that diagnostic iPad import was unresolved. No app
 - Consecutive numbers are project history, with permanent stable project folders under Supplements. Fixed numbered destinations and a durable local pending journal prevent accidental duplicates even when metadata saving fails or destinations/names change. Recover complete packages instead of regenerating them.
 - Schema 6 protects supplement records from older writers; immutable original schemas 1–5 backup before first save. No number/state advancement for failed/incomplete output, no receipt/import inference, no source PDF modifications.
 - Deliver unused 0.6.0, retain all older archives/checksums and GitHub Actions. Next: owner supplement/iPad review, then separately authorize event reference resolution from cumulative history. No unrelated features or Git operations.
+
+## October 21, 2026 — Cumulative event references / 0.6.1
+
+- Integrate existing records rather than add a distribution database/schema. Keep latest valid nonempty master selection unchanged, then apply only recorded supplements anchored to that member's exact master ID in validated number/predecessor order. Timestamps do not order supplements.
+- Preserve tune/part delivery history independently; use the latest applicable recorded tune selection for event references. Current preferences are descriptive only; no manual overrides, inferred delivery, local-revision substitution or PDF reads.
+- Validate/replay existing supplement chain/anchor rules and stop on inconsistent records. Preserve no-master/missing/unsafe filename placeholders and separate Undated acknowledgement. A later master excludes old anchored deltas only for its affected members.
+- Preserve one whole-event reference-only .4ss/member, XML format, exact filenames, all sets/repeats, naming/destinations/cloud ZIP validation and no-overwrite behavior. Provenance appears in existing preview and instructions; exported remains distinct from installed.
+- Owner-reported production master/Eden event/Night Dreamer supplement iPad imports and persistent history are successful. Verify actual Supplement 001 allocations read-only in isolated copied records; do not regenerate production packages or edit live events. Require owner check of new integration on iPad.
+- Deliver unused 0.6.1 with all prior builds/workflow intact, full tests/smoke and schema 6 unchanged. No optional functionality or source-control operations.

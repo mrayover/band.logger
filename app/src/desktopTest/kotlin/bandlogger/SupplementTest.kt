@@ -123,12 +123,12 @@ class SupplementTest {
         store.save(loaded); store.save(loaded)
         assertEquals(old,Files.readString(path.resolveSibling("workspace.pre-supplements.backup.json")))
     }
-    @Test fun eventExportRemainsMasterOnlyAfterSupplement() {
+    @Test fun eventExportResolvesRecordedSupplement() {
         val f=fixture(); var p=newTune(f); val tune=p.catalog.tunes.single { it.title=="Beta" }
         val event=newEvent(p,EventType.GIG,::newId).copy(title="Show",date="2026-10-21").addTune(p,tune.id,::newId)
         p=p.saveEvent(event); p=p.recordSupplement(SupplementExporter.generate(p,preview(p),journalDirectory=f.root))
         assertEquals(0,preview(p).selectedCount)
-        assertTrue(EventExportPlanner.preview(p,event.id).members.all { it.missingCount==1 })
+        assertTrue(EventExportPlanner.preview(p,event.id).members.all { it.matchedCount==1 && it.entries.single().distribution?.supplementNumber==1 })
     }
     @Test fun durableIntentBlocksDuplicateEvenAfterChangingDestinationOrProjectName() {
         val f=fixture(); val p=newTune(f); val record=SupplementExporter.generate(p,preview(p),journalDirectory=f.root)
